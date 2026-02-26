@@ -1,0 +1,3 @@
+*.css
+src/components/ui/*.tsx
+pnpm-lock.yaml
