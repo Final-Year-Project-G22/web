@@ -47,7 +47,7 @@ export function LoginForm() {
       </Button>
       {login.error && (
         <p className="text-sm text-destructive">
-          {login.error instanceof Error ? login.error.message : "Login failed"}
+          {login.error.detail ?? login.error.title ?? "Login failed"}
         </p>
       )}
     </form>

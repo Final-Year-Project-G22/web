@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import type {
+  ErrorModel,
   LoginRequest,
   LoginResponseBody,
   RegisterRequest,
@@ -11,7 +12,7 @@ import { authApi } from "./auth.api";
 export function useLogin() {
   const setSession = useAuthStore((state) => state.setSession);
 
-  return useMutation({
+  return useMutation<LoginResponseBody, ErrorModel, LoginRequest>({
     mutationFn: async (data: LoginRequest): Promise<LoginResponseBody> => {
       return authApi.login(data);
     },
