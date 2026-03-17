@@ -7,7 +7,16 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**/*.js", "**/*.ts", "**/*.tsx", "**/*.json", "**/*.css"]
+    "includes": [
+      "**/*.js",
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.json",
+      "**/*.css",
+      "!src/app/globals.css",
+      "!src/lib/api",
+      "!src/components/ui"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -41,6 +50,9 @@
   "css": {
     "formatter": {
       "enabled": true
+    },
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "assist": {
