@@ -1,55 +1,72 @@
-"use client";
-
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useLogin } from "../_services/auth.hook";
+import { Separator } from "@/components/ui/separator";
 
-const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
-
-export function LoginForm() {
-  const login = useLogin();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-  });
-
-  const onSubmit = (data: LoginFormData) => {
-    login.mutate(data);
-  };
-
+export default function LoginPage() {
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" placeholder="name@example.com" {...register("email")} />
-        {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+    <div className="min-h-screen flex flex-col">
+      {/* NAV */}
+      <div className="flex justify-between items-center px-10 py-4 border-b">
+        <h1 className="font-semibold text-lg">The Trusted Architect</h1>
+        <div className="flex gap-6 text-sm">
+          <span>Contact Support</span>
+          <span className="bg-muted px-3 py-1 rounded-full">EN</span>
+        </div>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" {...register("password")} />
-        {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
+
+      {/* MAIN */}
+      <div className="flex flex-1">
+        {/* LEFT */}
+        <div className="hidden md:flex w-1/2 bg-indigo-900 text-white p-16 flex-col justify-between">
+          <div>
+            <h1 className="text-5xl font-bold mb-6">Empowering Ethiopian MUMEs</h1>
+            <p className="text-gray-300 mb-10">Secure access to your business advisory toolkit.</p>
+          </div>
+          <p className="text-xs">ADISU SERATEGNA</p>
+        </div>
+
+        {/* RIGHT */}
+        <div className="flex-1 flex items-center justify-center p-8 bg-muted/30">
+          <div className="w-full max-w-md space-y-6">
+            <div>
+              <h2 className="text-2xl font-semibold">Login to your Account</h2>
+              <p className="text-sm text-green-600">እንኳን ደህና መጡ</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label>Email Address</Label>
+                <Input placeholder="name@company.com" />
+              </div>
+
+              <div>
+                <div className="flex justify-between">
+                  <Label>Password</Label>
+                  <span className="text-xs text-blue-600 cursor-pointer">Forgot Password?</span>
+                </div>
+                <Input type="password" placeholder="••••••••" />
+              </div>
+
+              <Button className="w-full bg-green-700 hover:bg-green-800">Sign In →</Button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Separator />
+              <span className="text-xs text-muted-foreground">OR CONTINUE WITH</span>
+              <Separator />
+            </div>
+
+            <Button variant="outline" className="w-full">
+              Sign in with Google
+            </Button>
+
+            <p className="text-sm text-center">
+              Don't have an account? <span className="text-green-700 cursor-pointer">Sign Up</span>
+            </p>
+          </div>
+        </div>
       </div>
-      <Button type="submit" className="w-full" disabled={login.isPending}>
-        {login.isPending ? "Signing in..." : "Sign in"}
-      </Button>
-      {login.error && (
-        <p className="text-sm text-destructive">
-          {login.error.detail ?? login.error.title ?? "Login failed"}
-        </p>
-      )}
-    </form>
+    </div>
   );
 }
