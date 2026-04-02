@@ -1,76 +1,118 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useRegister } from "../_services/auth.hook";
 
-const registerSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Invalid email address"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Password must contain an uppercase letter")
-    .regex(/[a-z]/, "Password must contain a lowercase letter")
-    .regex(/[0-9]/, "Password must contain a digit"),
-});
+export function RegisterForm({ switchToLogin }: { switchToLogin: () => void }) {
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-type RegisterFormData = z.infer<typeof registerSchema>;
-
-export function RegisterForm() {
-  const register = useRegister();
-
-  const {
-    register: registerField,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
-  });
-
-  const onSubmit = (data: RegisterFormData) => {
-    register.mutate(data);
-  };
+  const strength = password.length > 12 ? "Strong" : password.length > 8 ? "Medium" : "Weak";
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="firstName">First name</Label>
-          <Input id="firstName" {...registerField("firstName")} />
-          {errors.firstName && (
-            <p className="text-sm text-destructive">{errors.firstName.message}</p>
-          )}
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-semibold text-black">Admin Account Request</h2>
+          <p className="text-sm text-muted-foreground text-right">Step 1 of 2</p>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="lastName">Last name</Label>
-          <Input id="lastName" {...registerField("lastName")} />
-          {errors.lastName && <p className="text-sm text-destructive">{errors.lastName.message}</p>}
+
+        <div className="mt-2 h-2 bg-gray-200 rounded">
+          <div className="h-2 w-1/2 bg-blue-600 rounded"></div>
         </div>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" placeholder="name@example.com" {...registerField("email")} />
-        {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" {...registerField("password")} />
-        {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
-      </div>
-      <Button type="submit" className="w-full" disabled={register.isPending}>
-        {register.isPending ? "Creating account..." : "Create account"}
-      </Button>
-      {register.error && (
-        <p className="text-sm text-destructive">
-          {register.error instanceof Error ? register.error.message : "Registration failed"}
+
+      {/* Form */}
+      <div className="space-y-5">
+        <div className="space-y-5">
+          <Label className="text-black">Full Name</Label>
+          <Input className="border-gray-400" placeholder="e.g. Sarah Jenkins" />
+        </div>
+
+        <div className="space-y-5">
+          <Label className="text-black">Organization Email</Label>
+          <Input className="border-gray-400" placeholder="name@organization.com" />
+          <p className="text-xs text-muted-foreground">Must use a valid organizational domain.</p>
+        </div>
+
+        <div className="text-black">
+          <Label className="block text-sm mb-1">Requested Role</Label>
+          <select className="w-full border border-gray-400 rounded-lg p-3 text-sm">
+            <option>Select a role...</option>
+            <option>Admin</option>
+            <option>Moderator</option>
+          </select>
+        </div>
+
+        {/* Info box */}
+        <div className="bg-blue-50 border border-blue-200 text-blue-700 text-xs p-3 rounded">
+          Content Managers can publish and edit articles. Moderators can review user comments and
+          flag content. System Admins have full access.
+        </div>
+
+        {/* Password */}
+        <div className="space-y-5">
+          <Label className="text-black">Password</Label>
+
+          {/* 👁 Input with toggle */}
+          <div className="relative">
+            <Input
+              className="border-gray-200 text-black pr-10"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+            />
+
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+
+          {/* Strength */}
+          <div className="flex gap-1 mt-2">
+            <div className="h-1 flex-1 bg-green-500 rounded"></div>
+            <div className="h-1 flex-1 bg-green-500 rounded"></div>
+            <div className="h-1 flex-1 bg-gray-200 rounded"></div>
+          </div>
+          <div className="flex justify-between items-center mb-6">
+            <p className="text-xs text-muted-foreground">Strength: {strength}</p>
+            <p className="text-xs bg-gray-50 border border-gray-200 text-muted-foreground">
+              Min 8 chars
+            </p>
+          </div>
+        </div>
+
+        {/* Checkbox */}
+        <div className="flex items-center space-x-2 text-black">
+          <input type="checkbox" />
+          <span>
+            I agree to the <b className="text-purple-500">Admin Security Policy</b> and{" "}
+            <b className="text-purple-500">Terms of Service</b>.
+          </span>
+        </div>
+
+        {/* Button */}
+        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white p-5">
+          Request Access
+        </Button>
+
+        {/* Switch */}
+        <p className="text-sm text-center text-black">
+          Already have an account?{" "}
+          <button type="button" onClick={switchToLogin} className="text-blue-600">
+            Sign in here
+          </button>
         </p>
-      )}
-    </form>
+      </div>
+    </div>
   );
 }
