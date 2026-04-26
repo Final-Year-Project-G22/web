@@ -34,7 +34,7 @@ export function Header() {
 
       <div className="flex items-center gap-4">
         <Button asChild size="sm" variant="outline">
-          <Link href="/dashboard/community/admins/register">
+          <Link href="/admin/register">
             <UserPlus className="size-4" />
             Register New Admin
           </Link>

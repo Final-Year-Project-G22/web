@@ -40,6 +40,7 @@ export default function RegisterAdminPage() {
   const router = useRouter();
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
+  const [noticeType, setNoticeType] = useState<"success" | "error" | null>(null);
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -59,6 +60,7 @@ export default function RegisterAdminPage() {
 
   const onSubmit = (data: RegisterFormData) => {
     setNotice(null);
+    setNoticeType(null);
     registerMutation.mutate(
       {
         email: data.email,
@@ -68,8 +70,14 @@ export default function RegisterAdminPage() {
         roleIds: selectedRoleIds.length > 0 ? selectedRoleIds : null,
       },
       {
-        onSuccess: (res) => setNotice(`${res.message} — Account ID: ${res.accountId}`),
-        onError: (err) => setNotice(getErrorMessage(err)),
+        onSuccess: (res) => {
+          setNotice(res.message);
+          setNoticeType("success");
+        },
+        onError: (err) => {
+          setNotice(getErrorMessage(err));
+          setNoticeType("error");
+        },
       }
     );
   };
@@ -153,7 +161,7 @@ export default function RegisterAdminPage() {
             {notice && (
               <div
                 className={`text-sm p-3 rounded border ${
-                  notice.includes("Account ID")
+                  noticeType === "success"
                     ? "bg-green-50 border-green-200 text-green-700"
                     : "bg-red-50 border-red-200 text-red-700"
                 }`}
