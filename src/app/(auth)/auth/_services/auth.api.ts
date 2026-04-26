@@ -1,9 +1,13 @@
 import {
   login as loginApi,
   logout as logoutApi,
-  register as registerApi,
+  registerAdmin as registerAdminApi,
 } from "@/lib/api/services/authentication";
-import type { LoginRequest, RegisterRequest } from "@/lib/api/types";
+import type {
+  AdminRegisterRequest,
+  AdminRegisterResponseBody,
+  LoginRequest,
+} from "@/lib/api/types";
 
 export const authApi = {
   login: async (data: LoginRequest) => {
@@ -14,8 +18,11 @@ export const authApi = {
     return response.data;
   },
 
-  register: async (data: RegisterRequest) => {
-    const response = await registerApi(data);
+  registerAdmin: async (
+    data: AdminRegisterRequest,
+    headers?: Record<string, string>
+  ): Promise<AdminRegisterResponseBody> => {
+    const response = await registerAdminApi(data, { headers });
     if (response.status !== 200) {
       throw response.data;
     }

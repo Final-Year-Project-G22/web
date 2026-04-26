@@ -1,10 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import type {
+  AdminRegisterRequest,
+  AdminRegisterResponseBody,
   ErrorModel,
   LoginRequest,
   LoginResponseBody,
-  RegisterRequest,
-  RegisterResponseBody,
 } from "@/lib/api/types";
 import { useAuthStore } from "@/store/auth.store";
 import { authApi } from "./auth.api";
@@ -18,24 +18,20 @@ export function useLogin() {
     },
     onSuccess: (data) => {
       setSession(data.accessToken, data.user, data.account);
+      document.cookie = `access_token=${data.accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
     },
   });
 }
 
-export function useRegister() {
-  const setSession = useAuthStore((state) => state.setSession);
-
-  return useMutation({
-    mutationFn: async (data: RegisterRequest): Promise<RegisterResponseBody> => {
-      return authApi.register(data);
-    },
-    onSuccess: (data) => {
-      setSession(data.accessToken, data.user, data.account);
+export function useAdminRegister(options?: { headers?: Record<string, string> }) {
+  return useMutation<AdminRegisterResponseBody, ErrorModel, AdminRegisterRequest>({
+    mutationFn: async (data: AdminRegisterRequest) => {
+      return authApi.registerAdmin(data, options?.headers);
     },
   });
 }
 
-export function useLogout() {
+export function useLogout(onLogout?: () => void) {
   const logout = useAuthStore((state) => state.logout);
 
   return useMutation({
@@ -44,6 +40,8 @@ export function useLogout() {
     },
     onSuccess: () => {
       logout();
+      document.cookie = "access_token=; path=/; max-age=0; SameSite=Lax";
+      onLogout?.();
     },
   });
 }
