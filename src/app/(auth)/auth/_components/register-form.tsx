@@ -36,6 +36,7 @@ function getErrorMessage(err: unknown) {
 export function RegisterForm({ switchToLogin }: { switchToLogin: () => void }) {
   const router = useRouter();
   const [notice, setNotice] = useState<string | null>(null);
+  const [noticeType, setNoticeType] = useState<"success" | "error" | null>(null);
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
 
   const form = useForm<RegisterFormData>({
@@ -63,6 +64,7 @@ export function RegisterForm({ switchToLogin }: { switchToLogin: () => void }) {
 
   const onSubmit = (data: RegisterFormData) => {
     setNotice(null);
+    setNoticeType(null);
     adminRegisterMutation.mutate(
       {
         email: data.email,
@@ -73,11 +75,13 @@ export function RegisterForm({ switchToLogin }: { switchToLogin: () => void }) {
       },
       {
         onSuccess: (res) => {
-          setNotice(`${res.message} Account ID: ${res.accountId}`);
+          setNotice(res.message);
+          setNoticeType("success");
           setTimeout(() => router.push("/auth"), 3000);
         },
         onError: (err) => {
           setNotice(getErrorMessage(err));
+          setNoticeType("error");
         },
       }
     );
@@ -170,7 +174,7 @@ export function RegisterForm({ switchToLogin }: { switchToLogin: () => void }) {
       {notice && (
         <div
           className={`text-sm p-3 rounded border ${
-            notice.includes("Account ID")
+            noticeType === "success"
               ? "bg-green-50 border-green-200 text-green-700"
               : "bg-red-50 border-red-200 text-red-700"
           }`}
