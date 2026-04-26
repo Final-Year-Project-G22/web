@@ -10,11 +10,11 @@ export interface LoginRequest {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
   /**
-   * Email address
+   * Email or username
    * @minLength 1
    * @maxLength 255
    */
-  email: string;
+  identifier: string;
   /**
    * Password
    * @minLength 1

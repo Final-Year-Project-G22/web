@@ -1,16 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLogin } from "../_services/auth.hook";
 
-// ✅ Schema
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  identifier: z.string().min(1, "Email is required"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -22,43 +22,60 @@ type LoginFormProps = {
 };
 
 export function LoginForm({ switchToRegister, switchToForgot }: LoginFormProps) {
-  // ✅ Initialize form
+  const router = useRouter();
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      identifier: "",
       password: "",
     },
   });
 
-  // ✅ Submit handler
+  const loginMutation = useLogin();
+
   const onSubmit = (data: LoginFormData) => {
-    console.log("Login Data:", data);
-    // 👉 Replace with your API call (useLogin hook)
+    loginMutation.mutate(data, {
+      onSuccess: () => {
+        router.push("/dashboard");
+      },
+      onError: (err: unknown) => {
+        const maybe = err as { title?: string; detail?: string } | undefined;
+        const msg =
+          maybe?.title ||
+          maybe?.detail ||
+          (typeof err === "string" ? err : "Login failed. Check your credentials.");
+        form.setError("root", { message: msg });
+      },
+    });
   };
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-      {/* Email */}
       <div className="text-black space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="identifier">Email</Label>
           <Input
             className="border-gray-400"
-            id="email"
+            id="identifier"
             type="email"
             placeholder="you@example.com"
-            {...form.register("email")}
+            {...form.register("identifier")}
           />
-          {form.formState.errors.email && (
-            <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
+          {form.formState.errors.identifier && (
+            <p className="text-sm text-red-500">{form.formState.errors.identifier.message}</p>
           )}
         </div>
 
-        {/* Password + Forgot */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
+            <button
+              type="button"
+              onClick={switchToForgot}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Forgot password?
+            </button>
           </div>
 
           <Input
@@ -68,23 +85,26 @@ export function LoginForm({ switchToRegister, switchToForgot }: LoginFormProps) 
             placeholder="Enter your password"
             {...form.register("password")}
           />
-
-          <button type="button" onClick={switchToForgot} className="text-sm text-blue-600">
-            Forgot password?
-          </button>
           {form.formState.errors.password && (
             <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
           )}
         </div>
 
-        {/* Submit */}
-        <Button type="submit" className="w-full">
-          Sign In
+        {form.formState.errors.root && (
+          <p className="text-sm text-red-500">{form.formState.errors.root.message}</p>
+        )}
+
+        <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+          {loginMutation.isPending ? "Signing in…" : "Sign In"}
         </Button>
 
         <p className="text-sm text-center">
-          Don’t have an account?{" "}
-          <button type="button" onClick={switchToRegister} className="text-blue-600">
+          Don&apos;t have an account?{" "}
+          <button
+            type="button"
+            onClick={switchToRegister}
+            className="text-blue-600 hover:underline"
+          >
             Sign up
           </button>
         </p>

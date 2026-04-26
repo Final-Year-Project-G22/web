@@ -1,14 +1,79 @@
+"use client";
+
 import {
   BrainCircuit,
+  ChevronRight,
+  Folder,
   LayoutDashboard,
   Moon,
   Settings,
   ShieldAlert,
   ShieldCheck,
+  TriangleAlert,
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
+import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
+
+function DarkModeSwitch() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  const isDark = mounted ? theme === "dark" : true;
+
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={isDark}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className={cn(
+        "relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        isDark ? "bg-primary" : "bg-input"
+      )}
+    >
+      <span
+        className={cn(
+          "inline-block h-4 w-4 rounded-full bg-background shadow transition-transform",
+          isDark ? "translate-x-4" : "translate-x-0"
+        )}
+      />
+    </button>
+  );
+}
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+function NavLink({ href, icon, label }: { href: string; icon?: ReactNode; label: string }) {
+  const pathname = usePathname();
+  const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
+
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "flex items-center gap-3 px-2 py-2 rounded-md transition-colors",
+        isActive ? "bg-primary/5 text-primary font-medium" : "text-muted-foreground hover:bg-accent"
+      )}
+    >
+      {icon}
+      <span className="text-sm">{label}</span>
+    </Link>
+  );
+}
 
 export function Sidebar() {
   return (
@@ -27,13 +92,11 @@ export function Sidebar() {
               MAIN
             </h4>
             <nav className="space-y-1">
-              <Link
+              <NavLink
                 href="/dashboard"
-                className="flex items-center gap-3 px-2 py-2 bg-primary/5 text-primary font-medium rounded-md"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                <span className="text-sm">Dashboard</span>
-              </Link>
+                icon={<LayoutDashboard className="w-4 h-4" />}
+                label="Dashboard"
+              />
               <Link
                 href="#"
                 className="flex items-center justify-between px-2 py-2 text-muted-foreground hover:bg-accent rounded-md transition-colors"
@@ -67,13 +130,61 @@ export function Sidebar() {
               >
                 <span className="text-sm">Manage Templates</span>
               </Link>
-              <Link
-                href="#"
-                className="flex items-center gap-3 px-2 py-2 text-muted-foreground hover:bg-accent rounded-md transition-colors"
-              >
-                <ShieldAlert className="w-4 h-4" />
-                <span className="text-sm">Community & Moderation</span>
-              </Link>
+            </nav>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-semibold text-muted-foreground mb-3 px-2 tracking-wider">
+              COMMUNITY
+            </h4>
+            <nav className="space-y-1">
+              <NavLink
+                href="/dashboard/community/categories"
+                icon={<Folder className="w-4 h-4" />}
+                label="Categories"
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn(
+                      "flex w-full items-center gap-3 px-2 py-2 rounded-md transition-colors text-muted-foreground hover:bg-accent",
+                      usePathname().startsWith("/dashboard/moderation")
+                        ? "bg-primary/5 text-primary font-medium"
+                        : ""
+                    )}
+                  >
+                    <TriangleAlert className="w-4 h-4" />
+                    <span className="text-sm flex-1 text-left">Moderation</span>
+                    <ChevronRight className="w-3 h-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent sideOffset={4} className="w-48">
+                  <DropdownMenuItem asChild>
+                    <NavLink
+                      href="/dashboard/moderation/blocked-users"
+                      icon={<ShieldAlert className="w-4 h-4" />}
+                      label="Blocked Users"
+                    />
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <NavLink
+                      href="/dashboard/moderation/reported-content"
+                      icon={<TriangleAlert className="w-4 h-4" />}
+                      label="Reported Content"
+                    />
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <NavLink
+                      href="/dashboard/moderation/reported-users"
+                      icon={<TriangleAlert className="w-4 h-4" />}
+                      label="Reported Users"
+                    />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
           </div>
 
@@ -107,7 +218,7 @@ export function Sidebar() {
             <Moon className="w-4 h-4" />
             <span>Dark Mode</span>
           </div>
-          <Switch />
+          <DarkModeSwitch />
         </div>
       </div>
     </aside>
