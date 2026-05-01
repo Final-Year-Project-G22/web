@@ -24,6 +24,7 @@ import type {
   VerifyEmailOTPResponseBody
 } from '../types';
 
+import { customFetch } from '../mutator/custom-fetch';
 
 
 
@@ -94,7 +95,7 @@ export const getRegisterAdminUrl = () => {
 
 export const registerAdmin = async (adminRegisterRequest: NonReadonly<AdminRegisterRequest>, options?: RequestInit): Promise<registerAdminResponse> => {
   
-  const res = await fetch(getRegisterAdminUrl(),
+  return customFetch<registerAdminResponse>(getRegisterAdminUrl(),
   {      
     ...options,
     method: 'POST',
@@ -102,13 +103,7 @@ export const registerAdmin = async (adminRegisterRequest: NonReadonly<AdminRegis
     body: JSON.stringify(
       adminRegisterRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: registerAdminResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as registerAdminResponse
-}
+);}
   
 
 /**
@@ -145,7 +140,7 @@ export const getUpdateAdminRolesUrl = (accountId: string,) => {
 export const updateAdminRoles = async (accountId: string,
     adminUpdateRolesRequest: NonReadonly<AdminUpdateRolesRequest>, options?: RequestInit): Promise<updateAdminRolesResponse> => {
   
-  const res = await fetch(getUpdateAdminRolesUrl(accountId),
+  return customFetch<updateAdminRolesResponse>(getUpdateAdminRolesUrl(accountId),
   {      
     ...options,
     method: 'PUT',
@@ -153,13 +148,7 @@ export const updateAdminRoles = async (accountId: string,
     body: JSON.stringify(
       adminUpdateRolesRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: updateAdminRolesResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as updateAdminRolesResponse
-}
+);}
   
 
 /**
@@ -195,7 +184,7 @@ export const getLoginUrl = () => {
 
 export const login = async (loginRequest: NonReadonly<LoginRequest>, options?: RequestInit): Promise<loginResponse> => {
   
-  const res = await fetch(getLoginUrl(),
+  return customFetch<loginResponse>(getLoginUrl(),
   {      
     ...options,
     method: 'POST',
@@ -203,13 +192,7 @@ export const login = async (loginRequest: NonReadonly<LoginRequest>, options?: R
     body: JSON.stringify(
       loginRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: loginResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as loginResponse
-}
+);}
   
 
 /**
@@ -245,20 +228,14 @@ export const getLogoutUrl = () => {
 
 export const logout = async ( options?: RequestInit): Promise<logoutResponse> => {
   
-  const res = await fetch(getLogoutUrl(),
+  return customFetch<logoutResponse>(getLogoutUrl(),
   {      
     ...options,
     method: 'POST'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: logoutResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as logoutResponse
-}
+);}
   
 
 /**
@@ -294,20 +271,14 @@ export const getLogoutAllUrl = () => {
 
 export const logoutAll = async ( options?: RequestInit): Promise<logoutAllResponse> => {
   
-  const res = await fetch(getLogoutAllUrl(),
+  return customFetch<logoutAllResponse>(getLogoutAllUrl(),
   {      
     ...options,
     method: 'POST'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: logoutAllResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as logoutAllResponse
-}
+);}
   
 
 /**
@@ -343,20 +314,14 @@ export const getGetCurrentUserUrl = () => {
 
 export const getCurrentUser = async ( options?: RequestInit): Promise<getCurrentUserResponse> => {
   
-  const res = await fetch(getGetCurrentUserUrl(),
+  return customFetch<getCurrentUserResponse>(getGetCurrentUserUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getCurrentUserResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getCurrentUserResponse
-}
+);}
   
 
 /**
@@ -392,20 +357,14 @@ export const getRefreshUrl = () => {
 
 export const refresh = async ( options?: RequestInit): Promise<refreshResponse> => {
   
-  const res = await fetch(getRefreshUrl(),
+  return customFetch<refreshResponse>(getRefreshUrl(),
   {      
     ...options,
     method: 'POST'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: refreshResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as refreshResponse
-}
+);}
   
 
 /**
@@ -441,7 +400,7 @@ export const getRegisterUrl = () => {
 
 export const register = async (registerRequest: NonReadonly<RegisterRequest>, options?: RequestInit): Promise<registerResponse> => {
   
-  const res = await fetch(getRegisterUrl(),
+  return customFetch<registerResponse>(getRegisterUrl(),
   {      
     ...options,
     method: 'POST',
@@ -449,13 +408,7 @@ export const register = async (registerRequest: NonReadonly<RegisterRequest>, op
     body: JSON.stringify(
       registerRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: registerResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as registerResponse
-}
+);}
   
 
 /**
@@ -491,20 +444,14 @@ export const getResendEmailOTPUrl = () => {
 
 export const resendEmailOTP = async ( options?: RequestInit): Promise<resendEmailOTPResponse> => {
   
-  const res = await fetch(getResendEmailOTPUrl(),
+  return customFetch<resendEmailOTPResponse>(getResendEmailOTPUrl(),
   {      
     ...options,
     method: 'POST'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: resendEmailOTPResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as resendEmailOTPResponse
-}
+);}
   
 
 /**
@@ -540,7 +487,7 @@ export const getAccountPasswordUrl = () => {
 
 export const accountPassword = async (updateAccountPasswordRequest: NonReadonly<UpdateAccountPasswordRequest>, options?: RequestInit): Promise<accountPasswordResponse> => {
   
-  const res = await fetch(getAccountPasswordUrl(),
+  return customFetch<accountPasswordResponse>(getAccountPasswordUrl(),
   {      
     ...options,
     method: 'PUT',
@@ -548,13 +495,7 @@ export const accountPassword = async (updateAccountPasswordRequest: NonReadonly<
     body: JSON.stringify(
       updateAccountPasswordRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: accountPasswordResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as accountPasswordResponse
-}
+);}
   
 
 /**
@@ -590,7 +531,7 @@ export const getVerifyEmailOTPUrl = () => {
 
 export const verifyEmailOTP = async (verifyEmailOTPRequest: NonReadonly<VerifyEmailOTPRequest>, options?: RequestInit): Promise<verifyEmailOTPResponse> => {
   
-  const res = await fetch(getVerifyEmailOTPUrl(),
+  return customFetch<verifyEmailOTPResponse>(getVerifyEmailOTPUrl(),
   {      
     ...options,
     method: 'POST',
@@ -598,12 +539,6 @@ export const verifyEmailOTP = async (verifyEmailOTPRequest: NonReadonly<VerifyEm
     body: JSON.stringify(
       verifyEmailOTPRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: verifyEmailOTPResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as verifyEmailOTPResponse
-}
+);}
   
 

@@ -9,6 +9,12 @@ export default defineConfig({
       schemas: "src/lib/api/types",
       client: "fetch",
       clean: true,
+      override: {
+        mutator: {
+          path: "src/lib/api/mutator/custom-fetch.ts",
+          name: "customFetch",
+        },
+      },
     },
   },
 });

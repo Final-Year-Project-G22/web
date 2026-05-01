@@ -18,6 +18,7 @@ import type {
   OauthLinkCallbackParams
 } from '../types';
 
+import { customFetch } from '../mutator/custom-fetch';
 
 
 
@@ -97,20 +98,14 @@ export const getOauthCallbackUrl = (provider: string,
 export const oauthCallback = async (provider: string,
     params?: OauthCallbackParams, options?: RequestInit): Promise<oauthCallbackResponse> => {
   
-  const res = await fetch(getOauthCallbackUrl(provider,params),
+  return customFetch<oauthCallbackResponse>(getOauthCallbackUrl(provider,params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: oauthCallbackResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as oauthCallbackResponse
-}
+);}
   
 
 /**
@@ -153,20 +148,14 @@ export const getOauthCallbackMobileUrl = (provider: string,
 export const oauthCallbackMobile = async (provider: string,
     params?: OauthCallbackMobileParams, options?: RequestInit): Promise<oauthCallbackMobileResponse> => {
   
-  const res = await fetch(getOauthCallbackMobileUrl(provider,params),
+  return customFetch<oauthCallbackMobileResponse>(getOauthCallbackMobileUrl(provider,params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: oauthCallbackMobileResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as oauthCallbackMobileResponse
-}
+);}
   
 
 /**
@@ -202,7 +191,7 @@ export const getOauthCompleteWithEmailUrl = () => {
 
 export const oauthCompleteWithEmail = async (oAuthCompleteEmailRequest: NonReadonly<OAuthCompleteEmailRequest>, options?: RequestInit): Promise<oauthCompleteWithEmailResponse> => {
   
-  const res = await fetch(getOauthCompleteWithEmailUrl(),
+  return customFetch<oauthCompleteWithEmailResponse>(getOauthCompleteWithEmailUrl(),
   {      
     ...options,
     method: 'POST',
@@ -210,13 +199,7 @@ export const oauthCompleteWithEmail = async (oAuthCompleteEmailRequest: NonReado
     body: JSON.stringify(
       oAuthCompleteEmailRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: oauthCompleteWithEmailResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as oauthCompleteWithEmailResponse
-}
+);}
   
 
 /**
@@ -252,20 +235,14 @@ export const getGetOAuthIdentitiesUrl = () => {
 
 export const getOAuthIdentities = async ( options?: RequestInit): Promise<getOAuthIdentitiesResponse> => {
   
-  const res = await fetch(getGetOAuthIdentitiesUrl(),
+  return customFetch<getOAuthIdentitiesResponse>(getGetOAuthIdentitiesUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getOAuthIdentitiesResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getOAuthIdentitiesResponse
-}
+);}
   
 
 /**
@@ -301,20 +278,14 @@ export const getUnlinkOAuthProviderUrl = (provider: string,) => {
 
 export const unlinkOAuthProvider = async (provider: string, options?: RequestInit): Promise<unlinkOAuthProviderResponse> => {
   
-  const res = await fetch(getUnlinkOAuthProviderUrl(provider),
+  return customFetch<unlinkOAuthProviderResponse>(getUnlinkOAuthProviderUrl(provider),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: unlinkOAuthProviderResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as unlinkOAuthProviderResponse
-}
+);}
   
 
 /**
@@ -359,20 +330,14 @@ export const getOauthLinkCallbackUrl = (provider: string,
 export const oauthLinkCallback = async (provider: string,
     params?: OauthLinkCallbackParams, options?: RequestInit): Promise<oauthLinkCallbackResponse> => {
   
-  const res = await fetch(getOauthLinkCallbackUrl(provider,params),
+  return customFetch<oauthLinkCallbackResponse>(getOauthLinkCallbackUrl(provider,params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: oauthLinkCallbackResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as oauthLinkCallbackResponse
-}
+);}
   
 
 /**
@@ -408,20 +373,14 @@ export const getInitiateOAuthLinkUrl = (provider: string,) => {
 
 export const initiateOAuthLink = async (provider: string, options?: RequestInit): Promise<initiateOAuthLinkResponse> => {
   
-  const res = await fetch(getInitiateOAuthLinkUrl(provider),
+  return customFetch<initiateOAuthLinkResponse>(getInitiateOAuthLinkUrl(provider),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: initiateOAuthLinkResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as initiateOAuthLinkResponse
-}
+);}
   
 
 /**
@@ -455,20 +414,14 @@ export const getInitiateOAuthLoginUrl = (provider: string,) => {
 
 export const initiateOAuthLogin = async (provider: string, options?: RequestInit): Promise<initiateOAuthLoginResponse> => {
   
-  const res = await fetch(getInitiateOAuthLoginUrl(provider),
+  return customFetch<initiateOAuthLoginResponse>(getInitiateOAuthLoginUrl(provider),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: initiateOAuthLoginResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as initiateOAuthLoginResponse
-}
+);}
   
 
 /**
@@ -504,19 +457,13 @@ export const getGetOAuthProvidersUrl = () => {
 
 export const getOAuthProviders = async ( options?: RequestInit): Promise<getOAuthProvidersResponse> => {
   
-  const res = await fetch(getGetOAuthProvidersUrl(),
+  return customFetch<getOAuthProvidersResponse>(getGetOAuthProvidersUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getOAuthProvidersResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getOAuthProvidersResponse
-}
+);}
   
 
