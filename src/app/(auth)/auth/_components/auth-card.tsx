@@ -1,25 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { AuthModeProvider, useAuthMode } from "../_stores/auth-local.store";
 import { ForgotPasswordForm } from "./forgot-password-form";
 import { LoginForm } from "./login-form";
-import { RegisterForm } from "./register-form";
 
-export function AuthCard() {
-  const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
+function AuthCardContent() {
+  const mode = useAuthMode((state) => state.mode);
 
   return (
     <div className="w-full max-w-md">
-      {mode === "login" && (
-        <LoginForm
-          switchToRegister={() => setMode("register")}
-          switchToForgot={() => setMode("forgot")}
-        />
-      )}
-
-      {mode === "register" && <RegisterForm switchToLogin={() => setMode("login")} />}
-
-      {mode === "forgot" && <ForgotPasswordForm switchToLogin={() => setMode("login")} />}
+      {mode === "login" && <LoginForm />}
+      {mode === "forgot" && <ForgotPasswordForm />}
     </div>
+  );
+}
+
+export function AuthCard() {
+  return (
+    <AuthModeProvider>
+      <AuthCardContent />
+    </AuthModeProvider>
   );
 }

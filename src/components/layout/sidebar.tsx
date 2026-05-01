@@ -17,7 +17,6 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 function DarkModeSwitch() {
@@ -139,7 +138,7 @@ export function Sidebar() {
             </h4>
             <nav className="space-y-1">
               <NavLink
-                href="/dashboard/community/categories"
+                href="/community/categories"
                 icon={<Folder className="w-4 h-4" />}
                 label="Categories"
               />
@@ -149,7 +148,7 @@ export function Sidebar() {
                     type="button"
                     className={cn(
                       "flex w-full items-center gap-3 px-2 py-2 rounded-md transition-colors text-muted-foreground hover:bg-accent",
-                      usePathname().startsWith("/dashboard/moderation")
+                      usePathname().startsWith("/moderation")
                         ? "bg-primary/5 text-primary font-medium"
                         : ""
                     )}
@@ -162,7 +161,7 @@ export function Sidebar() {
                 <DropdownMenuContent sideOffset={4} className="w-48">
                   <DropdownMenuItem asChild>
                     <NavLink
-                      href="/dashboard/moderation/blocked-users"
+                      href="/moderation/blocked-users"
                       icon={<ShieldAlert className="w-4 h-4" />}
                       label="Blocked Users"
                     />
@@ -170,7 +169,7 @@ export function Sidebar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <NavLink
-                      href="/dashboard/moderation/reported-content"
+                      href="/moderation/reported-content"
                       icon={<TriangleAlert className="w-4 h-4" />}
                       label="Reported Content"
                     />
@@ -178,7 +177,7 @@ export function Sidebar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <NavLink
-                      href="/dashboard/moderation/reported-users"
+                      href="/moderation/reported-users"
                       icon={<TriangleAlert className="w-4 h-4" />}
                       label="Reported Users"
                     />

@@ -13,6 +13,7 @@ import type {
   UploadAvatarResponse
 } from '../types';
 
+import { customFetch } from '../mutator/custom-fetch';
 
 
 
@@ -85,7 +86,7 @@ export const uploadAvatar = async (uploadAvatarBody: UploadAvatarBody, options?:
     const formData = new FormData();
 formData.append(`file`, uploadAvatarBody.file);
 
-  const res = await fetch(getUploadAvatarUrl(),
+  return customFetch<uploadAvatarResponse>(getUploadAvatarUrl(),
   {      
     ...options,
     method: 'POST'
@@ -93,13 +94,7 @@ formData.append(`file`, uploadAvatarBody.file);
     body: 
       formData,
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: uploadAvatarResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as uploadAvatarResponse
-}
+);}
   
 
 /**
@@ -135,7 +130,7 @@ export const getUpdateUserProfileUrl = () => {
 
 export const updateUserProfile = async (updateUserProfileRequest: NonReadonly<UpdateUserProfileRequest>, options?: RequestInit): Promise<updateUserProfileResponse> => {
   
-  const res = await fetch(getUpdateUserProfileUrl(),
+  return customFetch<updateUserProfileResponse>(getUpdateUserProfileUrl(),
   {      
     ...options,
     method: 'PUT',
@@ -143,12 +138,6 @@ export const updateUserProfile = async (updateUserProfileRequest: NonReadonly<Up
     body: JSON.stringify(
       updateUserProfileRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: updateUserProfileResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as updateUserProfileResponse
-}
+);}
   
 

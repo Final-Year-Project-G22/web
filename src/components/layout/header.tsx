@@ -16,12 +16,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { ErrorModel } from "@/lib/api/types";
 import { useAuthStore } from "@/store/auth.store";
 
 export function Header() {
   const router = useRouter();
-  const { user, account, logout: clearSession } = useAuthStore();
+  const { user, account } = useAuthStore();
   const [open, setOpen] = useState(false);
 
   const initials = user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : "U";
@@ -74,7 +73,7 @@ export function Header() {
               inset
               onClick={() => {
                 setOpen(false);
-                router.push("/dashboard/settings/password");
+                router.push("/settings/password");
               }}
             >
               <Key className="size-4" />

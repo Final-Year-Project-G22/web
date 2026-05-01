@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLogin } from "../_services/auth.hook";
+import { useAuthMode } from "../_stores/auth-local.store";
 
 const loginSchema = z.object({
   identifier: z.string().min(1, "Email is required"),
@@ -16,13 +17,10 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-type LoginFormProps = {
-  switchToRegister: () => void;
-  switchToForgot: () => void;
-};
-
-export function LoginForm({ switchToRegister, switchToForgot }: LoginFormProps) {
+export function LoginForm() {
   const router = useRouter();
+  const setMode = useAuthMode((state) => state.setMode);
+
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -71,7 +69,7 @@ export function LoginForm({ switchToRegister, switchToForgot }: LoginFormProps) 
             <Label htmlFor="password">Password</Label>
             <button
               type="button"
-              onClick={switchToForgot}
+              onClick={() => setMode("forgot")}
               className="text-sm text-blue-600 hover:underline"
             >
               Forgot password?
@@ -97,17 +95,6 @@ export function LoginForm({ switchToRegister, switchToForgot }: LoginFormProps) 
         <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
           {loginMutation.isPending ? "Signing in…" : "Sign In"}
         </Button>
-
-        <p className="text-sm text-center">
-          Don&apos;t have an account?{" "}
-          <button
-            type="button"
-            onClick={switchToRegister}
-            className="text-blue-600 hover:underline"
-          >
-            Sign up
-          </button>
-        </p>
       </div>
     </form>
   );

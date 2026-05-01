@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Pencil, X } from "lucide-react";
 import type { CategoryDTO } from "@/lib/api/types";
-import { useAdminUpdateCategory, useAdminParentCategories, getErrorMessage } from "@/app/(admin)/dashboard/community/_services/community.hook";
+import { getErrorMessage } from "@/lib/utils";
+import { useAdminUpdateCategory, useAdminParentCategories } from "@/app/[locale]/(modules)/community/_services/community.hook";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
