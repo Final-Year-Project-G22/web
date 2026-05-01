@@ -1,13 +1,13 @@
 "use client";
 
-import { AlertTriangle, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use } from "react";
 import {
-  useAdminBlockUserInThread,
-  useAdminGetUserReport,
-  useAdminUpdateUserReportStatus,
-} from "@/app/[locale]/(modules)/moderation/_services/user-reports.hook";
+  useAdminDeleteReportedPost,
+  useAdminGetPostReport,
+  useAdminUpdatePostReportStatus,
+} from "@/app/[locale]/(modules)/dashboard/moderation/_services/post-reports.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,28 +21,24 @@ const STATUS_VARIANTS: Record<string, "secondary" | "default" | "outline"> = {
   dismissed: "outline",
 };
 
-export default function UserReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function PostReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
 
-  const reportQuery = useAdminGetUserReport(id);
-  const blockUser = useAdminBlockUserInThread();
-  const updateStatus = useAdminUpdateUserReportStatus();
+  const reportQuery = useAdminGetPostReport(id);
+  const deletePost = useAdminDeleteReportedPost();
+  const updateStatus = useAdminUpdatePostReportStatus();
 
   const report = reportQuery.data?.report;
   const content = reportQuery.data?.content;
 
   const isPending = report?.status === "pending" || report?.status === "under_review";
-  const isLoading = blockUser.isPending || updateStatus.isPending;
+  const isLoading = deletePost.isPending || updateStatus.isPending;
 
-  async function handleBlockUser() {
-    if (!report?.threadId || !report?.reportedAccountId) return;
+  async function handleDelete() {
     try {
-      await blockUser.mutateAsync({
-        threadId: report.threadId,
-        blockedId: report.reportedAccountId,
-      });
-      router.push("/dashboard/moderation/reported-users");
+      await deletePost.mutateAsync(id);
+      router.back();
     } catch {
       // error handled by hook
     }
@@ -69,8 +65,8 @@ export default function UserReportDetailPage({ params }: { params: Promise<{ id:
   const errorMessage =
     updateStatus.error?.detail ||
     updateStatus.error?.title ||
-    blockUser.error?.detail ||
-    blockUser.error?.title ||
+    deletePost.error?.detail ||
+    deletePost.error?.title ||
     "";
 
   return (
@@ -84,7 +80,7 @@ export default function UserReportDetailPage({ params }: { params: Promise<{ id:
         <CardHeader className="border-b">
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle>User Report Details</CardTitle>
+              <CardTitle>Post Report Details</CardTitle>
             </div>
             {report && (
               <Badge variant={STATUS_VARIANTS[report.status] ?? "outline"}>
@@ -126,14 +122,22 @@ export default function UserReportDetailPage({ params }: { params: Promise<{ id:
                 </div>
               </div>
 
-              {content?.user ? (
+              {content?.post ? (
                 <div className="rounded-lg border p-4 space-y-3">
-                  <h4 className="text-sm font-medium text-muted-foreground">Reported User</h4>
-                  <div className="space-y-1">
-                    <p className="font-medium text-base">
-                      {content.user.firstName} {content.user.lastName}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{content.user.email}</p>
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    Reported Content Preview
+                  </h4>
+                  <div className="space-y-2">
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">In thread: </span>
+                      <span>{content.post.threadTitle ?? "Unknown Thread"}</span>
+                    </div>
+                    <div className="rounded-md bg-muted/50 p-3 text-sm">
+                      <p className="text-muted-foreground mb-1">
+                        by {content.post.authorFirstName} {content.post.authorLastName}
+                      </p>
+                      <p className="whitespace-pre-wrap">{content.post.content}</p>
+                    </div>
                   </div>
                 </div>
               ) : null}
@@ -144,15 +148,15 @@ export default function UserReportDetailPage({ params }: { params: Promise<{ id:
                 <div className="flex flex-col gap-2 sm:flex-row">
                   {isPending && (
                     <ConfirmDialog
-                      title="Block User"
-                      description="Block this user from the platform and resolve the report? This action cannot be undone."
-                      confirmLabel="Block"
+                      title="Delete Post"
+                      description="Delete this post and resolve the report? This action cannot be undone."
+                      confirmLabel="Delete"
                       variant="destructive"
-                      onConfirm={handleBlockUser}
+                      onConfirm={handleDelete}
                     >
                       <Button variant="destructive" size="sm" disabled={isLoading}>
-                        <AlertTriangle className="w-4 h-4 mr-1" />
-                        Block User
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Delete Post
                       </Button>
                     </ConfirmDialog>
                   )}

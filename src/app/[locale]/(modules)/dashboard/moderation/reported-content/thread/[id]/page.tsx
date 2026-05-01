@@ -4,10 +4,10 @@ import { ArrowLeft, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use } from "react";
 import {
-  useAdminDeleteReportedPost,
-  useAdminGetPostReport,
-  useAdminUpdatePostReportStatus,
-} from "@/app/[locale]/(modules)/moderation/_services/post-reports.hook";
+  useAdminDeleteReportedThread,
+  useAdminGetThreadReport,
+  useAdminUpdateThreadReportStatus,
+} from "@/app/[locale]/(modules)/dashboard/moderation/_services/thread-reports.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,23 +21,23 @@ const STATUS_VARIANTS: Record<string, "secondary" | "default" | "outline"> = {
   dismissed: "outline",
 };
 
-export default function PostReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ThreadReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
 
-  const reportQuery = useAdminGetPostReport(id);
-  const deletePost = useAdminDeleteReportedPost();
-  const updateStatus = useAdminUpdatePostReportStatus();
+  const reportQuery = useAdminGetThreadReport(id);
+  const deleteThread = useAdminDeleteReportedThread();
+  const updateStatus = useAdminUpdateThreadReportStatus();
 
   const report = reportQuery.data?.report;
   const content = reportQuery.data?.content;
 
   const isPending = report?.status === "pending" || report?.status === "under_review";
-  const isLoading = deletePost.isPending || updateStatus.isPending;
+  const isLoading = deleteThread.isPending || updateStatus.isPending;
 
   async function handleDelete() {
     try {
-      await deletePost.mutateAsync(id);
+      await deleteThread.mutateAsync(id);
       router.back();
     } catch {
       // error handled by hook
@@ -65,8 +65,8 @@ export default function PostReportDetailPage({ params }: { params: Promise<{ id:
   const errorMessage =
     updateStatus.error?.detail ||
     updateStatus.error?.title ||
-    deletePost.error?.detail ||
-    deletePost.error?.title ||
+    deleteThread.error?.detail ||
+    deleteThread.error?.title ||
     "";
 
   return (
@@ -80,7 +80,7 @@ export default function PostReportDetailPage({ params }: { params: Promise<{ id:
         <CardHeader className="border-b">
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle>Post Report Details</CardTitle>
+              <CardTitle>Thread Report Details</CardTitle>
             </div>
             {report && (
               <Badge variant={STATUS_VARIANTS[report.status] ?? "outline"}>
@@ -122,22 +122,21 @@ export default function PostReportDetailPage({ params }: { params: Promise<{ id:
                 </div>
               </div>
 
-              {content?.post ? (
+              {content?.thread ? (
                 <div className="rounded-lg border p-4 space-y-3">
                   <h4 className="text-sm font-medium text-muted-foreground">
                     Reported Content Preview
                   </h4>
-                  <div className="space-y-2">
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">In thread: </span>
-                      <span>{content.post.threadTitle ?? "Unknown Thread"}</span>
-                    </div>
-                    <div className="rounded-md bg-muted/50 p-3 text-sm">
-                      <p className="text-muted-foreground mb-1">
-                        by {content.post.authorFirstName} {content.post.authorLastName}
+                  <div className="space-y-1">
+                    <p className="font-medium text-base">{content.thread.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      by {content.thread.authorFirstName} {content.thread.authorLastName}
+                    </p>
+                    {content.thread.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-3">
+                        {content.thread.description}
                       </p>
-                      <p className="whitespace-pre-wrap">{content.post.content}</p>
-                    </div>
+                    )}
                   </div>
                 </div>
               ) : null}
@@ -148,15 +147,15 @@ export default function PostReportDetailPage({ params }: { params: Promise<{ id:
                 <div className="flex flex-col gap-2 sm:flex-row">
                   {isPending && (
                     <ConfirmDialog
-                      title="Delete Post"
-                      description="Delete this post and resolve the report? This action cannot be undone."
+                      title="Delete Thread"
+                      description="Delete this thread and resolve the report? This action cannot be undone."
                       confirmLabel="Delete"
                       variant="destructive"
                       onConfirm={handleDelete}
                     >
                       <Button variant="destructive" size="sm" disabled={isLoading}>
                         <Trash2 className="w-4 h-4 mr-1" />
-                        Delete Post
+                        Delete Thread
                       </Button>
                     </ConfirmDialog>
                   )}
