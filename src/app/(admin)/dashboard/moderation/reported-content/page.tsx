@@ -2,6 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useAdminListPostReports } from "@/app/[locale]/(modules)/moderation/_services/post-reports.hook";
+import { useAdminListThreadReports } from "@/app/[locale]/(modules)/moderation/_services/thread-reports.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +17,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getErrorMessage } from "@/lib/utils";
-import { useAdminListPostReports, useAdminListThreadReports } from "../_services/moderation.hook";
 
 type Tab = "thread" | "post";
 type Status = "all" | "pending" | "under_review" | "resolved" | "dismissed";

@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import {
+  useAdminListAllBlockedUsers,
+  useAdminUnblockUser,
+} from "@/app/[locale]/(modules)/moderation/_services/blocked-users.hook";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -15,7 +19,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getErrorMessage } from "@/lib/utils";
-import { useAdminListAllBlockedUsers, useAdminUnblockUser } from "../_services/moderation.hook";
 
 export default function BlockedUsersPage() {
   const [page, setPage] = useState(1);
