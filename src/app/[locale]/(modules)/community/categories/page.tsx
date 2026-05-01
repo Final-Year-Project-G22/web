@@ -149,7 +149,7 @@ export default function AdminCommunityCategoriesPage() {
           <CardDescription>Manage community categories and subcategories</CardDescription>
           <CardAction>
             <Button asChild>
-              <Link href="/en/dashboard/community/categories/create">Create Category</Link>
+              <Link href="/community/categories/create">Create Category</Link>
             </Button>
           </CardAction>
         </CardHeader>

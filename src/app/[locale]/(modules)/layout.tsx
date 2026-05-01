@@ -4,7 +4,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ProtectedRoute target="/en/dashboard">
+    <ProtectedRoute target="/dashboard">
       <div className="flex h-screen overflow-hidden bg-[#fafafa]">
         <Sidebar />
         <div className="flex-1 flex flex-col h-full overflow-hidden">

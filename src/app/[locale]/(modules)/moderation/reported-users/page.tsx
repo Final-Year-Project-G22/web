@@ -66,7 +66,7 @@ export default function ReportedUsersPage() {
     if (newStatus !== "all") sp.set("status", newStatus);
     if (newSearch.trim()) sp.set("search", newSearch.trim());
     if (newPage > 1) sp.set("page", String(newPage));
-    router.push(`/en/dashboard/moderation/reported-users${sp.toString() ? `?${sp}` : ""}`);
+    router.push(`/moderation/reported-users${sp.toString() ? `?${sp}` : ""}`);
   }
 
   return (
@@ -173,9 +173,7 @@ export default function ReportedUsersPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() =>
-                                router.push(`/en/dashboard/moderation/reported-users/${r.id}`)
-                              }
+                              onClick={() => router.push(`/moderation/reported-users/${r.id}`)}
                             >
                               View Details
                             </Button>

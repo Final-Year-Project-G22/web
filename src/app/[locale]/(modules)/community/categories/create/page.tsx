@@ -48,7 +48,7 @@ export default function CreateCommunityCategoryPage() {
       {
         onSuccess: (data) => {
           setNotice(`Created: ${data.id}`);
-          router.push("/en/dashboard/community/categories");
+          router.push("/community/categories");
         },
         onError: (err) => setNotice(getErrorMessage(err)),
       }
@@ -63,7 +63,7 @@ export default function CreateCommunityCategoryPage() {
           <CardDescription>Create a community category via admin API</CardDescription>
           <CardAction>
             <Button asChild variant="outline">
-              <Link href="/en/dashboard/community/categories">Back to Categories</Link>
+              <Link href="/community/categories">Back to Categories</Link>
             </Button>
           </CardAction>
         </CardHeader>
@@ -146,7 +146,7 @@ export default function CreateCommunityCategoryPage() {
                 {createMutation.isPending ? "Creating&hellip;" : "Create"}
               </Button>
               <Button asChild type="button" variant="outline">
-                <Link href="/en/dashboard/community/categories">Cancel</Link>
+                <Link href="/community/categories">Cancel</Link>
               </Button>
             </div>
           </form>
