@@ -1,13 +1,13 @@
 "use client";
 
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use } from "react";
 import {
-  useAdminDeleteReportedThread,
-  useAdminGetThreadReport,
-  useAdminUpdateThreadReportStatus,
-} from "@/app/[locale]/(modules)/moderation/_services/thread-reports.hook";
+  useAdminBlockUserInThread,
+  useAdminGetUserReport,
+  useAdminUpdateUserReportStatus,
+} from "@/app/[locale]/(modules)/dashboard/moderation/_services/user-reports.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,24 +21,28 @@ const STATUS_VARIANTS: Record<string, "secondary" | "default" | "outline"> = {
   dismissed: "outline",
 };
 
-export default function ThreadReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function UserReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
 
-  const reportQuery = useAdminGetThreadReport(id);
-  const deleteThread = useAdminDeleteReportedThread();
-  const updateStatus = useAdminUpdateThreadReportStatus();
+  const reportQuery = useAdminGetUserReport(id);
+  const blockUser = useAdminBlockUserInThread();
+  const updateStatus = useAdminUpdateUserReportStatus();
 
   const report = reportQuery.data?.report;
   const content = reportQuery.data?.content;
 
   const isPending = report?.status === "pending" || report?.status === "under_review";
-  const isLoading = deleteThread.isPending || updateStatus.isPending;
+  const isLoading = blockUser.isPending || updateStatus.isPending;
 
-  async function handleDelete() {
+  async function handleBlockUser() {
+    if (!report?.threadId || !report?.reportedAccountId) return;
     try {
-      await deleteThread.mutateAsync(id);
-      router.back();
+      await blockUser.mutateAsync({
+        threadId: report.threadId,
+        blockedId: report.reportedAccountId,
+      });
+      router.push("/dashboard/moderation/reported-users");
     } catch {
       // error handled by hook
     }
@@ -65,8 +69,8 @@ export default function ThreadReportDetailPage({ params }: { params: Promise<{ i
   const errorMessage =
     updateStatus.error?.detail ||
     updateStatus.error?.title ||
-    deleteThread.error?.detail ||
-    deleteThread.error?.title ||
+    blockUser.error?.detail ||
+    blockUser.error?.title ||
     "";
 
   return (
@@ -80,7 +84,7 @@ export default function ThreadReportDetailPage({ params }: { params: Promise<{ i
         <CardHeader className="border-b">
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle>Thread Report Details</CardTitle>
+              <CardTitle>User Report Details</CardTitle>
             </div>
             {report && (
               <Badge variant={STATUS_VARIANTS[report.status] ?? "outline"}>
@@ -122,21 +126,14 @@ export default function ThreadReportDetailPage({ params }: { params: Promise<{ i
                 </div>
               </div>
 
-              {content?.thread ? (
+              {content?.user ? (
                 <div className="rounded-lg border p-4 space-y-3">
-                  <h4 className="text-sm font-medium text-muted-foreground">
-                    Reported Content Preview
-                  </h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Reported User</h4>
                   <div className="space-y-1">
-                    <p className="font-medium text-base">{content.thread.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      by {content.thread.authorFirstName} {content.thread.authorLastName}
+                    <p className="font-medium text-base">
+                      {content.user.firstName} {content.user.lastName}
                     </p>
-                    {content.thread.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-3">
-                        {content.thread.description}
-                      </p>
-                    )}
+                    <p className="text-sm text-muted-foreground">{content.user.email}</p>
                   </div>
                 </div>
               ) : null}
@@ -147,15 +144,15 @@ export default function ThreadReportDetailPage({ params }: { params: Promise<{ i
                 <div className="flex flex-col gap-2 sm:flex-row">
                   {isPending && (
                     <ConfirmDialog
-                      title="Delete Thread"
-                      description="Delete this thread and resolve the report? This action cannot be undone."
-                      confirmLabel="Delete"
+                      title="Block User"
+                      description="Block this user from the platform and resolve the report? This action cannot be undone."
+                      confirmLabel="Block"
                       variant="destructive"
-                      onConfirm={handleDelete}
+                      onConfirm={handleBlockUser}
                     >
                       <Button variant="destructive" size="sm" disabled={isLoading}>
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        Delete Thread
+                        <AlertTriangle className="w-4 h-4 mr-1" />
+                        Block User
                       </Button>
                     </ConfirmDialog>
                   )}

@@ -2,8 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { useAdminListPostReports } from "@/app/[locale]/(modules)/moderation/_services/post-reports.hook";
-import { useAdminListThreadReports } from "@/app/[locale]/(modules)/moderation/_services/thread-reports.hook";
+import { useAdminListPostReports } from "@/app/[locale]/(modules)/dashboard/moderation/_services/post-reports.hook";
+import { useAdminListThreadReports } from "@/app/[locale]/(modules)/dashboard/moderation/_services/thread-reports.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

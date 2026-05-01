@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { useAdminListUserReports } from "@/app/[locale]/(modules)/moderation/_services/user-reports.hook";
+import { useAdminListUserReports } from "@/app/[locale]/(modules)/dashboard/moderation/_services/user-reports.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
