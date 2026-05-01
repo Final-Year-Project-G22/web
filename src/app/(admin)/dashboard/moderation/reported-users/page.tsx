@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useAdminListUserReports } from "@/app/[locale]/(modules)/moderation/_services/user-reports.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getErrorMessage } from "@/lib/utils";
-import { useAdminListUserReports } from "../_services/moderation.hook";
 
 type Status = "all" | "pending" | "under_review" | "resolved" | "dismissed";
 

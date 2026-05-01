@@ -3,16 +3,16 @@
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use } from "react";
+import {
+  useAdminDeleteReportedThread,
+  useAdminGetThreadReport,
+  useAdminUpdateThreadReportStatus,
+} from "@/app/[locale]/(modules)/moderation/_services/thread-reports.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { getErrorMessage } from "@/lib/utils";
-import {
-  useAdminDeleteReportedThread,
-  useAdminGetThreadReport,
-  useAdminUpdateThreadReportStatus,
-} from "../../../_services/moderation.hook";
 
 const STATUS_VARIANTS: Record<string, "secondary" | "default" | "outline"> = {
   pending: "secondary",
