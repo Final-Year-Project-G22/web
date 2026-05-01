@@ -11,6 +11,7 @@ import type {
   ListPermissionsResponseBody
 } from '../types';
 
+import { customFetch } from '../mutator/custom-fetch';
 
 
 
@@ -61,19 +62,13 @@ export const getListPermissionsUrl = (params?: ListPermissionsParams,) => {
 
 export const listPermissions = async (params?: ListPermissionsParams, options?: RequestInit): Promise<listPermissionsResponse> => {
   
-  const res = await fetch(getListPermissionsUrl(params),
+  return customFetch<listPermissionsResponse>(getListPermissionsUrl(params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: listPermissionsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as listPermissionsResponse
-}
+);}
   
 

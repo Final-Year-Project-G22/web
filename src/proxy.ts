@@ -20,5 +20,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|_vercel|auth|favicon).*)"],
+  matcher: ["/api/:path*", "/((?!api|_next|_vercel|auth|favicon).*)"],
 };

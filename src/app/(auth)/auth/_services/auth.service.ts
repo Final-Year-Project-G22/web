@@ -13,8 +13,12 @@ export const AuthService = {
 
     const data: LoginResponseBody = res.data;
 
-    useAuthStore.getState().setSession(data.accessToken, data.user, data.account);
-    document.cookie = `access_token=${data.accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+    useAuthStore.getState().setSession(data.accessToken, data.user, data.account, data.expiresAt);
+    const maxAgeSec = Math.max(
+      0,
+      Math.floor((new Date(data.expiresAt).getTime() - Date.now()) / 1000)
+    );
+    document.cookie = `access_token=${data.accessToken}; path=/; max-age=${maxAgeSec}; SameSite=Lax`;
 
     return data;
   },

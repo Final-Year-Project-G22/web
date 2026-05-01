@@ -6,9 +6,10 @@ interface AuthState {
   token: string | null;
   user: UserDTO | null;
   account: AccountDTO | null;
+  expiresAt: string | null;
   isAuthenticated: boolean;
   _hasHydrated: boolean;
-  setSession: (token: string, user: UserDTO, account: AccountDTO) => void;
+  setSession: (token: string, user: UserDTO, account: AccountDTO, expiresAt: string) => void;
   logout: () => void;
   setHasHydrated: (state: boolean) => void;
 }
@@ -19,10 +20,13 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       user: null,
       account: null,
+      expiresAt: null,
       isAuthenticated: false,
       _hasHydrated: false,
-      setSession: (token, user, account) => set({ token, user, account, isAuthenticated: true }),
-      logout: () => set({ token: null, user: null, account: null, isAuthenticated: false }),
+      setSession: (token, user, account, expiresAt) =>
+        set({ token, user, account, expiresAt, isAuthenticated: true }),
+      logout: () =>
+        set({ token: null, user: null, account: null, expiresAt: null, isAuthenticated: false }),
       setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {

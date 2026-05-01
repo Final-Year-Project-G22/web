@@ -16,6 +16,7 @@ import type {
   UpdateRoleResponseBody
 } from '../types';
 
+import { customFetch } from '../mutator/custom-fetch';
 
 
 
@@ -86,20 +87,14 @@ export const getListRolesUrl = () => {
 
 export const listRoles = async ( options?: RequestInit): Promise<listRolesResponse> => {
   
-  const res = await fetch(getListRolesUrl(),
+  return customFetch<listRolesResponse>(getListRolesUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: listRolesResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as listRolesResponse
-}
+);}
   
 
 /**
@@ -135,7 +130,7 @@ export const getCreateRoleUrl = () => {
 
 export const createRole = async (createRoleRequest: NonReadonly<CreateRoleRequest>, options?: RequestInit): Promise<createRoleResponse> => {
   
-  const res = await fetch(getCreateRoleUrl(),
+  return customFetch<createRoleResponse>(getCreateRoleUrl(),
   {      
     ...options,
     method: 'POST',
@@ -143,13 +138,7 @@ export const createRole = async (createRoleRequest: NonReadonly<CreateRoleReques
     body: JSON.stringify(
       createRoleRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: createRoleResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as createRoleResponse
-}
+);}
   
 
 /**
@@ -185,20 +174,14 @@ export const getDeleteRoleUrl = (roleId: string,) => {
 
 export const deleteRole = async (roleId: string, options?: RequestInit): Promise<deleteRoleResponse> => {
   
-  const res = await fetch(getDeleteRoleUrl(roleId),
+  return customFetch<deleteRoleResponse>(getDeleteRoleUrl(roleId),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: deleteRoleResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as deleteRoleResponse
-}
+);}
   
 
 /**
@@ -234,20 +217,14 @@ export const getGetRoleUrl = (roleId: string,) => {
 
 export const getRole = async (roleId: string, options?: RequestInit): Promise<getRoleResponse> => {
   
-  const res = await fetch(getGetRoleUrl(roleId),
+  return customFetch<getRoleResponse>(getGetRoleUrl(roleId),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getRoleResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getRoleResponse
-}
+);}
   
 
 /**
@@ -284,7 +261,7 @@ export const getUpdateRoleUrl = (roleId: string,) => {
 export const updateRole = async (roleId: string,
     updateRoleRequest: NonReadonly<UpdateRoleRequest>, options?: RequestInit): Promise<updateRoleResponse> => {
   
-  const res = await fetch(getUpdateRoleUrl(roleId),
+  return customFetch<updateRoleResponse>(getUpdateRoleUrl(roleId),
   {      
     ...options,
     method: 'PUT',
@@ -292,12 +269,6 @@ export const updateRole = async (roleId: string,
     body: JSON.stringify(
       updateRoleRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: updateRoleResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as updateRoleResponse
-}
+);}
   
 

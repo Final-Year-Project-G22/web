@@ -40,6 +40,7 @@ import type {
   UpdatePostResponseBody
 } from '../types';
 
+import { customFetch } from '../mutator/custom-fetch';
 
 
 
@@ -117,20 +118,14 @@ export const getListCommunityCategoriesUrl = (params?: ListCommunityCategoriesPa
 
 export const listCommunityCategories = async (params?: ListCommunityCategoriesParams, options?: RequestInit): Promise<listCommunityCategoriesResponse> => {
   
-  const res = await fetch(getListCommunityCategoriesUrl(params),
+  return customFetch<listCommunityCategoriesResponse>(getListCommunityCategoriesUrl(params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: listCommunityCategoriesResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as listCommunityCategoriesResponse
-}
+);}
   
 
 /**
@@ -166,20 +161,14 @@ export const getGetCommunityCategoryUrl = (id: string,) => {
 
 export const getCommunityCategory = async (id: string, options?: RequestInit): Promise<getCommunityCategoryResponse> => {
   
-  const res = await fetch(getGetCommunityCategoryUrl(id),
+  return customFetch<getCommunityCategoryResponse>(getGetCommunityCategoryUrl(id),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getCommunityCategoryResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getCommunityCategoryResponse
-}
+);}
   
 
 /**
@@ -215,20 +204,14 @@ export const getUnfollowCommunityCategoryUrl = (id: string,) => {
 
 export const unfollowCommunityCategory = async (id: string, options?: RequestInit): Promise<unfollowCommunityCategoryResponse> => {
   
-  const res = await fetch(getUnfollowCommunityCategoryUrl(id),
+  return customFetch<unfollowCommunityCategoryResponse>(getUnfollowCommunityCategoryUrl(id),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: unfollowCommunityCategoryResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as unfollowCommunityCategoryResponse
-}
+);}
   
 
 /**
@@ -264,20 +247,14 @@ export const getFollowCommunityCategoryUrl = (id: string,) => {
 
 export const followCommunityCategory = async (id: string, options?: RequestInit): Promise<followCommunityCategoryResponse> => {
   
-  const res = await fetch(getFollowCommunityCategoryUrl(id),
+  return customFetch<followCommunityCategoryResponse>(getFollowCommunityCategoryUrl(id),
   {      
     ...options,
     method: 'POST'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: followCommunityCategoryResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as followCommunityCategoryResponse
-}
+);}
   
 
 /**
@@ -322,20 +299,14 @@ export const getListCommunityThreadsUrl = (id: string,
 export const listCommunityThreads = async (id: string,
     params?: ListCommunityThreadsParams, options?: RequestInit): Promise<listCommunityThreadsResponse> => {
   
-  const res = await fetch(getListCommunityThreadsUrl(id,params),
+  return customFetch<listCommunityThreadsResponse>(getListCommunityThreadsUrl(id,params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: listCommunityThreadsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as listCommunityThreadsResponse
-}
+);}
   
 
 /**
@@ -378,20 +349,14 @@ export const getListFollowedCategoriesUrl = (params?: ListFollowedCategoriesPara
 
 export const listFollowedCategories = async (params?: ListFollowedCategoriesParams, options?: RequestInit): Promise<listFollowedCategoriesResponse> => {
   
-  const res = await fetch(getListFollowedCategoriesUrl(params),
+  return customFetch<listFollowedCategoriesResponse>(getListFollowedCategoriesUrl(params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: listFollowedCategoriesResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as listFollowedCategoriesResponse
-}
+);}
   
 
 /**
@@ -434,20 +399,14 @@ export const getListFollowedThreadsUrl = (params?: ListFollowedThreadsParams,) =
 
 export const listFollowedThreads = async (params?: ListFollowedThreadsParams, options?: RequestInit): Promise<listFollowedThreadsResponse> => {
   
-  const res = await fetch(getListFollowedThreadsUrl(params),
+  return customFetch<listFollowedThreadsResponse>(getListFollowedThreadsUrl(params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: listFollowedThreadsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as listFollowedThreadsResponse
-}
+);}
   
 
 /**
@@ -483,20 +442,14 @@ export const getDeleteCommunityPostUrl = (id: string,) => {
 
 export const deleteCommunityPost = async (id: string, options?: RequestInit): Promise<deleteCommunityPostResponse> => {
   
-  const res = await fetch(getDeleteCommunityPostUrl(id),
+  return customFetch<deleteCommunityPostResponse>(getDeleteCommunityPostUrl(id),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: deleteCommunityPostResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as deleteCommunityPostResponse
-}
+);}
   
 
 /**
@@ -539,7 +492,7 @@ if(updateCommunityPostBody.file !== undefined) {
  }
 formData.append(`removeAttachment`, updateCommunityPostBody.removeAttachment.toString())
 
-  const res = await fetch(getUpdateCommunityPostUrl(id),
+  return customFetch<updateCommunityPostResponse>(getUpdateCommunityPostUrl(id),
   {      
     ...options,
     method: 'PATCH'
@@ -547,13 +500,7 @@ formData.append(`removeAttachment`, updateCommunityPostBody.removeAttachment.toS
     body: 
       formData,
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: updateCommunityPostResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as updateCommunityPostResponse
-}
+);}
   
 
 /**
@@ -601,7 +548,7 @@ if(createCommunityThreadBody.parentThreadId !== undefined) {
 formData.append(`slug`, createCommunityThreadBody.slug instanceof Blob ? createCommunityThreadBody.slug : new Blob([createCommunityThreadBody.slug], { type: 'text/plain' }));
 formData.append(`title`, createCommunityThreadBody.title instanceof Blob ? createCommunityThreadBody.title : new Blob([createCommunityThreadBody.title], { type: 'text/plain' }));
 
-  const res = await fetch(getCreateCommunityThreadUrl(),
+  return customFetch<createCommunityThreadResponse>(getCreateCommunityThreadUrl(),
   {      
     ...options,
     method: 'POST'
@@ -609,13 +556,7 @@ formData.append(`title`, createCommunityThreadBody.title instanceof Blob ? creat
     body: 
       formData,
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: createCommunityThreadResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as createCommunityThreadResponse
-}
+);}
   
 
 /**
@@ -658,20 +599,14 @@ export const getSearchCommunityThreadsUrl = (params?: SearchCommunityThreadsPara
 
 export const searchCommunityThreads = async (params?: SearchCommunityThreadsParams, options?: RequestInit): Promise<searchCommunityThreadsResponse> => {
   
-  const res = await fetch(getSearchCommunityThreadsUrl(params),
+  return customFetch<searchCommunityThreadsResponse>(getSearchCommunityThreadsUrl(params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: searchCommunityThreadsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as searchCommunityThreadsResponse
-}
+);}
   
 
 /**
@@ -707,20 +642,14 @@ export const getGetCommunityThreadUrl = (id: string,) => {
 
 export const getCommunityThread = async (id: string, options?: RequestInit): Promise<getCommunityThreadResponse> => {
   
-  const res = await fetch(getGetCommunityThreadUrl(id),
+  return customFetch<getCommunityThreadResponse>(getGetCommunityThreadUrl(id),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getCommunityThreadResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getCommunityThreadResponse
-}
+);}
   
 
 /**
@@ -757,7 +686,7 @@ export const getBlockCommunityUserUrl = (id: string,) => {
 export const blockCommunityUser = async (id: string,
     blockUserRequest: NonReadonly<BlockUserRequest>, options?: RequestInit): Promise<blockCommunityUserResponse> => {
   
-  const res = await fetch(getBlockCommunityUserUrl(id),
+  return customFetch<blockCommunityUserResponse>(getBlockCommunityUserUrl(id),
   {      
     ...options,
     method: 'POST',
@@ -765,13 +694,7 @@ export const blockCommunityUser = async (id: string,
     body: JSON.stringify(
       blockUserRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: blockCommunityUserResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as blockCommunityUserResponse
-}
+);}
   
 
 /**
@@ -809,20 +732,14 @@ export const getUnblockCommunityUserUrl = (id: string,
 export const unblockCommunityUser = async (id: string,
     accountId: string, options?: RequestInit): Promise<unblockCommunityUserResponse> => {
   
-  const res = await fetch(getUnblockCommunityUserUrl(id,accountId),
+  return customFetch<unblockCommunityUserResponse>(getUnblockCommunityUserUrl(id,accountId),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: unblockCommunityUserResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as unblockCommunityUserResponse
-}
+);}
   
 
 /**
@@ -858,20 +775,14 @@ export const getUnfollowCommunityThreadUrl = (id: string,) => {
 
 export const unfollowCommunityThread = async (id: string, options?: RequestInit): Promise<unfollowCommunityThreadResponse> => {
   
-  const res = await fetch(getUnfollowCommunityThreadUrl(id),
+  return customFetch<unfollowCommunityThreadResponse>(getUnfollowCommunityThreadUrl(id),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: unfollowCommunityThreadResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as unfollowCommunityThreadResponse
-}
+);}
   
 
 /**
@@ -907,20 +818,14 @@ export const getFollowCommunityThreadUrl = (id: string,) => {
 
 export const followCommunityThread = async (id: string, options?: RequestInit): Promise<followCommunityThreadResponse> => {
   
-  const res = await fetch(getFollowCommunityThreadUrl(id),
+  return customFetch<followCommunityThreadResponse>(getFollowCommunityThreadUrl(id),
   {      
     ...options,
     method: 'POST'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: followCommunityThreadResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as followCommunityThreadResponse
-}
+);}
   
 
 /**
@@ -965,20 +870,14 @@ export const getListCommunityPostsUrl = (id: string,
 export const listCommunityPosts = async (id: string,
     params?: ListCommunityPostsParams, options?: RequestInit): Promise<listCommunityPostsResponse> => {
   
-  const res = await fetch(getListCommunityPostsUrl(id,params),
+  return customFetch<listCommunityPostsResponse>(getListCommunityPostsUrl(id,params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: listCommunityPostsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as listCommunityPostsResponse
-}
+);}
   
 
 /**
@@ -1020,7 +919,7 @@ if(createCommunityPostBody.file !== undefined) {
  formData.append(`file`, createCommunityPostBody.file);
  }
 
-  const res = await fetch(getCreateCommunityPostUrl(id),
+  return customFetch<createCommunityPostResponse>(getCreateCommunityPostUrl(id),
   {      
     ...options,
     method: 'POST'
@@ -1028,13 +927,7 @@ if(createCommunityPostBody.file !== undefined) {
     body: 
       formData,
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: createCommunityPostResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as createCommunityPostResponse
-}
+);}
   
 
 /**
@@ -1078,7 +971,7 @@ if(replyCommunityPostBody.file !== undefined) {
  formData.append(`file`, replyCommunityPostBody.file);
  }
 
-  const res = await fetch(getReplyCommunityPostUrl(id,postId),
+  return customFetch<replyCommunityPostResponse>(getReplyCommunityPostUrl(id,postId),
   {      
     ...options,
     method: 'POST'
@@ -1086,13 +979,7 @@ if(replyCommunityPostBody.file !== undefined) {
     body: 
       formData,
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: replyCommunityPostResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as replyCommunityPostResponse
-}
+);}
   
 
 /**
@@ -1131,7 +1018,7 @@ export const reportPost = async (id: string,
     postId: string,
     reportPostRequest: NonReadonly<ReportPostRequest>, options?: RequestInit): Promise<reportPostResponse> => {
   
-  const res = await fetch(getReportPostUrl(id,postId),
+  return customFetch<reportPostResponse>(getReportPostUrl(id,postId),
   {      
     ...options,
     method: 'POST',
@@ -1139,13 +1026,7 @@ export const reportPost = async (id: string,
     body: JSON.stringify(
       reportPostRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: reportPostResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as reportPostResponse
-}
+);}
   
 
 /**
@@ -1182,7 +1063,7 @@ export const getReportThreadUrl = (id: string,) => {
 export const reportThread = async (id: string,
     reportThreadRequest: NonReadonly<ReportThreadRequest>, options?: RequestInit): Promise<reportThreadResponse> => {
   
-  const res = await fetch(getReportThreadUrl(id),
+  return customFetch<reportThreadResponse>(getReportThreadUrl(id),
   {      
     ...options,
     method: 'POST',
@@ -1190,13 +1071,7 @@ export const reportThread = async (id: string,
     body: JSON.stringify(
       reportThreadRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: reportThreadResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as reportThreadResponse
-}
+);}
   
 
 /**
@@ -1233,7 +1108,7 @@ export const getReportUserUrl = (id: string,) => {
 export const reportUser = async (id: string,
     reportUserRequest: NonReadonly<ReportUserRequest>, options?: RequestInit): Promise<reportUserResponse> => {
   
-  const res = await fetch(getReportUserUrl(id),
+  return customFetch<reportUserResponse>(getReportUserUrl(id),
   {      
     ...options,
     method: 'POST',
@@ -1241,13 +1116,7 @@ export const reportUser = async (id: string,
     body: JSON.stringify(
       reportUserRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: reportUserResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as reportUserResponse
-}
+);}
   
 
 /**
@@ -1285,19 +1154,13 @@ export const getMarkCommunitySolutionUrl = (id: string,
 export const markCommunitySolution = async (id: string,
     postId: string, options?: RequestInit): Promise<markCommunitySolutionResponse> => {
   
-  const res = await fetch(getMarkCommunitySolutionUrl(id,postId),
+  return customFetch<markCommunitySolutionResponse>(getMarkCommunitySolutionUrl(id,postId),
   {      
     ...options,
     method: 'POST'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: markCommunitySolutionResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as markCommunitySolutionResponse
-}
+);}
   
 

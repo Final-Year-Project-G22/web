@@ -40,6 +40,7 @@ import type {
   UpdateUserReportStatusResponseBody
 } from '../types';
 
+import { customFetch } from '../mutator/custom-fetch';
 
 
 
@@ -117,20 +118,14 @@ export const getAdminListAllBlockedUsersUrl = (params?: AdminListAllBlockedUsers
 
 export const adminListAllBlockedUsers = async (params?: AdminListAllBlockedUsersParams, options?: RequestInit): Promise<adminListAllBlockedUsersResponse> => {
   
-  const res = await fetch(getAdminListAllBlockedUsersUrl(params),
+  return customFetch<adminListAllBlockedUsersResponse>(getAdminListAllBlockedUsersUrl(params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminListAllBlockedUsersResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminListAllBlockedUsersResponse
-}
+);}
   
 
 /**
@@ -173,20 +168,14 @@ export const getAdminListCommunityCategoriesUrl = (params?: AdminListCommunityCa
 
 export const adminListCommunityCategories = async (params?: AdminListCommunityCategoriesParams, options?: RequestInit): Promise<adminListCommunityCategoriesResponse> => {
   
-  const res = await fetch(getAdminListCommunityCategoriesUrl(params),
+  return customFetch<adminListCommunityCategoriesResponse>(getAdminListCommunityCategoriesUrl(params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminListCommunityCategoriesResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminListCommunityCategoriesResponse
-}
+);}
   
 
 /**
@@ -222,7 +211,7 @@ export const getAdminCreateCommunityCategoryUrl = () => {
 
 export const adminCreateCommunityCategory = async (createCommunityCategoryRequest: NonReadonly<CreateCommunityCategoryRequest>, options?: RequestInit): Promise<adminCreateCommunityCategoryResponse> => {
   
-  const res = await fetch(getAdminCreateCommunityCategoryUrl(),
+  return customFetch<adminCreateCommunityCategoryResponse>(getAdminCreateCommunityCategoryUrl(),
   {      
     ...options,
     method: 'POST',
@@ -230,13 +219,7 @@ export const adminCreateCommunityCategory = async (createCommunityCategoryReques
     body: JSON.stringify(
       createCommunityCategoryRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminCreateCommunityCategoryResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminCreateCommunityCategoryResponse
-}
+);}
   
 
 /**
@@ -272,20 +255,14 @@ export const getAdminDeleteCommunityCategoryUrl = (id: string,) => {
 
 export const adminDeleteCommunityCategory = async (id: string, options?: RequestInit): Promise<adminDeleteCommunityCategoryResponse> => {
   
-  const res = await fetch(getAdminDeleteCommunityCategoryUrl(id),
+  return customFetch<adminDeleteCommunityCategoryResponse>(getAdminDeleteCommunityCategoryUrl(id),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminDeleteCommunityCategoryResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminDeleteCommunityCategoryResponse
-}
+);}
   
 
 /**
@@ -322,7 +299,7 @@ export const getAdminUpdateCommunityCategoryUrl = (id: string,) => {
 export const adminUpdateCommunityCategory = async (id: string,
     updateCommunityCategoryRequest: NonReadonly<UpdateCommunityCategoryRequest>, options?: RequestInit): Promise<adminUpdateCommunityCategoryResponse> => {
   
-  const res = await fetch(getAdminUpdateCommunityCategoryUrl(id),
+  return customFetch<adminUpdateCommunityCategoryResponse>(getAdminUpdateCommunityCategoryUrl(id),
   {      
     ...options,
     method: 'PUT',
@@ -330,13 +307,7 @@ export const adminUpdateCommunityCategory = async (id: string,
     body: JSON.stringify(
       updateCommunityCategoryRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminUpdateCommunityCategoryResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminUpdateCommunityCategoryResponse
-}
+);}
   
 
 /**
@@ -379,20 +350,14 @@ export const getAdminListPostReportsUrl = (params?: AdminListPostReportsParams,)
 
 export const adminListPostReports = async (params?: AdminListPostReportsParams, options?: RequestInit): Promise<adminListPostReportsResponse> => {
   
-  const res = await fetch(getAdminListPostReportsUrl(params),
+  return customFetch<adminListPostReportsResponse>(getAdminListPostReportsUrl(params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminListPostReportsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminListPostReportsResponse
-}
+);}
   
 
 /**
@@ -428,20 +393,14 @@ export const getAdminDeleteReportedPostUrl = (id: string,) => {
 
 export const adminDeleteReportedPost = async (id: string, options?: RequestInit): Promise<adminDeleteReportedPostResponse> => {
   
-  const res = await fetch(getAdminDeleteReportedPostUrl(id),
+  return customFetch<adminDeleteReportedPostResponse>(getAdminDeleteReportedPostUrl(id),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminDeleteReportedPostResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminDeleteReportedPostResponse
-}
+);}
   
 
 /**
@@ -477,20 +436,14 @@ export const getAdminGetPostReportUrl = (id: string,) => {
 
 export const adminGetPostReport = async (id: string, options?: RequestInit): Promise<adminGetPostReportResponse> => {
   
-  const res = await fetch(getAdminGetPostReportUrl(id),
+  return customFetch<adminGetPostReportResponse>(getAdminGetPostReportUrl(id),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminGetPostReportResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminGetPostReportResponse
-}
+);}
   
 
 /**
@@ -527,7 +480,7 @@ export const getAdminUpdatePostReportStatusUrl = (id: string,) => {
 export const adminUpdatePostReportStatus = async (id: string,
     updatePostReportStatusRequest: NonReadonly<UpdatePostReportStatusRequest>, options?: RequestInit): Promise<adminUpdatePostReportStatusResponse> => {
   
-  const res = await fetch(getAdminUpdatePostReportStatusUrl(id),
+  return customFetch<adminUpdatePostReportStatusResponse>(getAdminUpdatePostReportStatusUrl(id),
   {      
     ...options,
     method: 'PATCH',
@@ -535,13 +488,7 @@ export const adminUpdatePostReportStatus = async (id: string,
     body: JSON.stringify(
       updatePostReportStatusRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminUpdatePostReportStatusResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminUpdatePostReportStatusResponse
-}
+);}
   
 
 /**
@@ -584,20 +531,14 @@ export const getAdminListThreadReportsUrl = (params?: AdminListThreadReportsPara
 
 export const adminListThreadReports = async (params?: AdminListThreadReportsParams, options?: RequestInit): Promise<adminListThreadReportsResponse> => {
   
-  const res = await fetch(getAdminListThreadReportsUrl(params),
+  return customFetch<adminListThreadReportsResponse>(getAdminListThreadReportsUrl(params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminListThreadReportsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminListThreadReportsResponse
-}
+);}
   
 
 /**
@@ -633,20 +574,14 @@ export const getAdminDeleteReportedThreadUrl = (id: string,) => {
 
 export const adminDeleteReportedThread = async (id: string, options?: RequestInit): Promise<adminDeleteReportedThreadResponse> => {
   
-  const res = await fetch(getAdminDeleteReportedThreadUrl(id),
+  return customFetch<adminDeleteReportedThreadResponse>(getAdminDeleteReportedThreadUrl(id),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminDeleteReportedThreadResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminDeleteReportedThreadResponse
-}
+);}
   
 
 /**
@@ -682,20 +617,14 @@ export const getAdminGetThreadReportUrl = (id: string,) => {
 
 export const adminGetThreadReport = async (id: string, options?: RequestInit): Promise<adminGetThreadReportResponse> => {
   
-  const res = await fetch(getAdminGetThreadReportUrl(id),
+  return customFetch<adminGetThreadReportResponse>(getAdminGetThreadReportUrl(id),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminGetThreadReportResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminGetThreadReportResponse
-}
+);}
   
 
 /**
@@ -732,7 +661,7 @@ export const getAdminUpdateThreadReportStatusUrl = (id: string,) => {
 export const adminUpdateThreadReportStatus = async (id: string,
     updateThreadReportStatusRequest: NonReadonly<UpdateThreadReportStatusRequest>, options?: RequestInit): Promise<adminUpdateThreadReportStatusResponse> => {
   
-  const res = await fetch(getAdminUpdateThreadReportStatusUrl(id),
+  return customFetch<adminUpdateThreadReportStatusResponse>(getAdminUpdateThreadReportStatusUrl(id),
   {      
     ...options,
     method: 'PATCH',
@@ -740,13 +669,7 @@ export const adminUpdateThreadReportStatus = async (id: string,
     body: JSON.stringify(
       updateThreadReportStatusRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminUpdateThreadReportStatusResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminUpdateThreadReportStatusResponse
-}
+);}
   
 
 /**
@@ -789,20 +712,14 @@ export const getAdminListUserReportsUrl = (params?: AdminListUserReportsParams,)
 
 export const adminListUserReports = async (params?: AdminListUserReportsParams, options?: RequestInit): Promise<adminListUserReportsResponse> => {
   
-  const res = await fetch(getAdminListUserReportsUrl(params),
+  return customFetch<adminListUserReportsResponse>(getAdminListUserReportsUrl(params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminListUserReportsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminListUserReportsResponse
-}
+);}
   
 
 /**
@@ -838,20 +755,14 @@ export const getAdminGetUserReportUrl = (id: string,) => {
 
 export const adminGetUserReport = async (id: string, options?: RequestInit): Promise<adminGetUserReportResponse> => {
   
-  const res = await fetch(getAdminGetUserReportUrl(id),
+  return customFetch<adminGetUserReportResponse>(getAdminGetUserReportUrl(id),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminGetUserReportResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminGetUserReportResponse
-}
+);}
   
 
 /**
@@ -888,7 +799,7 @@ export const getAdminBlockReportedUserUrl = (id: string,) => {
 export const adminBlockReportedUser = async (id: string,
     blockReportedUserRequest: NonReadonly<BlockReportedUserRequest>, options?: RequestInit): Promise<adminBlockReportedUserResponse> => {
   
-  const res = await fetch(getAdminBlockReportedUserUrl(id),
+  return customFetch<adminBlockReportedUserResponse>(getAdminBlockReportedUserUrl(id),
   {      
     ...options,
     method: 'POST',
@@ -896,13 +807,7 @@ export const adminBlockReportedUser = async (id: string,
     body: JSON.stringify(
       blockReportedUserRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminBlockReportedUserResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminBlockReportedUserResponse
-}
+);}
   
 
 /**
@@ -939,7 +844,7 @@ export const getAdminUpdateUserReportStatusUrl = (id: string,) => {
 export const adminUpdateUserReportStatus = async (id: string,
     updateUserReportStatusRequest: NonReadonly<UpdateUserReportStatusRequest>, options?: RequestInit): Promise<adminUpdateUserReportStatusResponse> => {
   
-  const res = await fetch(getAdminUpdateUserReportStatusUrl(id),
+  return customFetch<adminUpdateUserReportStatusResponse>(getAdminUpdateUserReportStatusUrl(id),
   {      
     ...options,
     method: 'PATCH',
@@ -947,13 +852,7 @@ export const adminUpdateUserReportStatus = async (id: string,
     body: JSON.stringify(
       updateUserReportStatusRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminUpdateUserReportStatusResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminUpdateUserReportStatusResponse
-}
+);}
   
 
 /**
@@ -998,20 +897,14 @@ export const getAdminListThreadBlockedUsersUrl = (id: string,
 export const adminListThreadBlockedUsers = async (id: string,
     params?: AdminListThreadBlockedUsersParams, options?: RequestInit): Promise<adminListThreadBlockedUsersResponse> => {
   
-  const res = await fetch(getAdminListThreadBlockedUsersUrl(id,params),
+  return customFetch<adminListThreadBlockedUsersResponse>(getAdminListThreadBlockedUsersUrl(id,params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminListThreadBlockedUsersResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminListThreadBlockedUsersResponse
-}
+);}
   
 
 /**
@@ -1048,7 +941,7 @@ export const getAdminBlockCommunityUserUrl = (id: string,) => {
 export const adminBlockCommunityUser = async (id: string,
     blockUserRequest: NonReadonly<BlockUserRequest>, options?: RequestInit): Promise<adminBlockCommunityUserResponse> => {
   
-  const res = await fetch(getAdminBlockCommunityUserUrl(id),
+  return customFetch<adminBlockCommunityUserResponse>(getAdminBlockCommunityUserUrl(id),
   {      
     ...options,
     method: 'POST',
@@ -1056,13 +949,7 @@ export const adminBlockCommunityUser = async (id: string,
     body: JSON.stringify(
       blockUserRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminBlockCommunityUserResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminBlockCommunityUserResponse
-}
+);}
   
 
 /**
@@ -1100,19 +987,13 @@ export const getAdminUnblockCommunityUserUrl = (id: string,
 export const adminUnblockCommunityUser = async (id: string,
     accountId: string, options?: RequestInit): Promise<adminUnblockCommunityUserResponse> => {
   
-  const res = await fetch(getAdminUnblockCommunityUserUrl(id,accountId),
+  return customFetch<adminUnblockCommunityUserResponse>(getAdminUnblockCommunityUserUrl(id,accountId),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: adminUnblockCommunityUserResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as adminUnblockCommunityUserResponse
-}
+);}
   
 
