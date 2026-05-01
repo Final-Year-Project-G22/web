@@ -6,7 +6,7 @@ import { useState } from "react";
 import {
   useAdminCreateCategory,
   useAdminParentCategories,
-} from "@/app/(admin)/dashboard/community/_services/community.hook";
+} from "@/app/[locale]/(modules)/community/_services/community.hook";
 import { Button } from "@/components/ui/button";
 import {
   Card,

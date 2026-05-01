@@ -3,6 +3,11 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import {
+  useAdminDeleteCategory,
+  useAdminListCategories,
+  useAdminUpdateCategory,
+} from "@/app/[locale]/(modules)/community/_services/community.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,11 +32,6 @@ import {
 } from "@/components/ui/table";
 import type { CategoryDTO } from "@/lib/api/types";
 import { getErrorMessage } from "@/lib/utils";
-import {
-  useAdminDeleteCategory,
-  useAdminListCategories,
-  useAdminUpdateCategory,
-} from "../_services/community.hook";
 
 type FlatItem = { category: CategoryDTO; depth: number; parentId: string | null };
 
