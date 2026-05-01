@@ -13,4 +13,6 @@ export interface AccountDTO {
   id: string;
   /** Account status (pending_verification, active, locked, suspended, disabled) */
   status: string;
+  /** Account username */
+  username?: string;
 }

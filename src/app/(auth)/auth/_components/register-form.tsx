@@ -1,118 +1,198 @@
 "use client";
 
-import { Eye, EyeOff } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { listRoles } from "@/lib/api/services/roles";
+import type { ErrorModel, RoleDTO } from "@/lib/api/types";
+import { useAdminRegister } from "../_services/auth.hook";
+
+const registerSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  username: z.string().min(3, "Username must be at least 3 characters").optional(),
+});
+
+type RegisterFormData = z.infer<typeof registerSchema>;
+
+function getErrorMessage(err: unknown) {
+  const maybe = err as Partial<ErrorModel> | undefined;
+  if (maybe && typeof maybe.title === "string" && maybe.title.trim()) return maybe.title;
+  if (maybe && typeof maybe.detail === "string" && maybe.detail.trim()) return maybe.detail;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return "Request failed";
+  }
+}
 
 export function RegisterForm({ switchToLogin }: { switchToLogin: () => void }) {
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+  const [notice, setNotice] = useState<string | null>(null);
+  const [noticeType, setNoticeType] = useState<"success" | "error" | null>(null);
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
 
-  const strength = password.length > 12 ? "Strong" : password.length > 8 ? "Medium" : "Weak";
+  const form = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      username: "",
+    },
+  });
+
+  const rolesQuery = useQuery<RoleDTO[], ErrorModel>({
+    queryKey: ["roles"],
+    queryFn: async () => {
+      const res = await listRoles();
+      if (res.status !== 200) throw res.data;
+      return (res.data.roles ?? []).filter(Boolean);
+    },
+  });
+
+  const roles: RoleDTO[] = rolesQuery.data ?? [];
+
+  const adminRegisterMutation = useAdminRegister();
+
+  const onSubmit = (data: RegisterFormData) => {
+    setNotice(null);
+    setNoticeType(null);
+    adminRegisterMutation.mutate(
+      {
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        username: data.username || undefined,
+        roleIds: selectedRoleIds.length > 0 ? selectedRoleIds : null,
+      },
+      {
+        onSuccess: (res) => {
+          setNotice(res.message);
+          setNoticeType("success");
+          setTimeout(() => router.push("/auth"), 3000);
+        },
+        onError: (err) => {
+          setNotice(getErrorMessage(err));
+          setNoticeType("error");
+        },
+      }
+    );
+  };
+
+  const toggleRole = (roleId: string) => {
+    setSelectedRoleIds((prev) =>
+      prev.includes(roleId) ? prev.filter((id) => id !== roleId) : [...prev, roleId]
+    );
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 text-black">
       <div>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-black">Admin Account Request</h2>
           <p className="text-sm text-muted-foreground text-right">Step 1 of 2</p>
         </div>
-
         <div className="mt-2 h-2 bg-gray-200 rounded">
           <div className="h-2 w-1/2 bg-blue-600 rounded"></div>
         </div>
       </div>
 
-      {/* Form */}
-      <div className="space-y-5">
-        <div className="space-y-5">
-          <Label className="text-black">Full Name</Label>
-          <Input className="border-gray-400" placeholder="e.g. Sarah Jenkins" />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="firstName">First Name</Label>
+          <Input id="firstName" placeholder="Sarah" {...form.register("firstName")} />
+          {form.formState.errors.firstName && (
+            <p className="text-sm text-red-500">{form.formState.errors.firstName.message}</p>
+          )}
         </div>
-
-        <div className="space-y-5">
-          <Label className="text-black">Organization Email</Label>
-          <Input className="border-gray-400" placeholder="name@organization.com" />
-          <p className="text-xs text-muted-foreground">Must use a valid organizational domain.</p>
+        <div className="space-y-2">
+          <Label htmlFor="lastName">Last Name</Label>
+          <Input id="lastName" placeholder="Jenkins" {...form.register("lastName")} />
+          {form.formState.errors.lastName && (
+            <p className="text-sm text-red-500">{form.formState.errors.lastName.message}</p>
+          )}
         </div>
-
-        <div className="text-black">
-          <Label className="block text-sm mb-1">Requested Role</Label>
-          <select className="w-full border border-gray-400 rounded-lg p-3 text-sm">
-            <option>Select a role...</option>
-            <option>Admin</option>
-            <option>Moderator</option>
-          </select>
-        </div>
-
-        {/* Info box */}
-        <div className="bg-blue-50 border border-blue-200 text-blue-700 text-xs p-3 rounded">
-          Content Managers can publish and edit articles. Moderators can review user comments and
-          flag content. System Admins have full access.
-        </div>
-
-        {/* Password */}
-        <div className="space-y-5">
-          <Label className="text-black">Password</Label>
-
-          {/* 👁 Input with toggle */}
-          <div className="relative">
-            <Input
-              className="border-gray-200 text-black pr-10"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
-
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-
-          {/* Strength */}
-          <div className="flex gap-1 mt-2">
-            <div className="h-1 flex-1 bg-green-500 rounded"></div>
-            <div className="h-1 flex-1 bg-green-500 rounded"></div>
-            <div className="h-1 flex-1 bg-gray-200 rounded"></div>
-          </div>
-          <div className="flex justify-between items-center mb-6">
-            <p className="text-xs text-muted-foreground">Strength: {strength}</p>
-            <p className="text-xs bg-gray-50 border border-gray-200 text-muted-foreground">
-              Min 8 chars
-            </p>
-          </div>
-        </div>
-
-        {/* Checkbox */}
-        <div className="flex items-center space-x-2 text-black">
-          <input type="checkbox" />
-          <span>
-            I agree to the <b className="text-purple-500">Admin Security Policy</b> and{" "}
-            <b className="text-purple-500">Terms of Service</b>.
-          </span>
-        </div>
-
-        {/* Button */}
-        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white p-5">
-          Request Access
-        </Button>
-
-        {/* Switch */}
-        <p className="text-sm text-center text-black">
-          Already have an account?{" "}
-          <button type="button" onClick={switchToLogin} className="text-blue-600">
-            Sign in here
-          </button>
-        </p>
       </div>
-    </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="email">Organization Email</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="name@organization.com"
+          {...form.register("email")}
+        />
+        {form.formState.errors.email && (
+          <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
+        )}
+        <p className="text-xs text-muted-foreground">Must use a valid organizational domain.</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="username">Username (optional)</Label>
+        <Input id="username" placeholder="sarah_jenkins" {...form.register("username")} />
+        {form.formState.errors.username && (
+          <p className="text-sm text-red-500">{form.formState.errors.username.message}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label>Assign Roles</Label>
+        <div className="border border-gray-200 rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto">
+          {rolesQuery.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading roles&hellip;</p>
+          ) : rolesQuery.isError ? (
+            <p className="text-sm text-muted-foreground">Failed to load roles</p>
+          ) : (
+            roles.map((role) => (
+              <label key={role.id} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedRoleIds.includes(role.id)}
+                  onChange={() => toggleRole(role.id)}
+                />
+                <span className="text-sm">{role.name}</span>
+              </label>
+            ))
+          )}
+        </div>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 text-blue-700 text-xs p-3 rounded">
+        An auto-generated password will be emailed to the new admin. Content Managers can publish
+        and edit articles. Moderators can review user comments. System Admins have full access.
+      </div>
+
+      {notice && (
+        <div
+          className={`text-sm p-3 rounded border ${
+            noticeType === "success"
+              ? "bg-green-50 border-green-200 text-green-700"
+              : "bg-red-50 border-red-200 text-red-700"
+          }`}
+        >
+          {notice}
+        </div>
+      )}
+
+      <Button type="submit" className="w-full" disabled={adminRegisterMutation.isPending}>
+        {adminRegisterMutation.isPending ? "Creating Account…" : "Request Access"}
+      </Button>
+
+      <p className="text-sm text-center text-black">
+        Already have an account?{" "}
+        <button type="button" onClick={switchToLogin} className="text-blue-600 hover:underline">
+          Sign in here
+        </button>
+      </p>
+    </form>
   );
 }

@@ -6,12 +6,22 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  AdminRegisterRequest,
+  AdminRegisterResponseBody,
+  AdminUpdateRolesOutputBody,
+  AdminUpdateRolesRequest,
   ErrorModel,
+  GetCurrentUserResponseBody,
   LoginRequest,
   LoginResponseBody,
   RefreshResponseBody,
   RegisterRequest,
-  RegisterResponseBody
+  RegisterResponseBody,
+  ResendEmailOTPResponseBody,
+  UpdateAccountPasswordRequest,
+  UpdateAccountPasswordResponseBody,
+  VerifyEmailOTPRequest,
+  VerifyEmailOTPResponseBody
 } from '../types';
 
 
@@ -52,7 +62,108 @@ export type HTTPStatusCode5xx = 500 | 501 | 502 | 503 | 504 | 505 | 507 | 511;
 export type HTTPStatusCodes = HTTPStatusCode1xx | HTTPStatusCode2xx | HTTPStatusCode3xx | HTTPStatusCode4xx | HTTPStatusCode5xx;
 
 /**
- * Authenticates a user with email and password, returns authentication tokens.
+ * Creates an admin account and emails the generated password.
+ * @summary Register a new admin
+ */
+export type registerAdminResponse200 = {
+  data: AdminRegisterResponseBody
+  status: 200
+}
+
+export type registerAdminResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type registerAdminResponseSuccess = (registerAdminResponse200) & {
+  headers: Headers;
+};
+export type registerAdminResponseError = (registerAdminResponseDefault) & {
+  headers: Headers;
+};
+
+export type registerAdminResponse = (registerAdminResponseSuccess | registerAdminResponseError)
+
+export const getRegisterAdminUrl = () => {
+
+
+  
+
+  return `/api/v1/auth/admin/register`
+}
+
+export const registerAdmin = async (adminRegisterRequest: NonReadonly<AdminRegisterRequest>, options?: RequestInit): Promise<registerAdminResponse> => {
+  
+  const res = await fetch(getRegisterAdminUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      adminRegisterRequest,)
+  }
+)
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+  
+  const data: registerAdminResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as registerAdminResponse
+}
+  
+
+/**
+ * Replaces roles assigned to an admin account.
+ * @summary Update admin roles
+ */
+export type updateAdminRolesResponse200 = {
+  data: AdminUpdateRolesOutputBody
+  status: 200
+}
+
+export type updateAdminRolesResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type updateAdminRolesResponseSuccess = (updateAdminRolesResponse200) & {
+  headers: Headers;
+};
+export type updateAdminRolesResponseError = (updateAdminRolesResponseDefault) & {
+  headers: Headers;
+};
+
+export type updateAdminRolesResponse = (updateAdminRolesResponseSuccess | updateAdminRolesResponseError)
+
+export const getUpdateAdminRolesUrl = (accountId: string,) => {
+
+
+  
+
+  return `/api/v1/auth/admin/${accountId}/roles`
+}
+
+export const updateAdminRoles = async (accountId: string,
+    adminUpdateRolesRequest: NonReadonly<AdminUpdateRolesRequest>, options?: RequestInit): Promise<updateAdminRolesResponse> => {
+  
+  const res = await fetch(getUpdateAdminRolesUrl(accountId),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      adminUpdateRolesRequest,)
+  }
+)
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+  
+  const data: updateAdminRolesResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as updateAdminRolesResponse
+}
+  
+
+/**
+ * Authenticates a user with email or username and password, returns authentication tokens.
  * @summary Log in a user
  */
 export type loginResponse200 = {
@@ -200,6 +311,55 @@ export const logoutAll = async ( options?: RequestInit): Promise<logoutAllRespon
   
 
 /**
+ * Returns the current authenticated user's profile and account information.
+ * @summary Get current user
+ */
+export type getCurrentUserResponse200 = {
+  data: GetCurrentUserResponseBody
+  status: 200
+}
+
+export type getCurrentUserResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type getCurrentUserResponseSuccess = (getCurrentUserResponse200) & {
+  headers: Headers;
+};
+export type getCurrentUserResponseError = (getCurrentUserResponseDefault) & {
+  headers: Headers;
+};
+
+export type getCurrentUserResponse = (getCurrentUserResponseSuccess | getCurrentUserResponseError)
+
+export const getGetCurrentUserUrl = () => {
+
+
+  
+
+  return `/api/v1/auth/me`
+}
+
+export const getCurrentUser = async ( options?: RequestInit): Promise<getCurrentUserResponse> => {
+  
+  const res = await fetch(getGetCurrentUserUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+)
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+  
+  const data: getCurrentUserResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getCurrentUserResponse
+}
+  
+
+/**
  * Uses the refresh token cookie to issue new access and refresh tokens. Implements token rotation for security.
  * @summary Refresh access token
  */
@@ -295,6 +455,155 @@ export const register = async (registerRequest: NonReadonly<RegisterRequest>, op
   
   const data: registerResponse['data'] = body ? JSON.parse(body) : {}
   return { data, status: res.status, headers: res.headers } as registerResponse
+}
+  
+
+/**
+ * Resends a new one-time password for email verification with cooldown and resend limits.
+ * @summary Resend account email OTP
+ */
+export type resendEmailOTPResponse200 = {
+  data: ResendEmailOTPResponseBody
+  status: 200
+}
+
+export type resendEmailOTPResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type resendEmailOTPResponseSuccess = (resendEmailOTPResponse200) & {
+  headers: Headers;
+};
+export type resendEmailOTPResponseError = (resendEmailOTPResponseDefault) & {
+  headers: Headers;
+};
+
+export type resendEmailOTPResponse = (resendEmailOTPResponseSuccess | resendEmailOTPResponseError)
+
+export const getResendEmailOTPUrl = () => {
+
+
+  
+
+  return `/api/v1/auth/resend-email-otp`
+}
+
+export const resendEmailOTP = async ( options?: RequestInit): Promise<resendEmailOTPResponse> => {
+  
+  const res = await fetch(getResendEmailOTPUrl(),
+  {      
+    ...options,
+    method: 'POST'
+    
+    
+  }
+)
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+  
+  const data: resendEmailOTPResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as resendEmailOTPResponse
+}
+  
+
+/**
+ * Updates account password
+ * @summary Update account password
+ */
+export type accountPasswordResponse200 = {
+  data: UpdateAccountPasswordResponseBody
+  status: 200
+}
+
+export type accountPasswordResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type accountPasswordResponseSuccess = (accountPasswordResponse200) & {
+  headers: Headers;
+};
+export type accountPasswordResponseError = (accountPasswordResponseDefault) & {
+  headers: Headers;
+};
+
+export type accountPasswordResponse = (accountPasswordResponseSuccess | accountPasswordResponseError)
+
+export const getAccountPasswordUrl = () => {
+
+
+  
+
+  return `/api/v1/auth/user/updatePassword`
+}
+
+export const accountPassword = async (updateAccountPasswordRequest: NonReadonly<UpdateAccountPasswordRequest>, options?: RequestInit): Promise<accountPasswordResponse> => {
+  
+  const res = await fetch(getAccountPasswordUrl(),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateAccountPasswordRequest,)
+  }
+)
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+  
+  const data: accountPasswordResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as accountPasswordResponse
+}
+  
+
+/**
+ * Verifies pending account email using a one-time password and activates the account.
+ * @summary Verify account email with OTP
+ */
+export type verifyEmailOTPResponse200 = {
+  data: VerifyEmailOTPResponseBody
+  status: 200
+}
+
+export type verifyEmailOTPResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type verifyEmailOTPResponseSuccess = (verifyEmailOTPResponse200) & {
+  headers: Headers;
+};
+export type verifyEmailOTPResponseError = (verifyEmailOTPResponseDefault) & {
+  headers: Headers;
+};
+
+export type verifyEmailOTPResponse = (verifyEmailOTPResponseSuccess | verifyEmailOTPResponseError)
+
+export const getVerifyEmailOTPUrl = () => {
+
+
+  
+
+  return `/api/v1/auth/verify-email-otp`
+}
+
+export const verifyEmailOTP = async (verifyEmailOTPRequest: NonReadonly<VerifyEmailOTPRequest>, options?: RequestInit): Promise<verifyEmailOTPResponse> => {
+  
+  const res = await fetch(getVerifyEmailOTPUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      verifyEmailOTPRequest,)
+  }
+)
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+  
+  const data: verifyEmailOTPResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as verifyEmailOTPResponse
 }
   
 

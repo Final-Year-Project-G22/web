@@ -33,4 +33,11 @@ export interface RegisterRequest {
    * @maxLength 128
    */
   password: string;
+  /**
+   * Username (lowercase letters, digits, underscore)
+   * @minLength 3
+   * @maxLength 32
+   * @pattern ^[a-z0-9_]+$
+   */
+  username?: string;
 }
