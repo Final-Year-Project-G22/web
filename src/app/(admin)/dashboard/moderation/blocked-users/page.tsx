@@ -14,11 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  getErrorMessage,
-  useAdminListAllBlockedUsers,
-  useAdminUnblockUser,
-} from "../_services/moderation.hook";
+import { getErrorMessage } from "@/lib/utils";
+import { useAdminListAllBlockedUsers, useAdminUnblockUser } from "../_services/moderation.hook";
 
 export default function BlockedUsersPage() {
   const [page, setPage] = useState(1);

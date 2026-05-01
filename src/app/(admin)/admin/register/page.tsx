@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { listRoles } from "@/lib/api/services/roles";
 import type { ErrorModel, RoleDTO } from "@/lib/api/types";
+import { getErrorMessage } from "@/lib/utils";
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -24,17 +25,6 @@ const registerSchema = z.object({
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
-
-function getErrorMessage(err: unknown) {
-  const maybe = err as Partial<ErrorModel> | undefined;
-  if (maybe?.title) return maybe.title;
-  if (maybe?.detail) return maybe.detail;
-  try {
-    return JSON.stringify(err);
-  } catch {
-    return "Request failed";
-  }
-}
 
 export default function RegisterAdminPage() {
   const router = useRouter();

@@ -14,7 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getErrorMessage, useAdminListUserReports } from "../_services/moderation.hook";
+import { getErrorMessage } from "@/lib/utils";
+import { useAdminListUserReports } from "../_services/moderation.hook";
 
 type Status = "all" | "pending" | "under_review" | "resolved" | "dismissed";
 

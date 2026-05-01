@@ -9,6 +9,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuthMode } from "../_stores/auth-local.store";
 
 const forgotSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -16,12 +17,9 @@ const forgotSchema = z.object({
 
 type ForgotFormData = z.infer<typeof forgotSchema>;
 
-type ForgotPasswordFormProps = {
-  switchToLogin: () => void;
-};
-
-export function ForgotPasswordForm({ switchToLogin }: ForgotPasswordFormProps) {
+export function ForgotPasswordForm() {
   const router = useRouter();
+  const setMode = useAuthMode((state) => state.setMode);
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +28,7 @@ export function ForgotPasswordForm({ switchToLogin }: ForgotPasswordFormProps) {
     defaultValues: { email: "" },
   });
 
-  const onSubmit = (data: ForgotFormData) => {
+  const onSubmit = (_data: ForgotFormData) => {
     setLoading(true);
     setSent(true);
     setTimeout(() => {
@@ -84,7 +82,11 @@ export function ForgotPasswordForm({ switchToLogin }: ForgotPasswordFormProps) {
 
       <p className="text-sm text-center">
         Back to{" "}
-        <button type="button" onClick={switchToLogin} className="text-blue-600 hover:underline">
+        <button
+          type="button"
+          onClick={() => setMode("login")}
+          className="text-blue-600 hover:underline"
+        >
           Login
         </button>
       </p>

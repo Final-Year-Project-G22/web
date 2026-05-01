@@ -11,7 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { accountPassword } from "@/lib/api/services/authentication";
-import type { ErrorModel, UpdateAccountPasswordRequest } from "@/lib/api/types";
+import type { UpdateAccountPasswordRequest } from "@/lib/api/types";
+import { getErrorMessage } from "@/lib/utils";
 
 const passwordSchema = z
   .object({
@@ -25,17 +26,6 @@ const passwordSchema = z
   });
 
 type PasswordFormData = z.infer<typeof passwordSchema>;
-
-function getErrorMessage(err: unknown) {
-  const maybe = err as Partial<ErrorModel> | undefined;
-  if (maybe?.title) return maybe.title;
-  if (maybe?.detail) return maybe.detail;
-  try {
-    return JSON.stringify(err);
-  } catch {
-    return "Request failed";
-  }
-}
 
 export default function ChangePasswordPage() {
   const [notice, setNotice] = useState<string | null>(null);
