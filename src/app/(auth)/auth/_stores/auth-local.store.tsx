@@ -4,11 +4,11 @@ import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";
 
 interface AuthModeProps {
-  mode: "login" | "register" | "forgot";
+  mode: "login" | "forgot";
 }
 
 interface AuthModeState extends AuthModeProps {
-  setMode: (mode: "login" | "register" | "forgot") => void;
+  setMode: (mode: "login" | "forgot") => void;
 }
 
 type AuthModeStore = ReturnType<typeof createAuthModeStore>;

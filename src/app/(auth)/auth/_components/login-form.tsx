@@ -95,17 +95,6 @@ export function LoginForm() {
         <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
           {loginMutation.isPending ? "Signing in…" : "Sign In"}
         </Button>
-
-        <p className="text-sm text-center">
-          Don&apos;t have an account?{" "}
-          <button
-            type="button"
-            onClick={() => setMode("register")}
-            className="text-blue-600 hover:underline"
-          >
-            Sign up
-          </button>
-        </p>
       </div>
     </form>
   );
