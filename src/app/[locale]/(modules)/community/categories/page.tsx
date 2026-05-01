@@ -33,14 +33,18 @@ import {
 import type { CategoryDTO } from "@/lib/api/types";
 import { getErrorMessage } from "@/lib/utils";
 
-type FlatItem = { category: CategoryDTO; depth: number; parentId: string | null };
+type FlatItem = {
+  category: CategoryDTO;
+  depth: number;
+  parentId: string | null;
+};
 
 function buildHierarchy(categories: CategoryDTO[]) {
   const map = new Map<string | null, CategoryDTO[]>();
   for (const c of categories) {
     const key = c.parentCategoryId ?? null;
     if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(c);
+    map.get(key)?.push(c);
   }
   const sorted = (list: CategoryDTO[]) => [...list].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -145,7 +149,7 @@ export default function AdminCommunityCategoriesPage() {
           <CardDescription>Manage community categories and subcategories</CardDescription>
           <CardAction>
             <Button asChild>
-              <Link href="/dashboard/community/categories/create">Create Category</Link>
+              <Link href="/en/dashboard/community/categories/create">Create Category</Link>
             </Button>
           </CardAction>
         </CardHeader>
@@ -238,7 +242,10 @@ export default function AdminCommunityCategoriesPage() {
                                 disabled={updateCategory.isPending}
                                 onClick={() =>
                                   updateCategory.mutate(
-                                    { id: c.id, patch: { isActive: !c.isActive } },
+                                    {
+                                      id: c.id,
+                                      patch: { isActive: !c.isActive },
+                                    },
                                     {
                                       onError: (err) => setNotice(getErrorMessage(err)),
                                     }

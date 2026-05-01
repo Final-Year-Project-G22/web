@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import {
   useAdminListAllBlockedUsers,
   useAdminUnblockUser,
-} from "@/app/[locale]/(modules)/dashboard/moderation/_services/blocked-users.hook";
+} from "@/app/[locale]/(modules)/moderation/_services/blocked-users.hook";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";

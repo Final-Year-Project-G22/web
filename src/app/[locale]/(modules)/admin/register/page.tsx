@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -27,7 +27,7 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterAdminPage() {
-  const router = useRouter();
+  const _router = useRouter();
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [noticeType, setNoticeType] = useState<"success" | "error" | null>(null);
@@ -89,7 +89,7 @@ export default function RegisterAdminPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <Button asChild variant="outline" size="sm">
-            <Link href="/dashboard">Back to Dashboard</Link>
+            <Link href="/en/dashboard">Back to Dashboard</Link>
           </Button>
 
           <div className="space-y-4">

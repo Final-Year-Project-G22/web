@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { useAdminListUserReports } from "@/app/[locale]/(modules)/dashboard/moderation/_services/user-reports.hook";
+import { useAdminListUserReports } from "@/app/[locale]/(modules)/moderation/_services/user-reports.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -66,7 +66,7 @@ export default function ReportedUsersPage() {
     if (newStatus !== "all") sp.set("status", newStatus);
     if (newSearch.trim()) sp.set("search", newSearch.trim());
     if (newPage > 1) sp.set("page", String(newPage));
-    router.push(`/dashboard/moderation/reported-users${sp.toString() ? `?${sp}` : ""}`);
+    router.push(`/en/dashboard/moderation/reported-users${sp.toString() ? `?${sp}` : ""}`);
   }
 
   return (
@@ -174,7 +174,7 @@ export default function ReportedUsersPage() {
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                router.push(`/dashboard/moderation/reported-users/${r.id}`)
+                                router.push(`/en/dashboard/moderation/reported-users/${r.id}`)
                               }
                             >
                               View Details

@@ -5,7 +5,7 @@ import { useEffect } from "react";
 
 import { useAuthStore } from "@/store/auth.store";
 
-type Props = { children: React.ReactNode; target: "/auth" | "/dashboard" };
+type Props = { children: React.ReactNode; target: "/auth" | "/en/dashboard" };
 
 export function ProtectedRoute({ children, target }: Props) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -14,16 +14,16 @@ export function ProtectedRoute({ children, target }: Props) {
 
   useEffect(() => {
     if (!hasHydrated) return;
-    if (target === "/dashboard" && !isAuthenticated) {
+    if (target === "/en/dashboard" && !isAuthenticated) {
       router.replace("/auth");
     } else if (target === "/auth" && isAuthenticated) {
-      router.replace("/dashboard");
+      router.replace("/en/dashboard");
     }
   }, [isAuthenticated, hasHydrated, router, target]);
 
   if (!hasHydrated) return null;
 
-  if ((target === "/dashboard" && !isAuthenticated) || (target === "/auth" && isAuthenticated)) {
+  if ((target === "/en/dashboard" && !isAuthenticated) || (target === "/auth" && isAuthenticated)) {
     return null;
   }
 
