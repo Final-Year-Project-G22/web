@@ -1,9 +1,9 @@
 import { Activity, AlertCircle, BrainCircuit, Users } from "lucide-react";
-import { AIUsageChart } from "@/components/dashboard/ai-usage-chart";
-import { RecentLogs } from "@/components/dashboard/recent-logs";
-import { StatCard } from "@/components/dashboard/stat-card";
-import { SystemHealth } from "@/components/dashboard/system-health";
-import { UserGrowthChart } from "@/components/dashboard/user-growth-chart";
+import { AIUsageChart } from "@/app/[locale]/(modules)/dashboard/_components/ai-usage-chart";
+import { RecentLogs } from "@/app/[locale]/(modules)/dashboard/_components/recent-logs";
+import { StatCard } from "@/app/[locale]/(modules)/dashboard/_components/stat-card";
+import { SystemHealth } from "@/app/[locale]/(modules)/dashboard/_components/system-health";
+import { UserGrowthChart } from "@/app/[locale]/(modules)/dashboard/_components/user-growth-chart";
 
 export default function DashboardPage() {
   return (
