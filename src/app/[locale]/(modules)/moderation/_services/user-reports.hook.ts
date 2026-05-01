@@ -47,7 +47,7 @@ export function useAdminBlockUserInThread() {
   return useMutation<
     BlockUserResponseBody,
     ErrorModel,
-    { threadId: string; blockedId: string; reason?: string; reportId: string }
+    { threadId: string; blockedId: string; reason?: string }
   >({
     mutationFn: async ({ threadId, blockedId, reason }) => {
       const res = await adminBlockCommunityUser(threadId, {

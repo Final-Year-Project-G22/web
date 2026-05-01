@@ -41,7 +41,6 @@ export default function UserReportDetailPage({ params }: { params: Promise<{ id:
       await blockUser.mutateAsync({
         threadId: report.threadId,
         blockedId: report.reportedAccountId,
-        reportId: id,
       });
       router.push("/dashboard/moderation/reported-users");
     } catch {
