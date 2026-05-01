@@ -204,7 +204,7 @@ export function ReportDetailPage({
           threadId: report.threadId,
           blockedId: report.reportedAccountId,
         });
-        router.push("/dashboard/moderation/reported-users");
+        router.push("/en/dashboard/moderation/reported-users");
         return;
       }
       if (type === "post") {

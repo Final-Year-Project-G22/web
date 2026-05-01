@@ -17,7 +17,6 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 function DarkModeSwitch() {
@@ -59,7 +58,8 @@ import {
 
 function NavLink({ href, icon, label }: { href: string; icon?: ReactNode; label: string }) {
   const pathname = usePathname();
-  const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
+  const isActive =
+    pathname === href || (href !== "/en/dashboard" && pathname.startsWith(`${href}/`));
 
   return (
     <Link
@@ -93,7 +93,7 @@ export function Sidebar() {
             </h4>
             <nav className="space-y-1">
               <NavLink
-                href="/dashboard"
+                href="/en/dashboard"
                 icon={<LayoutDashboard className="w-4 h-4" />}
                 label="Dashboard"
               />
@@ -116,7 +116,7 @@ export function Sidebar() {
                 </div>
               </Link>
               <Link
-                href="/dashboard"
+                href="/en/dashboard"
                 className="flex items-center justify-between px-2 py-2 text-muted-foreground hover:bg-accent rounded-md transition-colors"
               >
                 <div className="flex items-center gap-3">
@@ -139,7 +139,7 @@ export function Sidebar() {
             </h4>
             <nav className="space-y-1">
               <NavLink
-                href="/dashboard/community/categories"
+                href="/en/dashboard/community/categories"
                 icon={<Folder className="w-4 h-4" />}
                 label="Categories"
               />
@@ -149,7 +149,7 @@ export function Sidebar() {
                     type="button"
                     className={cn(
                       "flex w-full items-center gap-3 px-2 py-2 rounded-md transition-colors text-muted-foreground hover:bg-accent",
-                      usePathname().startsWith("/dashboard/moderation")
+                      usePathname().startsWith("/en/dashboard/moderation")
                         ? "bg-primary/5 text-primary font-medium"
                         : ""
                     )}
@@ -162,7 +162,7 @@ export function Sidebar() {
                 <DropdownMenuContent sideOffset={4} className="w-48">
                   <DropdownMenuItem asChild>
                     <NavLink
-                      href="/dashboard/moderation/blocked-users"
+                      href="/en/dashboard/moderation/blocked-users"
                       icon={<ShieldAlert className="w-4 h-4" />}
                       label="Blocked Users"
                     />
@@ -170,7 +170,7 @@ export function Sidebar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <NavLink
-                      href="/dashboard/moderation/reported-content"
+                      href="/en/dashboard/moderation/reported-content"
                       icon={<TriangleAlert className="w-4 h-4" />}
                       label="Reported Content"
                     />
@@ -178,7 +178,7 @@ export function Sidebar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <NavLink
-                      href="/dashboard/moderation/reported-users"
+                      href="/en/dashboard/moderation/reported-users"
                       icon={<TriangleAlert className="w-4 h-4" />}
                       label="Reported Users"
                     />
