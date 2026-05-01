@@ -73,7 +73,7 @@ export function Header() {
               inset
               onClick={() => {
                 setOpen(false);
-                router.push("/en/dashboard/settings/password");
+                router.push("/settings/password");
               }}
             >
               <Key className="size-4" />

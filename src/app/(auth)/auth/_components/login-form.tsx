@@ -34,7 +34,7 @@ export function LoginForm() {
   const onSubmit = (data: LoginFormData) => {
     loginMutation.mutate(data, {
       onSuccess: () => {
-        router.push("/en/dashboard");
+        router.push("/dashboard");
       },
       onError: (err: unknown) => {
         const maybe = err as { title?: string; detail?: string } | undefined;

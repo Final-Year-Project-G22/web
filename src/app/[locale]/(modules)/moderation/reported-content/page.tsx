@@ -73,7 +73,7 @@ export default function ReportedContentPage() {
     if (newStatus !== "all") sp.set("status", newStatus);
     if (newSearch.trim()) sp.set("search", newSearch.trim());
     if (newPage > 1) sp.set("page", String(newPage));
-    router.push(`/en/dashboard/moderation/reported-content${sp.toString() ? `?${sp}` : ""}`);
+    router.push(`/moderation/reported-content${sp.toString() ? `?${sp}` : ""}`);
   }
 
   return (
@@ -212,9 +212,7 @@ export default function ReportedContentPage() {
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                router.push(
-                                  `/en/dashboard/moderation/reported-content/${tab}/${r.id}`
-                                )
+                                router.push(`/moderation/reported-content/${tab}/${r.id}`)
                               }
                             >
                               View Details

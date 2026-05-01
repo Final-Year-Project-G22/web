@@ -89,7 +89,7 @@ export default function RegisterAdminPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <Button asChild variant="outline" size="sm">
-            <Link href="/en/dashboard">Back to Dashboard</Link>
+            <Link href="/dashboard">Back to Dashboard</Link>
           </Button>
 
           <div className="space-y-4">
