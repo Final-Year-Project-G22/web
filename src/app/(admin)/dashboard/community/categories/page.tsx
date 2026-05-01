@@ -26,8 +26,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { CategoryDTO } from "@/lib/api/types";
+import { getErrorMessage } from "@/lib/utils";
 import {
-  getErrorMessage,
   useAdminDeleteCategory,
   useAdminListCategories,
   useAdminUpdateCategory,

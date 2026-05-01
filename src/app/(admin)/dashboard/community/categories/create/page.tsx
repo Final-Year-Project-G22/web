@@ -3,13 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
 import {
-  getErrorMessage,
   useAdminCreateCategory,
   useAdminParentCategories,
 } from "@/app/(admin)/dashboard/community/_services/community.hook";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { getErrorMessage } from "@/lib/utils";
 
 export default function CreateCommunityCategoryPage() {
   const router = useRouter();

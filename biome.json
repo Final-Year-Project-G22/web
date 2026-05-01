@@ -33,6 +33,10 @@
       },
       "suspicious": {
         "noExplicitAny": "warn"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "error",
+        "useHookAtTopLevel": "error"
       }
     }
   },

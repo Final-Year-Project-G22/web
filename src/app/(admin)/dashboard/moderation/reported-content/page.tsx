@@ -14,11 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  getErrorMessage,
-  useAdminListPostReports,
-  useAdminListThreadReports,
-} from "../_services/moderation.hook";
+import { getErrorMessage } from "@/lib/utils";
+import { useAdminListPostReports, useAdminListThreadReports } from "../_services/moderation.hook";
 
 type Tab = "thread" | "post";
 type Status = "all" | "pending" | "under_review" | "resolved" | "dismissed";

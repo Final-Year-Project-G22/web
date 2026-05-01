@@ -11,7 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { listRoles } from "@/lib/api/services/roles";
 import type { ErrorModel, RoleDTO } from "@/lib/api/types";
+import { getErrorMessage } from "@/lib/utils";
 import { useAdminRegister } from "../_services/auth.hook";
+import { useAuthMode } from "../_stores/auth-local.store";
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -22,19 +24,9 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-function getErrorMessage(err: unknown) {
-  const maybe = err as Partial<ErrorModel> | undefined;
-  if (maybe && typeof maybe.title === "string" && maybe.title.trim()) return maybe.title;
-  if (maybe && typeof maybe.detail === "string" && maybe.detail.trim()) return maybe.detail;
-  try {
-    return JSON.stringify(err);
-  } catch {
-    return "Request failed";
-  }
-}
-
-export function RegisterForm({ switchToLogin }: { switchToLogin: () => void }) {
+export function RegisterForm() {
   const router = useRouter();
+  const setMode = useAuthMode((state) => state.setMode);
   const [notice, setNotice] = useState<string | null>(null);
   const [noticeType, setNoticeType] = useState<"success" | "error" | null>(null);
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
@@ -189,7 +181,11 @@ export function RegisterForm({ switchToLogin }: { switchToLogin: () => void }) {
 
       <p className="text-sm text-center text-black">
         Already have an account?{" "}
-        <button type="button" onClick={switchToLogin} className="text-blue-600 hover:underline">
+        <button
+          type="button"
+          onClick={() => setMode("login")}
+          className="text-blue-600 hover:underline"
+        >
           Sign in here
         </button>
       </p>

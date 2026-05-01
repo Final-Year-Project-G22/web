@@ -41,18 +41,6 @@ import type {
   UpdateUserReportStatusResponseBody,
 } from "@/lib/api/types";
 
-export function getErrorMessage(err: unknown) {
-  if (err == null) return "";
-  const maybe = err as { title?: string; detail?: string } | undefined;
-  if (maybe?.title) return maybe.title;
-  if (maybe?.detail) return maybe.detail;
-  try {
-    return JSON.stringify(err);
-  } catch {
-    return "Request failed";
-  }
-}
-
 const BLOCKED_QUERY_KEY = ["admin", "moderation", "blocked-users"];
 const REPORTS_QUERY_KEY = ["admin", "moderation", "reports"];
 
