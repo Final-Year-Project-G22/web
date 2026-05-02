@@ -114,15 +114,11 @@ export function Sidebar() {
                   <span className="text-sm">Formalization Guide</span>
                 </div>
               </Link>
-              <Link
-                href="/dashboard"
-                className="flex items-center justify-between px-2 py-2 text-muted-foreground hover:bg-accent rounded-md transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <BrainCircuit className="w-4 h-4" />
-                  <span className="text-sm">AI Knowledge</span>
-                </div>
-              </Link>
+              <NavLink
+                href="/ai/knowledge-base"
+                icon={<BrainCircuit className="w-4 h-4" />}
+                label="AI Knowledge"
+              />
               <Link
                 href="#"
                 className="flex items-center gap-3 px-2 py-2 text-muted-foreground hover:bg-accent rounded-md transition-colors"
