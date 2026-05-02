@@ -102,6 +102,7 @@ export * from './deadEventDTO';
 export * from './deleteCategoryResponseBody';
 export * from './deleteCategoryTranslationOutputBody';
 export * from './deleteCommunityCategoryResponseBody';
+export * from './deleteDocumentResponseBody';
 export * from './deleteGuideResponseBody';
 export * from './deleteInteractiveFormOutputBody';
 export * from './deleteNotificationResponseBody';

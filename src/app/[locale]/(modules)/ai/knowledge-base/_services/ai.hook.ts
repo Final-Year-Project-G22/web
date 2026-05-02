@@ -10,6 +10,7 @@ import {
 import { listDeadEvents, redriveEvent } from "@/lib/api/services/ai-dlq";
 import {
   createIngestionUploadIntent,
+  deleteIngestionDocument,
   finalizeIngestionUpload,
   getIngestionToggle,
   setIngestionToggle,
@@ -214,6 +215,25 @@ export function useUploadDocument() {
       // Invalidate all AI status queries regardless of accountId to ensure
       // the sidebar refreshes even if accountId wasn't hydrated yet.
       queryClient.invalidateQueries({ queryKey: ["ai", "status"] });
+    },
+  });
+}
+
+export function useDeleteDocument() {
+  const queryClient = useQueryClient();
+  return useMutation<void, ErrorModel, string>({
+    mutationFn: async (documentId) => {
+      const res = await deleteIngestionDocument(documentId);
+      if (res.status !== 200) throw res.data;
+    },
+    onSuccess: async (_, documentId) => {
+      // Remove the deleted document from all cached status lists immediately
+      queryClient.setQueriesData<IngestionStatusProjectionResponse[]>(
+        { queryKey: ["ai", "status"] },
+        (old) => old?.filter((d) => d.documentId !== documentId) ?? []
+      );
+      // Then invalidate to force a background re-sync with the server
+      await queryClient.invalidateQueries({ queryKey: ["ai", "status"] });
     },
   });
 }

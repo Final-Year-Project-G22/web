@@ -8,6 +8,7 @@
 import type {
   CreateUploadIntentRequest,
   CreateUploadIntentResponseBody,
+  DeleteDocumentResponseBody,
   ErrorModel,
   FinalizeUploadRequest,
   FinalizeUploadResponseBody,
@@ -52,6 +53,49 @@ export type HTTPStatusCode3xx = 300 | 301 | 302 | 303 | 304 | 305 | 307 | 308;
 export type HTTPStatusCode4xx = 400 | 401 | 402 | 403 | 404 | 405 | 406 | 407 | 408 | 409 | 410 | 411 | 412 | 413 | 414 | 415 | 416 | 417 | 418 | 419 | 420 | 421 | 422 | 423 | 424 | 426 | 428 | 429 | 431 | 451;
 export type HTTPStatusCode5xx = 500 | 501 | 502 | 503 | 504 | 505 | 507 | 511;
 export type HTTPStatusCodes = HTTPStatusCode1xx | HTTPStatusCode2xx | HTTPStatusCode3xx | HTTPStatusCode4xx | HTTPStatusCode5xx;
+
+/**
+ * Soft-deletes an ingestion document and its status projection.
+ * @summary Delete ingestion document
+ */
+export type deleteIngestionDocumentResponse200 = {
+  data: DeleteDocumentResponseBody
+  status: 200
+}
+
+export type deleteIngestionDocumentResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type deleteIngestionDocumentResponseSuccess = (deleteIngestionDocumentResponse200) & {
+  headers: Headers;
+};
+export type deleteIngestionDocumentResponseError = (deleteIngestionDocumentResponseDefault) & {
+  headers: Headers;
+};
+
+export type deleteIngestionDocumentResponse = (deleteIngestionDocumentResponseSuccess | deleteIngestionDocumentResponseError)
+
+export const getDeleteIngestionDocumentUrl = (documentId: string,) => {
+
+
+  
+
+  return `/api/v1/ai/ingestion/documents/${documentId}`
+}
+
+export const deleteIngestionDocument = async (documentId: string, options?: RequestInit): Promise<deleteIngestionDocumentResponse> => {
+  
+  return customFetch<deleteIngestionDocumentResponse>(getDeleteIngestionDocumentUrl(documentId),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+  
 
 /**
  * Get the current ingestion toggle state.

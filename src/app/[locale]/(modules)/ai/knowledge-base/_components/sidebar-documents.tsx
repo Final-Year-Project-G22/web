@@ -1,18 +1,20 @@
 "use client";
 
-import { FileText, Search, UploadCloud } from "lucide-react";
+import { FileText, Search, Trash2, UploadCloud } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getErrorMessage } from "@/lib/utils";
-import { useAIStatusList, useUploadDocument } from "../_services/ai.hook";
+import { useAIStatusList, useDeleteDocument, useUploadDocument } from "../_services/ai.hook";
 
 export function SidebarDocuments() {
   const [searchDoc, setSearchDoc] = useState("");
   const { data: documents, isLoading, isError } = useAIStatusList(1, 100);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadDoc = useUploadDocument();
+  const deleteDoc = useDeleteDocument();
 
   const filteredDocs =
     documents?.filter((doc) => doc.documentId.toLowerCase().includes(searchDoc.toLowerCase())) ||
@@ -28,6 +30,14 @@ export function SidebarDocuments() {
       });
       e.target.value = "";
     }
+  };
+
+  const handleDelete = (documentId: string) => {
+    toast.promise(deleteDoc.mutateAsync(documentId), {
+      loading: "Deleting document...",
+      success: "Document deleted",
+      error: (err) => `Failed to delete: ${getErrorMessage(err)}`,
+    });
   };
 
   return (
@@ -124,6 +134,18 @@ export function SidebarDocuments() {
                 <Badge variant={badgeVariant} className={extraClassName}>
                   {displayStatus}
                 </Badge>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(doc.documentId);
+                  }}
+                  disabled={deleteDoc.isPending}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
               </div>
             </div>
           );
