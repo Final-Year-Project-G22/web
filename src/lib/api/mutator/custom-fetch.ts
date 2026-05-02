@@ -59,12 +59,18 @@ export const customFetch = async <T>(
     await refreshToken();
   }
 
-  const res = await fetch(url, { ...options, credentials: "include" });
+  // Strip body from GET/HEAD requests — many HTTP stacks reject bodies on GET.
+  const method = (options.method || "GET").toUpperCase();
+  const safeOptions = method === "GET" || method === "HEAD"
+    ? { ...options, body: undefined }
+    : options;
+
+  const res = await fetch(url, { ...safeOptions, credentials: "include" });
 
   if (res.status === 401) {
     const refreshed = await refreshToken();
     if (refreshed) {
-      const retryRes = await fetch(url, { ...options, credentials: "include" });
+      const retryRes = await fetch(url, { ...safeOptions, credentials: "include" });
       const body = [204, 205, 304].includes(retryRes.status)
         ? null
         : await retryRes.text();

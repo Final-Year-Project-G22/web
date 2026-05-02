@@ -1,5 +1,6 @@
 "use client";
 
+import { DlqPanel } from "./_components/dlq-panel";
 import { HeaderTools } from "./_components/header-tools";
 import { PipelineProgress } from "./_components/pipeline-progress";
 import { SidebarDocuments } from "./_components/sidebar-documents";
@@ -23,6 +24,9 @@ export default function AIKnowledgeBasePage() {
 
           {/* Test Retrieval Chat */}
           <TestRetrievalChat />
+
+          {/* Dead Letter Queue */}
+          <DlqPanel />
         </div>
       </div>
     </div>
