@@ -11,7 +11,6 @@ import type {
   ErrorModel,
   FinalizeUploadRequest,
   FinalizeUploadResponseBody,
-  GetIngestToggleInputBody,
   IngestToggleStateResponse,
   SetIngestToggleInputBody
 } from '../types';
@@ -85,15 +84,14 @@ export const getGetIngestionToggleUrl = () => {
   return `/api/v1/ai/ingestion/toggle`
 }
 
-export const getIngestionToggle = async (getIngestToggleInputBody: NonReadonly<GetIngestToggleInputBody>, options?: RequestInit): Promise<getIngestionToggleResponse> => {
+export const getIngestionToggle = async ( options?: RequestInit): Promise<getIngestionToggleResponse> => {
   
   return customFetch<getIngestionToggleResponse>(getGetIngestionToggleUrl(),
   {      
     ...options,
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      getIngestToggleInputBody,)
+    method: 'GET'
+    
+    
   }
 );}
   

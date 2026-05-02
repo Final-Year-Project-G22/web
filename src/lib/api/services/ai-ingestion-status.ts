@@ -7,45 +7,13 @@
  */
 import type {
   ErrorModel,
-  GetStatusByDocumentInputBody,
   IngestionStatusProjectionResponse,
-  ListStatusByAccountInputBody,
   ListStatusByAccountOutputBody,
-  ListStatusByUserInputBody,
-  ListStatusByUserOutputBody,
-  StreamStatusByDocumentInputBody,
-  StreamStatusInputBody
+  ListStatusByUserOutputBody
 } from '../types';
 
 import { customFetch } from '../mutator/custom-fetch';
 
-
-
-// https://stackoverflow.com/questions/49579094/typescript-conditional-types-filter-out-readonly-properties-pick-only-requir/49579497#49579497
-type IfEquals<X, Y, A = X, B = never> = (<T>() => T extends X ? 1 : 2) extends <
-T,
->() => T extends Y ? 1 : 2
-? A
-: B;
-
-type WritableKeys<T> = {
-[P in keyof T]-?: IfEquals<
-  { [Q in P]: T[P] },
-  { -readonly [Q in P]: T[P] },
-  P
->;
-}[keyof T];
-
-type UnionToIntersection<U> =
-  (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never;
-type DistributeReadOnlyOverUnions<T> = T extends any ? NonReadonly<T> : never;
-
-type Writable<T> = Pick<T, WritableKeys<T>>;
-type NonReadonly<T> = [T] extends [UnionToIntersection<T>] ? {
-  [P in keyof Writable<T>]: T[P] extends object
-    ? NonReadonly<NonNullable<T[P]>>
-    : T[P];
-} : DistributeReadOnlyOverUnions<T>;
 
 
 export type HTTPStatusCode1xx = 100 | 101 | 102 | 103;
@@ -86,16 +54,14 @@ export const getListIngestionStatusByAccountIDUrl = (accountId: string,) => {
   return `/api/v1/ai/ingestion/status/accounts/${accountId}`
 }
 
-export const listIngestionStatusByAccountID = async (accountId: string,
-    listStatusByAccountInputBody: NonReadonly<ListStatusByAccountInputBody>, options?: RequestInit): Promise<listIngestionStatusByAccountIDResponse> => {
+export const listIngestionStatusByAccountID = async (accountId: string, options?: RequestInit): Promise<listIngestionStatusByAccountIDResponse> => {
   
   return customFetch<listIngestionStatusByAccountIDResponse>(getListIngestionStatusByAccountIDUrl(accountId),
   {      
     ...options,
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      listStatusByAccountInputBody,)
+    method: 'GET'
+    
+    
   }
 );}
   
@@ -131,16 +97,14 @@ export const getStreamIngestionStatusByDocumentUrl = (documentId: string,) => {
   return `/api/v1/ai/ingestion/status/document/${documentId}/stream`
 }
 
-export const streamIngestionStatusByDocument = async (documentId: string,
-    streamStatusByDocumentInputBody: NonReadonly<StreamStatusByDocumentInputBody>, options?: RequestInit): Promise<streamIngestionStatusByDocumentResponse> => {
+export const streamIngestionStatusByDocument = async (documentId: string, options?: RequestInit): Promise<streamIngestionStatusByDocumentResponse> => {
   
   return customFetch<streamIngestionStatusByDocumentResponse>(getStreamIngestionStatusByDocumentUrl(documentId),
   {      
     ...options,
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      streamStatusByDocumentInputBody,)
+    method: 'GET'
+    
+    
   }
 );}
   
@@ -176,16 +140,14 @@ export const getGetIngestionStatusByDocumentIDUrl = (documentId: string,) => {
   return `/api/v1/ai/ingestion/status/documents/${documentId}`
 }
 
-export const getIngestionStatusByDocumentID = async (documentId: string,
-    getStatusByDocumentInputBody: NonReadonly<GetStatusByDocumentInputBody>, options?: RequestInit): Promise<getIngestionStatusByDocumentIDResponse> => {
+export const getIngestionStatusByDocumentID = async (documentId: string, options?: RequestInit): Promise<getIngestionStatusByDocumentIDResponse> => {
   
   return customFetch<getIngestionStatusByDocumentIDResponse>(getGetIngestionStatusByDocumentIDUrl(documentId),
   {      
     ...options,
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      getStatusByDocumentInputBody,)
+    method: 'GET'
+    
+    
   }
 );}
   
@@ -221,15 +183,14 @@ export const getStreamIngestionStatusUrl = () => {
   return `/api/v1/ai/ingestion/status/stream`
 }
 
-export const streamIngestionStatus = async (streamStatusInputBody: NonReadonly<StreamStatusInputBody>, options?: RequestInit): Promise<streamIngestionStatusResponse> => {
+export const streamIngestionStatus = async ( options?: RequestInit): Promise<streamIngestionStatusResponse> => {
   
   return customFetch<streamIngestionStatusResponse>(getStreamIngestionStatusUrl(),
   {      
     ...options,
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      streamStatusInputBody,)
+    method: 'GET'
+    
+    
   }
 );}
   
@@ -265,16 +226,14 @@ export const getListIngestionStatusByUserIDUrl = (userId: string,) => {
   return `/api/v1/ai/ingestion/status/users/${userId}`
 }
 
-export const listIngestionStatusByUserID = async (userId: string,
-    listStatusByUserInputBody: NonReadonly<ListStatusByUserInputBody>, options?: RequestInit): Promise<listIngestionStatusByUserIDResponse> => {
+export const listIngestionStatusByUserID = async (userId: string, options?: RequestInit): Promise<listIngestionStatusByUserIDResponse> => {
   
   return customFetch<listIngestionStatusByUserIDResponse>(getListIngestionStatusByUserIDUrl(userId),
   {      
     ...options,
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      listStatusByUserInputBody,)
+    method: 'GET'
+    
+    
   }
 );}
   

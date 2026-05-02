@@ -44,7 +44,10 @@ export function useAIStatusList(page = 1, pageSize = 50) {
     queryKey: [...QUERY_KEYS.status(accountId || ""), { page, pageSize }],
     queryFn: async () => {
       if (!accountId) return [];
-      const res = await listIngestionStatusByAccountID(accountId, { page, pageSize });
+      const qs = new URLSearchParams();
+      qs.set("limit", String(pageSize));
+      qs.set("offset", String((page - 1) * pageSize));
+      const res = await listIngestionStatusByAccountID(accountId + "?" + qs.toString());
       if (res.status !== 200) throw res.data;
       return res.data.projections ?? [];
     },
@@ -58,7 +61,7 @@ export function useAIIngestionToggle() {
   return useQuery<IngestToggleStateResponse, ErrorModel>({
     queryKey: QUERY_KEYS.toggle,
     queryFn: async () => {
-      const res = await getIngestionToggle({ accountId: "" }); // Global fallback if needed, or omit if backend ignores
+      const res = await getIngestionToggle();
       if (res.status !== 200) throw res.data;
       return res.data;
     },
@@ -84,7 +87,7 @@ export function useAIDeadEvents(page = 1, pageSize = 50) {
   return useQuery<DeadEventDTO[], ErrorModel>({
     queryKey: [...QUERY_KEYS.dlq, { page, pageSize }],
     queryFn: async () => {
-      const res = await listDeadEvents({ page, pageSize });
+      const res = await listDeadEvents();
       if (res.status !== 200) throw res.data;
       return res.data.events ?? [];
     },
@@ -110,7 +113,7 @@ export function useAIConversationsList(page = 1, pageSize = 20) {
   return useQuery<ConversationDTO[], ErrorModel>({
     queryKey: [...QUERY_KEYS.conversations, { page, pageSize }],
     queryFn: async () => {
-      const res = await listConversations({ page, pageSize });
+      const res = await listConversations();
       if (res.status !== 200) throw res.data;
       return res.data.sessions ?? [];
     },
@@ -154,7 +157,9 @@ export function useAskAI() {
     },
     onSuccess: (_, req) => {
       if (req.sessionId) {
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.conversation(req.sessionId) });
+        queryClient.invalidateQueries({
+          queryKey: QUERY_KEYS.conversation(req.sessionId),
+        });
       }
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.conversations });
     },
@@ -163,7 +168,6 @@ export function useAskAI() {
 
 export function useUploadDocument() {
   const queryClient = useQueryClient();
-  const accountId = useAuthStore((s) => s.account?.id);
 
   return useMutation<void, ErrorModel, File>({
     mutationFn: async (file) => {
@@ -207,7 +211,9 @@ export function useUploadDocument() {
       if (finalizeRes.status !== 200) throw finalizeRes.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.status(accountId || "") });
+      // Invalidate all AI status queries regardless of accountId to ensure
+      // the sidebar refreshes even if accountId wasn't hydrated yet.
+      queryClient.invalidateQueries({ queryKey: ["ai", "status"] });
     },
   });
 }

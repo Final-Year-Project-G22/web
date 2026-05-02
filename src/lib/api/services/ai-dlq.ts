@@ -8,8 +8,6 @@
 import type {
   DeadEventDTO,
   ErrorModel,
-  GetDeadEventInputBody,
-  ListDeadEventsInputBody,
   ListDeadEventsOutputBody,
   RedriveBatchInputBody,
   RedriveBatchOutputBody,
@@ -86,15 +84,14 @@ export const getListDeadEventsUrl = () => {
   return `/api/v1/ai/ingestion/dlq/events`
 }
 
-export const listDeadEvents = async (listDeadEventsInputBody: NonReadonly<ListDeadEventsInputBody>, options?: RequestInit): Promise<listDeadEventsResponse> => {
+export const listDeadEvents = async ( options?: RequestInit): Promise<listDeadEventsResponse> => {
   
   return customFetch<listDeadEventsResponse>(getListDeadEventsUrl(),
   {      
     ...options,
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      listDeadEventsInputBody,)
+    method: 'GET'
+    
+    
   }
 );}
   
@@ -174,16 +171,14 @@ export const getGetDeadEventUrl = (eventId: string,) => {
   return `/api/v1/ai/ingestion/dlq/events/${eventId}`
 }
 
-export const getDeadEvent = async (eventId: string,
-    getDeadEventInputBody: NonReadonly<GetDeadEventInputBody>, options?: RequestInit): Promise<getDeadEventResponse> => {
+export const getDeadEvent = async (eventId: string, options?: RequestInit): Promise<getDeadEventResponse> => {
   
   return customFetch<getDeadEventResponse>(getGetDeadEventUrl(eventId),
   {      
     ...options,
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      getDeadEventInputBody,)
+    method: 'GET'
+    
+    
   }
 );}
   
