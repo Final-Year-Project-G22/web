@@ -8,10 +8,10 @@
 import type {
   CreateUploadIntentRequest,
   CreateUploadIntentResponseBody,
+  DeleteDocumentResponseBody,
   ErrorModel,
   FinalizeUploadRequest,
   FinalizeUploadResponseBody,
-  GetIngestToggleInputBody,
   IngestToggleStateResponse,
   SetIngestToggleInputBody
 } from '../types';
@@ -55,6 +55,49 @@ export type HTTPStatusCode5xx = 500 | 501 | 502 | 503 | 504 | 505 | 507 | 511;
 export type HTTPStatusCodes = HTTPStatusCode1xx | HTTPStatusCode2xx | HTTPStatusCode3xx | HTTPStatusCode4xx | HTTPStatusCode5xx;
 
 /**
+ * Soft-deletes an ingestion document and its status projection.
+ * @summary Delete ingestion document
+ */
+export type deleteIngestionDocumentResponse200 = {
+  data: DeleteDocumentResponseBody
+  status: 200
+}
+
+export type deleteIngestionDocumentResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type deleteIngestionDocumentResponseSuccess = (deleteIngestionDocumentResponse200) & {
+  headers: Headers;
+};
+export type deleteIngestionDocumentResponseError = (deleteIngestionDocumentResponseDefault) & {
+  headers: Headers;
+};
+
+export type deleteIngestionDocumentResponse = (deleteIngestionDocumentResponseSuccess | deleteIngestionDocumentResponseError)
+
+export const getDeleteIngestionDocumentUrl = (documentId: string,) => {
+
+
+  
+
+  return `/api/v1/ai/ingestion/documents/${documentId}`
+}
+
+export const deleteIngestionDocument = async (documentId: string, options?: RequestInit): Promise<deleteIngestionDocumentResponse> => {
+  
+  return customFetch<deleteIngestionDocumentResponse>(getDeleteIngestionDocumentUrl(documentId),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+  
+
+/**
  * Get the current ingestion toggle state.
  * @summary Get ingestion toggle
  */
@@ -85,15 +128,14 @@ export const getGetIngestionToggleUrl = () => {
   return `/api/v1/ai/ingestion/toggle`
 }
 
-export const getIngestionToggle = async (getIngestToggleInputBody: NonReadonly<GetIngestToggleInputBody>, options?: RequestInit): Promise<getIngestionToggleResponse> => {
+export const getIngestionToggle = async ( options?: RequestInit): Promise<getIngestionToggleResponse> => {
   
   return customFetch<getIngestionToggleResponse>(getGetIngestionToggleUrl(),
   {      
     ...options,
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      getIngestToggleInputBody,)
+    method: 'GET'
+    
+    
   }
 );}
   

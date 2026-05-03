@@ -1,0 +1,199 @@
+"use client";
+
+import { FileText, Search, Trash2, UploadCloud } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { getErrorMessage } from "@/lib/utils";
+import { useAIStatusList, useDeleteDocument, useUploadDocument } from "../_services/ai.hook";
+import { DlqPanel } from "./dlq-panel";
+
+export function SidebarDocuments() {
+  const [searchDoc, setSearchDoc] = useState("");
+  const { data: documents, isLoading, isError } = useAIStatusList(1, 100);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadDoc = useUploadDocument();
+  const deleteDoc = useDeleteDocument();
+
+  const filteredDocs =
+    documents?.filter((doc) => doc.documentId.toLowerCase().includes(searchDoc.toLowerCase())) ||
+    [];
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      toast.promise(uploadDoc.mutateAsync(file), {
+        loading: "Uploading document...",
+        success: "Document uploaded successfully!",
+        error: (err) => `Failed to upload: ${getErrorMessage(err)}`,
+      });
+      e.target.value = "";
+    }
+  };
+
+  const handleDelete = (documentId: string) => {
+    toast.promise(deleteDoc.mutateAsync(documentId), {
+      loading: "Deleting document...",
+      success: "Document deleted",
+      error: (err) => `Failed to delete: ${getErrorMessage(err)}`,
+    });
+  };
+
+  return (
+    <div className="w-80 flex flex-col gap-4 border rounded-xl bg-card p-4 overflow-hidden hidden md:flex">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-sm tracking-wide text-muted-foreground">DOCUMENTS</h2>
+        <span className="text-xs text-muted-foreground">{documents?.length || 0} Files</span>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder="Search files..."
+          className="pl-8 bg-muted/50"
+          value={searchDoc}
+          onChange={(e) => setSearchDoc(e.target.value)}
+        />
+      </div>
+
+      {/* Dropzone */}
+      <button
+        type="button"
+        className="w-full border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/30 transition-colors"
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <UploadCloud className="h-6 w-6 text-muted-foreground mb-1" />
+        <p className="text-sm font-medium">Drop new PDF/DOCX here</p>
+      </button>
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept=".pdf,.doc,.docx"
+        onChange={handleFileChange}
+      />
+
+      {/* Top half: Document list */}
+      <div className="flex-1 min-h-0 flex flex-col">
+        <div className="flex flex-col gap-2 overflow-y-auto flex-1">
+          {isLoading && (
+            <p className="text-sm text-muted-foreground text-center py-4">Loading...</p>
+          )}
+          {isError && (
+            <p className="text-sm text-destructive text-center py-4">Failed to load documents</p>
+          )}
+          {!isLoading && !isError && filteredDocs.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-4">No documents found.</p>
+          )}
+          {filteredDocs.map((doc) => {
+            // Map pipeline stages to user-friendly labels and colours.
+            const STAGE_META: Record<
+              string,
+              { label: string; variant: "default" | "destructive" | "secondary"; className: string }
+            > = {
+              queued: {
+                label: "Queued",
+                variant: "secondary",
+                className:
+                  "bg-slate-100 text-slate-700 hover:bg-slate-100/80 border-transparent shadow-none",
+              },
+              validating: {
+                label: "Validating",
+                variant: "secondary",
+                className:
+                  "bg-blue-50 text-blue-700 hover:bg-blue-50/80 border-transparent shadow-none",
+              },
+              fetching: {
+                label: "Fetching",
+                variant: "secondary",
+                className:
+                  "bg-sky-50 text-sky-700 hover:bg-sky-50/80 border-transparent shadow-none",
+              },
+              chunking: {
+                label: "Chunking",
+                variant: "secondary",
+                className:
+                  "bg-orange-50 text-orange-700 hover:bg-orange-50/80 border-transparent shadow-none",
+              },
+              embedding: {
+                label: "Embedding",
+                variant: "secondary",
+                className:
+                  "bg-amber-50 text-amber-700 hover:bg-amber-50/80 border-transparent shadow-none",
+              },
+              indexing: {
+                label: "Indexing",
+                variant: "secondary",
+                className:
+                  "bg-yellow-50 text-yellow-700 hover:bg-yellow-50/80 border-transparent shadow-none",
+              },
+              completed: {
+                label: "Live",
+                variant: "default",
+                className:
+                  "bg-green-100 text-green-800 hover:bg-green-100/80 border-transparent shadow-none",
+              },
+              failed: { label: "Failed", variant: "destructive", className: "" },
+            };
+
+            const stage = doc.currentStage.toLowerCase();
+            const meta = STAGE_META[stage] ?? {
+              label: doc.currentStage || "Processing",
+              variant: "secondary" as const,
+              className: "",
+            };
+
+            return (
+              <div
+                key={doc.documentId}
+                className={`flex items-center justify-between p-3 rounded-lg border bg-card transition-colors ${meta.variant === "destructive" ? "border-red-200" : "hover:bg-muted/50"} cursor-pointer`}
+              >
+                <div className="flex items-start gap-3 overflow-hidden">
+                  <div className="mt-0.5 bg-red-100 p-1.5 rounded text-red-600">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div className="flex flex-col overflow-hidden max-w-[140px]">
+                    <span className="text-sm font-medium truncate" title={doc.documentId}>
+                      {doc.documentId}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(doc.startedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant={meta.variant} className={meta.className}>
+                    {meta.label}
+                  </Badge>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(doc.documentId);
+                    }}
+                    disabled={deleteDoc.isPending}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Bottom half: DLQ */}
+      <div className="flex-1 min-h-0 flex flex-col">
+        <DlqPanel />
+      </div>
+    </div>
+  );
+}

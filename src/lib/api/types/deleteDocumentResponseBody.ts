@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface GetDeadEventInputBody {
+export interface DeleteDocumentResponseBody {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
+  /** Whether deletion succeeded */
+  success: boolean;
 }

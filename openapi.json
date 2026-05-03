@@ -2278,24 +2278,6 @@
         "required": ["message"],
         "type": "object"
       },
-      "DeleteDocumentResponseBody": {
-        "additionalProperties": false,
-        "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": ["https://example.com/schemas/DeleteDocumentResponseBody.json"],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
-          "success": {
-            "description": "Whether deletion succeeded",
-            "type": "boolean"
-          }
-        },
-        "required": ["success"],
-        "type": "object"
-      },
       "DeleteGuideResponseBody": {
         "additionalProperties": false,
         "properties": {
@@ -13170,53 +13152,6 @@
         ],
         "summary": "Redrive single event",
         "tags": ["AI DLQ"]
-      }
-    },
-    "/api/v1/ai/ingestion/documents/{documentId}": {
-      "delete": {
-        "description": "Soft-deletes an ingestion document and its status projection.",
-        "operationId": "deleteIngestionDocument",
-        "parameters": [
-          {
-            "description": "Document ID",
-            "in": "path",
-            "name": "documentId",
-            "required": true,
-            "schema": {
-              "description": "Document ID",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeleteDocumentResponseBody"
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "default": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Error"
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Delete ingestion document",
-        "tags": ["AI Ingestion"]
       }
     },
     "/api/v1/ai/ingestion/status/accounts/{accountId}": {

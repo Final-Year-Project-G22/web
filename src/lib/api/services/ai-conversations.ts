@@ -6,44 +6,14 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-  ArchiveConversationInputBody,
   ArchiveConversationOutputBody,
   ErrorModel,
-  GetConversationInputBody,
   GetConversationOutputBody,
-  ListConversationsInputBody,
   ListConversationsOutputBody
 } from '../types';
 
 import { customFetch } from '../mutator/custom-fetch';
 
-
-
-// https://stackoverflow.com/questions/49579094/typescript-conditional-types-filter-out-readonly-properties-pick-only-requir/49579497#49579497
-type IfEquals<X, Y, A = X, B = never> = (<T>() => T extends X ? 1 : 2) extends <
-T,
->() => T extends Y ? 1 : 2
-? A
-: B;
-
-type WritableKeys<T> = {
-[P in keyof T]-?: IfEquals<
-  { [Q in P]: T[P] },
-  { -readonly [Q in P]: T[P] },
-  P
->;
-}[keyof T];
-
-type UnionToIntersection<U> =
-  (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never;
-type DistributeReadOnlyOverUnions<T> = T extends any ? NonReadonly<T> : never;
-
-type Writable<T> = Pick<T, WritableKeys<T>>;
-type NonReadonly<T> = [T] extends [UnionToIntersection<T>] ? {
-  [P in keyof Writable<T>]: T[P] extends object
-    ? NonReadonly<NonNullable<T[P]>>
-    : T[P];
-} : DistributeReadOnlyOverUnions<T>;
 
 
 export type HTTPStatusCode1xx = 100 | 101 | 102 | 103;
@@ -84,15 +54,14 @@ export const getListConversationsUrl = () => {
   return `/api/v1/ai/conversations`
 }
 
-export const listConversations = async (listConversationsInputBody: NonReadonly<ListConversationsInputBody>, options?: RequestInit): Promise<listConversationsResponse> => {
+export const listConversations = async ( options?: RequestInit): Promise<listConversationsResponse> => {
   
   return customFetch<listConversationsResponse>(getListConversationsUrl(),
   {      
     ...options,
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      listConversationsInputBody,)
+    method: 'GET'
+    
+    
   }
 );}
   
@@ -128,16 +97,14 @@ export const getArchiveConversationUrl = (sessionId: string,) => {
   return `/api/v1/ai/conversations/${sessionId}`
 }
 
-export const archiveConversation = async (sessionId: string,
-    archiveConversationInputBody: NonReadonly<ArchiveConversationInputBody>, options?: RequestInit): Promise<archiveConversationResponse> => {
+export const archiveConversation = async (sessionId: string, options?: RequestInit): Promise<archiveConversationResponse> => {
   
   return customFetch<archiveConversationResponse>(getArchiveConversationUrl(sessionId),
   {      
     ...options,
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      archiveConversationInputBody,)
+    method: 'DELETE'
+    
+    
   }
 );}
   
@@ -173,16 +140,14 @@ export const getGetConversationUrl = (sessionId: string,) => {
   return `/api/v1/ai/conversations/${sessionId}`
 }
 
-export const getConversation = async (sessionId: string,
-    getConversationInputBody: NonReadonly<GetConversationInputBody>, options?: RequestInit): Promise<getConversationResponse> => {
+export const getConversation = async (sessionId: string, options?: RequestInit): Promise<getConversationResponse> => {
   
   return customFetch<getConversationResponse>(getGetConversationUrl(sessionId),
   {      
     ...options,
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      getConversationInputBody,)
+    method: 'GET'
+    
+    
   }
 );}
   
