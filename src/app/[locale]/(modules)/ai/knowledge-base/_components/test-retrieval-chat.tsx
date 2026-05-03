@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useAskAI } from "../_services/ai.hook";
+import { useAskAIStream } from "../_services/ai.hook";
 
 // Helper internal type to hold chat pairs
 type ChatMessage = {
@@ -19,7 +19,8 @@ type ChatMessage = {
 export function TestRetrievalChat() {
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const { mutate: askAI, isPending } = useAskAI();
+  const [activeStreamId, setActiveStreamId] = useState<string | null>(null);
+  const { start: askAIStream, cancel, isStreaming } = useAskAIStream();
 
   const handleSend = () => {
     if (!chatInput.trim()) return;
@@ -30,34 +31,86 @@ export function TestRetrievalChat() {
       content: chatInput,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const assistantId = (Date.now() + 1).toString();
+    const assistantMessage: ChatMessage = {
+      id: assistantId,
+      role: "assistant",
+      content: "Thinking...",
+    };
+
+    setMessages((prev) => [...prev, userMessage, assistantMessage]);
     const currentQuery = chatInput;
     setChatInput("");
 
-    askAI(
-      { query: currentQuery, topK: 3 }, // Simplified settings payload for now
+    cancel();
+    setActiveStreamId(assistantId);
+
+    void askAIStream(
+      { query: currentQuery, topK: 3 },
       {
-        onSuccess: (data) => {
-          const aiMessage: ChatMessage = {
-            id: (Date.now() + 1).toString(),
-            role: "assistant",
-            content: data.answer || "No answer provided.",
-            source: data.citations?.[0]
-              ? {
-                  title: data.citations[0].title || `Chunk - ${data.citations[0].documentId}`,
-                  excerpt: `(Chunk ID: ${data.citations[0].chunkId})`,
-                }
-              : undefined,
-          };
-          setMessages((prev) => [...prev, aiMessage]);
+        onChunk: (_, state) => {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId
+                ? {
+                    ...msg,
+                    content: state.answer || "Thinking...",
+                  }
+                : msg
+            )
+          );
+        },
+        onCitations: (citations) => {
+          const top = citations[0];
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId
+                ? {
+                    ...msg,
+                    source: top
+                      ? {
+                          title: top.title || `Chunk - ${top.documentId}`,
+                          excerpt: `(Chunk ID: ${top.chunkId})`,
+                        }
+                      : undefined,
+                  }
+                : msg
+            )
+          );
+        },
+        onDone: (payload) => {
+          const top = payload.citations?.[0];
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId
+                ? {
+                    ...msg,
+                    content: payload.answer || "No answer provided.",
+                    source: top
+                      ? {
+                          title: top.title || `Chunk - ${top.documentId}`,
+                          excerpt: `(Chunk ID: ${top.chunkId})`,
+                        }
+                      : undefined,
+                  }
+                : msg
+            )
+          );
+          setActiveStreamId(null);
         },
         onError: () => {
-          const aiMessage: ChatMessage = {
-            id: (Date.now() + 1).toString(),
-            role: "assistant",
-            content: "*Error fetching response form AI.*",
-          };
-          setMessages((prev) => [...prev, aiMessage]);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId
+                ? {
+                    ...msg,
+                    content: "*Error fetching response form AI.*",
+                    source: undefined,
+                  }
+                : msg
+            )
+          );
+          setActiveStreamId(null);
         },
       }
     );
@@ -144,7 +197,7 @@ export function TestRetrievalChat() {
             </div>
           </div>
         ))}
-        {isPending && (
+        {isStreaming && !activeStreamId && (
           <div className="flex gap-3 max-w-[85%]">
             <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
               <Bot className="w-4 h-4 text-primary animate-pulse" />
@@ -163,7 +216,7 @@ export function TestRetrievalChat() {
             className="pr-12 py-6 rounded-xl border-muted bg-muted/20"
             placeholder="Ask a question..."
             value={chatInput}
-            disabled={isPending}
+            disabled={isStreaming}
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSend();
@@ -173,7 +226,7 @@ export function TestRetrievalChat() {
             size="icon"
             className="absolute right-2 h-8 w-8 rounded-lg"
             onClick={handleSend}
-            disabled={!chatInput.trim() || isPending}
+            disabled={!chatInput.trim() || isStreaming}
           >
             <Send className="h-4 w-4" />
           </Button>
