@@ -50,39 +50,34 @@ const KEYS = {
     [...KEYS.all, "detail", id, params] as const,
   steps: (id: string, params?: ListGuideStepsAdminParams) =>
     [...KEYS.all, "steps", id, params] as const,
-  categories: (params?: GetCategoryTreeAdminParams) => [...KEYS.all, "categories", params] as const,
+  categories: (params?: GetCategoryTreeAdminParams) =>
+    [...KEYS.all, "categories", ...(params ? [params] : [])] as const,
 };
 
 // ─── Read Hooks ───────────────────────────────────────────────
 
-export function useAdminGuideList(params?: ListGuidesAdminParams) {
-  return useQuery<AdminGuideCardDTO[], ErrorModel>({
-    queryKey: KEYS.list(params),
-    queryFn: async () => {
-      const res = await listGuidesAdmin(params);
-      if (res.status !== 200) throw res.data;
-      return res.data.guides ?? [];
-    },
-  });
-}
+type PaginatedGuides = {
+  guides: AdminGuideCardDTO[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+};
 
-export function useAdminGuidePaginationMeta(params?: ListGuidesAdminParams) {
-  return useQuery<
-    { page: number; pageSize: number; totalItems: number; totalPages: number },
-    ErrorModel
-  >({
+export function useAdminGuideList(params?: ListGuidesAdminParams) {
+  return useQuery<PaginatedGuides, ErrorModel>({
     queryKey: KEYS.list(params),
     queryFn: async () => {
       const res = await listGuidesAdmin(params);
       if (res.status !== 200) throw res.data;
       return {
+        guides: res.data.guides ?? [],
         page: res.data.page,
         pageSize: res.data.pageSize,
         totalItems: res.data.totalItems,
         totalPages: res.data.totalPages,
       };
     },
-    staleTime: 0,
   });
 }
 
@@ -99,33 +94,23 @@ export function useAdminGuideDetail(id: string | undefined, params?: GetGuideAdm
   });
 }
 
-export function useAdminGuideSteps(id: string | undefined, params?: ListGuideStepsAdminParams) {
-  return useQuery<AdminGuideStepDTO[], ErrorModel>({
-    queryKey: KEYS.steps(id ?? "", params),
-    queryFn: async () => {
-      if (!id) throw new Error("Guide ID is required");
-      const res = await listGuideStepsAdmin(id, params);
-      if (res.status !== 200) throw res.data;
-      return res.data.steps ?? [];
-    },
-    enabled: Boolean(id),
-  });
-}
+type PaginatedSteps = {
+  steps: AdminGuideStepDTO[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+};
 
-export function useAdminGuideStepsPaginationMeta(
-  id: string | undefined,
-  params?: ListGuideStepsAdminParams
-) {
-  return useQuery<
-    { page: number; pageSize: number; totalItems: number; totalPages: number },
-    ErrorModel
-  >({
+export function useAdminGuideSteps(id: string | undefined, params?: ListGuideStepsAdminParams) {
+  return useQuery<PaginatedSteps, ErrorModel>({
     queryKey: KEYS.steps(id ?? "", params),
     queryFn: async () => {
       if (!id) throw new Error("Guide ID is required");
       const res = await listGuideStepsAdmin(id, params);
       if (res.status !== 200) throw res.data;
       return {
+        steps: res.data.steps ?? [],
         page: res.data.page,
         pageSize: res.data.pageSize,
         totalItems: res.data.totalItems,
@@ -133,7 +118,6 @@ export function useAdminGuideStepsPaginationMeta(
       };
     },
     enabled: Boolean(id),
-    staleTime: 0,
   });
 }
 

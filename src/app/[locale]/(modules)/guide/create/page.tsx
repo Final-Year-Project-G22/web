@@ -2,6 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  useAdminGuideCategoryTree,
+  useCreateGuide,
+} from "@/app/[locale]/(modules)/guide/_services/guide.hook";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,17 +17,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getErrorMessage } from "@/lib/utils";
 
 export default function CreateGuidePage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
-  const [category, setCategory] = useState("legal-compliance");
+  const [categoryId, setCategoryId] = useState("");
+
+  const createGuide = useCreateGuide();
+  const categoriesQuery = useAdminGuideCategoryTree({ includeInactive: false });
+
+  const categories = categoriesQuery.data ?? [];
 
   function onCreateGuide(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fakeCreatedId = "guide-local-1";
-    router.push(`/guide/${fakeCreatedId}/edit?step=step-1`);
+    createGuide.mutate(
+      {
+        slug,
+        categoryId,
+        sortOrder: 1,
+        translations: [
+          { language: "en", name: title, description: "" },
+          { language: "am", name: title, description: "" },
+        ],
+      },
+      {
+        onSuccess: (data) => {
+          router.push(`/guide/${data.id}/edit?step=step-1`);
+        },
+      }
+    );
   }
 
   return (
@@ -60,23 +84,37 @@ export default function CreateGuidePage() {
 
             <div className="space-y-2">
               <Label>Category</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="legal-compliance">Legal & Compliance</SelectItem>
-                  <SelectItem value="tax">Tax</SelectItem>
-                  <SelectItem value="licensing">Licensing</SelectItem>
-                </SelectContent>
-              </Select>
+              {categoriesQuery.isLoading ? (
+                <p className="text-sm text-muted-foreground">Loading categories&hellip;</p>
+              ) : (
+                <Select value={categoryId} onValueChange={setCategoryId} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
+
+            {createGuide.isError ? (
+              <p className="text-sm text-destructive">
+                Failed to create: {getErrorMessage(createGuide.error)}
+              </p>
+            ) : null}
 
             <div className="flex items-center justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => router.push("/guide")}>
                 Cancel
               </Button>
-              <Button type="submit">Create & Continue</Button>
+              <Button type="submit" disabled={createGuide.isPending || !categoryId}>
+                {createGuide.isPending ? "Creating..." : "Create & Continue"}
+              </Button>
             </div>
           </form>
         </CardContent>
