@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ask } from "@/lib/api/services/ai-ask";
 import {
   archiveConversation,
@@ -20,12 +20,14 @@ import { listIngestionStatusByAccountID } from "@/lib/api/services/ai-ingestion-
 import type {
   AskRequest,
   AskResponseBody,
+  CitationDTO,
   ConversationDTO,
   DeadEventDTO,
   ErrorModel,
   GetConversationOutputBody,
   IngestionStatusProjectionResponse,
   IngestToggleStateResponse,
+  UsageDTO,
 } from "@/lib/api/types";
 import { env } from "@/lib/env";
 import { useAuthStore } from "@/store/auth.store";
@@ -33,6 +35,15 @@ import { useAuthStore } from "@/store/auth.store";
 /** SSE must hit the API origin when configured; Next rewrites can buffer streaming responses. */
 function getIngestionSseStreamUrl(): URL {
   const path = "/api/v1/ai/ingestion/status/stream";
+  if (env.NEXT_PUBLIC_API_URL) {
+    return new URL(path, env.NEXT_PUBLIC_API_URL);
+  }
+  return new URL(path, window.location.origin);
+}
+
+/** Ask-stream SSE must hit the API origin when configured; Next rewrites can buffer. */
+function getAskStreamSseUrl(): URL {
+  const path = "/api/v1/ai/ask/stream";
   if (env.NEXT_PUBLIC_API_URL) {
     return new URL(path, env.NEXT_PUBLIC_API_URL);
   }
@@ -442,6 +453,184 @@ export function useAskAI() {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.conversations });
     },
   });
+}
+
+type AskStreamChunkEventBody = {
+  text: string;
+};
+
+type AskStreamCitationEventBody = {
+  citations: CitationDTO[];
+};
+
+type AskStreamDoneEventBody = {
+  model: string;
+  latencyMs: number;
+  usage: UsageDTO;
+  sessionId: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type AskStreamErrorEventBody = {
+  code: string;
+  message: string;
+};
+
+type AskStreamState = {
+  answer: string;
+  citations: CitationDTO[] | null;
+};
+
+type AskStreamHandlers = {
+  onChunk?: (text: string, state: AskStreamState) => void;
+  onCitations?: (citations: CitationDTO[]) => void;
+  onDone?: (payload: AskStreamDoneEventBody & AskStreamState) => void;
+  onError?: (error: AskStreamErrorEventBody) => void;
+};
+
+export function useAskAIStream() {
+  const token = useAuthStore((s) => s.token);
+  const queryClient = useQueryClient();
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [error, setError] = useState<AskStreamErrorEventBody | null>(null);
+  const controllerRef = useRef<AbortController | null>(null);
+
+  const cancel = () => {
+    controllerRef.current?.abort();
+    controllerRef.current = null;
+    setIsStreaming(false);
+  };
+
+  const start = async (req: AskRequest, handlers: AskStreamHandlers = {}) => {
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+
+    setIsStreaming(true);
+    setError(null);
+
+    let answer = "";
+    let citations: CitationDTO[] | null = null;
+    let completed = false;
+    let receivedEvent = false;
+
+    try {
+      const headers: Record<string, string> = {
+        Accept: "text/event-stream",
+        "Content-Type": "application/json",
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(getAskStreamSseUrl().toString(), {
+        method: "POST",
+        headers,
+        credentials: "include",
+        body: JSON.stringify(req),
+        signal: controller.signal,
+      });
+
+      if (!response.ok || !response.body) {
+        const err = {
+          code: "stream_failed",
+          message: `Stream failed (${response.status})`,
+        };
+        setError(err);
+        handlers.onError?.(err);
+        setIsStreaming(false);
+        controllerRef.current = null;
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        buffer += chunk.replace(/\r\n/g, "\n");
+        const events = buffer.split("\n\n");
+        buffer = events.pop() ?? "";
+
+        for (const eventChunk of events) {
+          const event = parseSSEChunk(eventChunk);
+          if (!event?.data) continue;
+          receivedEvent = true;
+
+          try {
+            if (event.event === "chunk") {
+              const parsed = JSON.parse(event.data) as AskStreamChunkEventBody;
+              if (parsed?.text) {
+                answer += parsed.text;
+                handlers.onChunk?.(parsed.text, { answer, citations });
+              }
+            } else if (event.event === "citations") {
+              const parsed = JSON.parse(event.data) as AskStreamCitationEventBody;
+              citations = parsed.citations ?? [];
+              handlers.onCitations?.(citations);
+            } else if (event.event === "done") {
+              const parsed = JSON.parse(event.data) as AskStreamDoneEventBody;
+              completed = true;
+              handlers.onDone?.({ ...parsed, answer, citations });
+
+              const sessionId = parsed.sessionId || req.sessionId;
+              if (sessionId) {
+                queryClient.invalidateQueries({
+                  queryKey: QUERY_KEYS.conversation(sessionId),
+                });
+              }
+              queryClient.invalidateQueries({ queryKey: QUERY_KEYS.conversations });
+
+              setIsStreaming(false);
+              controllerRef.current = null;
+              return;
+            } else if (event.event === "error") {
+              const parsed = JSON.parse(event.data) as AskStreamErrorEventBody;
+              completed = true;
+              setError(parsed);
+              handlers.onError?.(parsed);
+              setIsStreaming(false);
+              controllerRef.current = null;
+              return;
+            }
+          } catch (err) {
+            console.warn("[SSE] Failed to parse ask stream event", err);
+          }
+        }
+      }
+      if (!completed) {
+        const parsed = {
+          code: "stream_closed",
+          message: receivedEvent
+            ? "Stream closed before completion"
+            : "No events received from stream",
+        };
+        setError(parsed);
+        handlers.onError?.(parsed);
+      }
+    } catch (err) {
+      if (!(err instanceof DOMException && err.name === "AbortError")) {
+        const parsed = {
+          code: "stream_error",
+          message: "Stream connection failed",
+        };
+        setError(parsed);
+        handlers.onError?.(parsed);
+      }
+    } finally {
+      if (controllerRef.current === controller) {
+        controllerRef.current = null;
+      }
+      setIsStreaming(false);
+    }
+  };
+
+  return { start, cancel, isStreaming, error };
 }
 
 export function useUploadDocument() {
