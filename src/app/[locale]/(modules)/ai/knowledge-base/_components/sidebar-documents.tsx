@@ -85,37 +85,66 @@ export function SidebarDocuments() {
           <p className="text-sm text-muted-foreground text-center py-4">No documents found.</p>
         )}
         {filteredDocs.map((doc) => {
-          // Parse status visually based on currentStage and isTerminal
-          let displayStatus = "Processing";
-          let badgeVariant: "default" | "destructive" | "secondary" = "secondary";
-          let extraClassName = "";
+          // Map pipeline stages to user-friendly labels and colours.
+          const STAGE_META: Record<
+            string,
+            { label: string; variant: "default" | "destructive" | "secondary"; className: string }
+          > = {
+            queued: {
+              label: "Queued",
+              variant: "secondary",
+              className:
+                "bg-slate-100 text-slate-700 hover:bg-slate-100/80 border-transparent shadow-none",
+            },
+            validating: {
+              label: "Validating",
+              variant: "secondary",
+              className:
+                "bg-blue-50 text-blue-700 hover:bg-blue-50/80 border-transparent shadow-none",
+            },
+            fetching: {
+              label: "Fetching",
+              variant: "secondary",
+              className: "bg-sky-50 text-sky-700 hover:bg-sky-50/80 border-transparent shadow-none",
+            },
+            chunking: {
+              label: "Chunking",
+              variant: "secondary",
+              className:
+                "bg-orange-50 text-orange-700 hover:bg-orange-50/80 border-transparent shadow-none",
+            },
+            embedding: {
+              label: "Embedding",
+              variant: "secondary",
+              className:
+                "bg-amber-50 text-amber-700 hover:bg-amber-50/80 border-transparent shadow-none",
+            },
+            indexing: {
+              label: "Indexing",
+              variant: "secondary",
+              className:
+                "bg-yellow-50 text-yellow-700 hover:bg-yellow-50/80 border-transparent shadow-none",
+            },
+            completed: {
+              label: "Live",
+              variant: "default",
+              className:
+                "bg-green-100 text-green-800 hover:bg-green-100/80 border-transparent shadow-none",
+            },
+            failed: { label: "Failed", variant: "destructive", className: "" },
+          };
 
-          if (doc.isTerminal) {
-            if (doc.currentStage === "FAILED") {
-              displayStatus = "Failed";
-              badgeVariant = "destructive";
-            } else {
-              displayStatus = "Live";
-              badgeVariant = "default";
-              extraClassName =
-                "bg-green-100 text-green-800 hover:bg-green-100/80 border-transparent shadow-none";
-            }
-          } else {
-            // Usually Extraction, Chunking, Vectorization stages mappings
-            if (doc.currentStage === "CHUNKING") {
-              displayStatus = "Chunking";
-              badgeVariant = "destructive";
-              extraClassName =
-                "bg-orange-100 text-orange-800 hover:bg-orange-100/80 border-transparent shadow-none";
-            } else {
-              displayStatus = doc.currentStage || "Uploaded";
-            }
-          }
+          const stage = doc.currentStage.toLowerCase();
+          const meta = STAGE_META[stage] ?? {
+            label: doc.currentStage || "Processing",
+            variant: "secondary" as const,
+            className: "",
+          };
 
           return (
             <div
               key={doc.documentId}
-              className={`flex items-center justify-between p-3 rounded-lg border bg-card transition-colors ${badgeVariant === "destructive" ? "border-red-200" : "hover:bg-muted/50"} cursor-pointer`}
+              className={`flex items-center justify-between p-3 rounded-lg border bg-card transition-colors ${meta.variant === "destructive" ? "border-red-200" : "hover:bg-muted/50"} cursor-pointer`}
             >
               <div className="flex items-start gap-3 overflow-hidden">
                 <div className="mt-0.5 bg-red-100 p-1.5 rounded text-red-600">
@@ -131,8 +160,8 @@ export function SidebarDocuments() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant={badgeVariant} className={extraClassName}>
-                  {displayStatus}
+                <Badge variant={meta.variant} className={meta.className}>
+                  {meta.label}
                 </Badge>
                 <Button
                   size="icon"
