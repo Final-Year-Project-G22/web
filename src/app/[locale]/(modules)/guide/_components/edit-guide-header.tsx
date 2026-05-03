@@ -12,8 +12,11 @@ import {
 import { Button } from "@/components/ui/button";
 
 export function EditGuideHeader() {
+  const language = useGuideEditor((state) => state.editorLanguage);
   const title = useGuideEditor(
-    (state) => state.meta.translations?.find((t) => t.language === "en")?.name ?? "Untitled Guide"
+    (state) =>
+      state.meta.translations?.find((translation) => translation.language === language)?.name ??
+      "Untitled Guide"
   );
 
   return (

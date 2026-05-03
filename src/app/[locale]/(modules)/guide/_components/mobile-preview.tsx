@@ -7,6 +7,7 @@ import { useGuideEditor } from "@/app/[locale]/(modules)/guide/_stores/guide-edi
 import { Button } from "@/components/ui/button";
 
 export function MobilePreview() {
+  const language = useGuideEditor((state) => state.editorLanguage);
   const meta = useGuideEditor((state) => state.meta);
   const steps = useGuideEditor((state) => state.steps);
   const activeStepId = useGuideEditor((state) => state.activeStepId);
@@ -17,9 +18,10 @@ export function MobilePreview() {
   );
 
   const guideTitle =
-    meta.translations?.find((translation) => translation.language === "en")?.name ?? "Guide";
+    meta.translations?.find((translation) => translation.language === language)?.name ?? "Guide";
   const stepTitle =
-    activeStep?.translations?.find((translation) => translation.language === "en")?.title ?? "Step";
+    activeStep?.translations?.find((translation) => translation.language === language)?.title ??
+    "Step";
 
   return (
     <aside className="hidden border-l bg-[#f9fafb] p-6 xl:block">
