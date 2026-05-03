@@ -12,6 +12,8 @@ import type {
   CreateCategoryResponseBody,
   DeleteCategoryResponseBody,
   ErrorModel,
+  GetCategoryTreeAdminParams,
+  GuideCategoryTreeAdminResponseBody,
   RemoveCategoryConditionResponseBody,
   SetCategoryTranslationsRequest,
   SetCategoryTranslationsResponseBody,
@@ -138,6 +140,56 @@ export const removeCategoryCondition = async (condId: string, options?: RequestI
   {      
     ...options,
     method: 'DELETE'
+    
+    
+  }
+);}
+  
+
+/**
+ * Retrieves guide categories tree for admin management.
+ * @summary Get admin guide category tree
+ */
+export type getCategoryTreeAdminResponse200 = {
+  data: GuideCategoryTreeAdminResponseBody
+  status: 200
+}
+
+export type getCategoryTreeAdminResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type getCategoryTreeAdminResponseSuccess = (getCategoryTreeAdminResponse200) & {
+  headers: Headers;
+};
+export type getCategoryTreeAdminResponseError = (getCategoryTreeAdminResponseDefault) & {
+  headers: Headers;
+};
+
+export type getCategoryTreeAdminResponse = (getCategoryTreeAdminResponseSuccess | getCategoryTreeAdminResponseError)
+
+export const getGetCategoryTreeAdminUrl = (params?: GetCategoryTreeAdminParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/admin/guides/categories/tree?${stringifiedParams}` : `/api/v1/admin/guides/categories/tree`
+}
+
+export const getCategoryTreeAdmin = async (params?: GetCategoryTreeAdminParams, options?: RequestInit): Promise<getCategoryTreeAdminResponse> => {
+  
+  return customFetch<getCategoryTreeAdminResponse>(getGetCategoryTreeAdminUrl(params),
+  {      
+    ...options,
+    method: 'GET'
     
     
   }
