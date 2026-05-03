@@ -33,12 +33,6 @@ export default function EditGuidePage() {
     }
   }, [activeStepId, router, searchParams, setActiveStepId, steps]);
 
-  useEffect(() => {
-    const current = searchParams.get("step");
-    if (current === activeStepId || !activeStepId) return;
-    router.replace(`?step=${activeStepId}`);
-  }, [activeStepId, router, searchParams]);
-
   return (
     <div className="-m-8 flex h-[calc(100vh-4rem)] flex-col bg-[#f4f5f7]">
       <EditGuideHeader />

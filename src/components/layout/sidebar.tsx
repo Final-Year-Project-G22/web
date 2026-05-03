@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BookOpen,
   BrainCircuit,
   ChevronRight,
   Folder,
@@ -75,6 +76,13 @@ function NavLink({ href, icon, label }: { href: string; icon?: ReactNode; label:
 }
 
 export function Sidebar() {
+  const pathname = usePathname();
+  const [guideOpen, setGuideOpen] = useState(pathname.startsWith("/guide"));
+
+  useEffect(() => {
+    if (pathname.startsWith("/guide")) setGuideOpen(true);
+  }, [pathname]);
+
   return (
     <aside className="w-64 border-r bg-background h-screen flex flex-col hidden md:flex sticky top-0">
       <div className="p-6">
@@ -105,15 +113,50 @@ export function Sidebar() {
                   <span className="text-sm">MSME Users</span>
                 </div>
               </Link>
-              <Link
-                href="#"
-                className="flex items-center justify-between px-2 py-2 text-muted-foreground hover:bg-accent rounded-md transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <Users className="w-4 h-4" />
-                  <span className="text-sm">Formalization Guide</span>
-                </div>
-              </Link>
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => setGuideOpen((prev) => !prev)}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-md px-2 py-2 text-muted-foreground transition-colors hover:bg-accent",
+                    pathname.startsWith("/guide") ? "bg-primary/5 font-medium text-primary" : ""
+                  )}
+                  aria-expanded={guideOpen}
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span className="text-sm flex-1 text-left">Guide Module</span>
+                  <ChevronRight
+                    className={cn("h-3 w-3 transition-transform", guideOpen ? "rotate-90" : "")}
+                  />
+                </button>
+
+                {guideOpen ? (
+                  <div className="ml-6 space-y-1 border-l pl-3">
+                    <Link
+                      href="/guide"
+                      className={cn(
+                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
+                        pathname === "/guide"
+                          ? "bg-primary/5 font-medium text-primary"
+                          : "text-muted-foreground hover:bg-accent"
+                      )}
+                    >
+                      Guides
+                    </Link>
+                    <Link
+                      href="/guide/categories"
+                      className={cn(
+                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
+                        pathname === "/guide/categories"
+                          ? "bg-primary/5 font-medium text-primary"
+                          : "text-muted-foreground hover:bg-accent"
+                      )}
+                    >
+                      Categories
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
               <NavLink
                 href="/ai/knowledge-base"
                 icon={<BrainCircuit className="w-4 h-4" />}

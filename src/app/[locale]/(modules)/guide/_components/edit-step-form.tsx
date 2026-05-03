@@ -5,6 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { Image, Italic, Link2, List, ListOrdered, Pilcrow, Quote, Underline } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useGuideEditor } from "@/app/[locale]/(modules)/guide/_stores/guide-editor.store";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -13,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
+import type { CreateGuideTranslation } from "@/lib/api/types/createGuideTranslation";
 
 const categoryOptions = [
   { value: "legal-compliance", label: "Legal & Compliance" },
@@ -30,6 +32,8 @@ export function EditStepForm() {
   const meta = useGuideEditor((state) => state.meta);
   const steps = useGuideEditor((state) => state.steps);
   const activeStepId = useGuideEditor((state) => state.activeStepId);
+  const language = useGuideEditor((state) => state.editorLanguage);
+  const setEditorLanguage = useGuideEditor((state) => state.setEditorLanguage);
   const updateMeta = useGuideEditor((state) => state.updateMeta);
   const updateStep = useGuideEditor((state) => state.updateStep);
 
@@ -38,9 +42,72 @@ export function EditStepForm() {
     [activeStepId, steps]
   );
 
+  const activeTranslation = useMemo(
+    () => activeStep?.translations?.find((translation) => translation.language === language),
+    [activeStep, language]
+  );
+
+  const activeGuideTranslation = useMemo(
+    () => meta.translations?.find((translation) => translation.language === language),
+    [language, meta.translations]
+  );
+
+  function upsertGuideTranslation(languageCode: string, updates: Partial<CreateGuideTranslation>) {
+    const currentTranslations = meta.translations ?? [];
+    const nextTranslations = [...currentTranslations];
+    const index = nextTranslations.findIndex(
+      (translation) => translation.language === languageCode
+    );
+
+    if (index >= 0) {
+      const previous = nextTranslations[index];
+      nextTranslations[index] = {
+        ...previous,
+        ...updates,
+      };
+    } else {
+      nextTranslations.push({
+        language: languageCode,
+        name: updates.name ?? "Untitled Guide",
+        description: updates.description ?? "",
+      });
+    }
+
+    updateMeta({ translations: nextTranslations });
+  }
+
+  function upsertStepTranslation(
+    stepId: string,
+    lang: string,
+    updates: Partial<{ title: string; description: string; detailedContent: unknown }>
+  ) {
+    if (!activeStep) return;
+    const currentTranslations = activeStep.translations ?? [];
+    const nextTranslations = [...currentTranslations];
+    const index = nextTranslations.findIndex((translation) => translation.language === lang);
+
+    if (index >= 0) {
+      const previous = nextTranslations[index];
+      nextTranslations[index] = {
+        ...previous,
+        ...updates,
+      };
+    } else {
+      nextTranslations.push({
+        language: lang,
+        title: updates.title ?? activeTranslation?.title ?? "Untitled Step",
+        description: updates.description ?? activeTranslation?.description ?? "",
+        detailedContent: updates.detailedContent,
+      });
+    }
+
+    updateStep(stepId, { translations: nextTranslations });
+  }
+
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [StarterKit],
-    content: activeStep?.ui.summary ?? "",
+    content: activeTranslation?.description ?? activeStep?.ui.summary ?? "",
     editorProps: {
       attributes: {
         class:
@@ -49,11 +116,16 @@ export function EditStepForm() {
     },
     onUpdate: ({ editor: tiptapEditor }) => {
       if (!activeStep) return;
+      const html = tiptapEditor.getHTML();
       updateStep(activeStep.clientId, {
         ui: {
           ...activeStep.ui,
-          summary: tiptapEditor.getHTML(),
+          summary: html,
         },
+      });
+      upsertStepTranslation(activeStep.clientId, language, {
+        description: html,
+        detailedContent: activeStep.ui,
       });
     },
   });
@@ -61,11 +133,11 @@ export function EditStepForm() {
   useEffect(() => {
     if (!editor || !activeStep) return;
     const current = editor.getHTML();
-    const incoming = activeStep.ui.summary;
+    const incoming = activeTranslation?.description ?? activeStep.ui.summary;
     if (current !== incoming) {
       editor.commands.setContent(incoming, { emitUpdate: false });
     }
-  }, [activeStep, editor]);
+  }, [activeStep, activeTranslation, editor]);
 
   if (!activeStep) {
     return <div className="p-6 text-sm text-muted-foreground">No step selected.</div>;
@@ -73,7 +145,20 @@ export function EditStepForm() {
 
   return (
     <section className="space-y-4 p-6">
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-4">
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">Language</p>
+          <Select value={language} onValueChange={setEditorLanguage}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select language" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="am">Amharic</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground">Category</p>
           <Select
@@ -137,6 +222,49 @@ export function EditStepForm() {
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">
+            Guide Name ({language.toUpperCase()})
+          </p>
+          <Input
+            value={activeGuideTranslation?.name ?? ""}
+            onChange={(e) => {
+              upsertGuideTranslation(language, { name: e.target.value });
+            }}
+            placeholder="Enter guide name"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">
+            Guide Description ({language.toUpperCase()})
+          </p>
+          <Input
+            value={activeGuideTranslation?.description ?? ""}
+            onChange={(e) => {
+              upsertGuideTranslation(language, { description: e.target.value });
+            }}
+            placeholder="Enter short guide description"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground">
+          Step Title ({language.toUpperCase()})
+        </p>
+        <Input
+          value={activeTranslation?.title ?? ""}
+          onChange={(e) => {
+            upsertStepTranslation(activeStep.clientId, language, {
+              title: e.target.value,
+            });
+          }}
+          placeholder="Enter step title"
+        />
       </div>
 
       <div className="flex flex-wrap items-center gap-1 rounded-lg border bg-white p-2">

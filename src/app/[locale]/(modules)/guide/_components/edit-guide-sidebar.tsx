@@ -1,14 +1,26 @@
 "use client";
 
 import { GripVertical, Plus } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useGuideEditor } from "@/app/[locale]/(modules)/guide/_stores/guide-editor.store";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function EditGuideSidebar() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const steps = useGuideEditor((state) => state.steps);
   const activeStepId = useGuideEditor((state) => state.activeStepId);
+  const language = useGuideEditor((state) => state.editorLanguage);
   const setActiveStepId = useGuideEditor((state) => state.setActiveStepId);
+
+  function onSelectStep(stepId: string) {
+    setActiveStepId(stepId);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("step", stepId);
+    router.replace(`${pathname}?${params.toString()}`);
+  }
 
   return (
     <aside className="w-full border-r bg-white lg:w-72">
@@ -21,7 +33,7 @@ export function EditGuideSidebar() {
         <div className="space-y-2 p-3">
           {steps.map((step, idx) => {
             const title =
-              step.translations?.find((translation) => translation.language === "en")?.title ??
+              step.translations?.find((translation) => translation.language === language)?.title ??
               `Step ${idx + 1}`;
             const isActive = activeStepId === step.clientId;
 
@@ -29,7 +41,7 @@ export function EditGuideSidebar() {
               <button
                 type="button"
                 key={step.clientId}
-                onClick={() => setActiveStepId(step.clientId)}
+                onClick={() => onSelectStep(step.clientId)}
                 className={`flex w-full items-start gap-2 rounded-lg border px-3 py-3 text-left transition ${
                   isActive
                     ? "border-blue-500 bg-blue-50"

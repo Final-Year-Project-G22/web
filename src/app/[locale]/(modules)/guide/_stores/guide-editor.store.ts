@@ -32,7 +32,9 @@ export type GuideEditorState = {
   meta: GuideEditorMeta;
   steps: GuideEditorStep[];
   activeStepId: string;
+  editorLanguage: string;
   setActiveStepId: (stepId: string) => void;
+  setEditorLanguage: (language: string) => void;
   updateStep: (stepId: string, updates: Partial<GuideEditorStep>) => void;
   updateMeta: (updates: Partial<GuideEditorMeta>) => void;
 };
@@ -73,6 +75,7 @@ export const guideEditorInitialState: {
   meta: GuideEditorMeta;
   steps: GuideEditorStep[];
   activeStepId: string;
+  editorLanguage: string;
 } = {
   meta: {
     categoryId: "legal-compliance",
@@ -86,6 +89,7 @@ export const guideEditorInitialState: {
     ),
   },
   activeStepId: "step-1",
+  editorLanguage: "en",
   steps: [
     {
       clientId: "step-1",
@@ -308,7 +312,9 @@ export const createGuideEditorStore = () =>
     meta: guideEditorInitialState.meta,
     steps: guideEditorInitialState.steps,
     activeStepId: guideEditorInitialState.activeStepId,
+    editorLanguage: guideEditorInitialState.editorLanguage,
     setActiveStepId: (stepId) => set({ activeStepId: stepId }),
+    setEditorLanguage: (language) => set({ editorLanguage: language }),
     updateStep: (stepId, updates) =>
       set((state) => ({
         steps: state.steps.map((step) =>
