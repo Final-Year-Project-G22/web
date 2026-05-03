@@ -503,13 +503,6 @@ export function useAskAIStream() {
   };
 
   const start = async (req: AskRequest, handlers: AskStreamHandlers = {}) => {
-    if (!token) {
-      const err = { code: "auth_missing", message: "Missing auth token" };
-      setError(err);
-      handlers.onError?.(err);
-      return;
-    }
-
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
@@ -519,15 +512,21 @@ export function useAskAIStream() {
 
     let answer = "";
     let citations: CitationDTO[] | null = null;
+    let completed = false;
+    let receivedEvent = false;
 
     try {
+      const headers: Record<string, string> = {
+        Accept: "text/event-stream",
+        "Content-Type": "application/json",
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       const response = await fetch(getAskStreamSseUrl().toString(), {
         method: "POST",
-        headers: {
-          Accept: "text/event-stream",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         credentials: "include",
         body: JSON.stringify(req),
         signal: controller.signal,
@@ -553,13 +552,15 @@ export function useAskAIStream() {
         const { done, value } = await reader.read();
         if (done) break;
 
-        buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, "\n");
+        const chunk = decoder.decode(value, { stream: true });
+        buffer += chunk.replace(/\r\n/g, "\n");
         const events = buffer.split("\n\n");
         buffer = events.pop() ?? "";
 
         for (const eventChunk of events) {
           const event = parseSSEChunk(eventChunk);
           if (!event?.data) continue;
+          receivedEvent = true;
 
           try {
             if (event.event === "chunk") {
@@ -574,6 +575,7 @@ export function useAskAIStream() {
               handlers.onCitations?.(citations);
             } else if (event.event === "done") {
               const parsed = JSON.parse(event.data) as AskStreamDoneEventBody;
+              completed = true;
               handlers.onDone?.({ ...parsed, answer, citations });
 
               const sessionId = parsed.sessionId || req.sessionId;
@@ -589,6 +591,7 @@ export function useAskAIStream() {
               return;
             } else if (event.event === "error") {
               const parsed = JSON.parse(event.data) as AskStreamErrorEventBody;
+              completed = true;
               setError(parsed);
               handlers.onError?.(parsed);
               setIsStreaming(false);
@@ -599,6 +602,16 @@ export function useAskAIStream() {
             console.warn("[SSE] Failed to parse ask stream event", err);
           }
         }
+      }
+      if (!completed) {
+        const parsed = {
+          code: "stream_closed",
+          message: receivedEvent
+            ? "Stream closed before completion"
+            : "No events received from stream",
+        };
+        setError(parsed);
+        handlers.onError?.(parsed);
       }
     } catch (err) {
       if (!(err instanceof DOMException && err.name === "AbortError")) {
