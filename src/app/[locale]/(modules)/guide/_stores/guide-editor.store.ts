@@ -37,6 +37,7 @@ export type GuideEditorState = {
   setEditorLanguage: (language: string) => void;
   updateStep: (stepId: string, updates: Partial<GuideEditorStep>) => void;
   updateMeta: (updates: Partial<GuideEditorMeta>) => void;
+  hydrate: (meta: GuideEditorMeta, steps: GuideEditorStep[]) => void;
 };
 
 const createGuideTranslations = (name: string, description: string): CreateGuideTranslation[] => [
@@ -328,6 +329,15 @@ export const createGuideEditorStore = () =>
           ...updates,
         },
       })),
+    hydrate: (meta, steps) =>
+      set((state) => {
+        const stepExists = steps.some((s) => s.clientId === state.activeStepId);
+        return {
+          meta,
+          steps,
+          activeStepId: stepExists ? state.activeStepId : (steps[0]?.clientId ?? ""),
+        };
+      }),
   }));
 
 const guideEditorStore = createGuideEditorStore();

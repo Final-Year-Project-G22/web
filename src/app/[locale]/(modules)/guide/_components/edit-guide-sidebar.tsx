@@ -1,7 +1,8 @@
 "use client";
 
 import { GripVertical, Plus } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCreateStep } from "@/app/[locale]/(modules)/guide/_services/guide.hook";
 import { useGuideEditor } from "@/app/[locale]/(modules)/guide/_stores/guide-editor.store";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -10,10 +11,36 @@ export function EditGuideSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { id: guideId } = useParams<{ id: string }>();
+
   const steps = useGuideEditor((state) => state.steps);
   const activeStepId = useGuideEditor((state) => state.activeStepId);
   const language = useGuideEditor((state) => state.editorLanguage);
   const setActiveStepId = useGuideEditor((state) => state.setActiveStepId);
+
+  const createStep = useCreateStep();
+
+  function onAddStep() {
+    const nextOrder = steps.length + 1;
+    createStep.mutate(
+      {
+        guideId,
+        slug: `step-${nextOrder}`,
+        stepType: "document",
+        sortOrder: nextOrder,
+        isOptional: false,
+        translations: [
+          { language: "en", title: `Step ${nextOrder}`, description: "" },
+          { language: "am", title: `Step ${nextOrder}`, description: "" },
+        ],
+      },
+      {
+        onSuccess: (data) => {
+          onSelectStep(data.id);
+        },
+      }
+    );
+  }
 
   function onSelectStep(stepId: string) {
     setActiveStepId(stepId);
@@ -57,9 +84,14 @@ export function EditGuideSidebar() {
             );
           })}
 
-          <Button variant="outline" className="mt-3 w-full border-dashed">
+          <Button
+            variant="outline"
+            className="mt-3 w-full border-dashed"
+            onClick={onAddStep}
+            disabled={createStep.isPending}
+          >
             <Plus className="mr-2 h-4 w-4" />
-            Add Step
+            {createStep.isPending ? "Adding..." : "Add Step"}
           </Button>
         </div>
       </ScrollArea>

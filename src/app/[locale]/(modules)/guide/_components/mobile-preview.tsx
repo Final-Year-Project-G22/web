@@ -1,7 +1,6 @@
 "use client";
 
 import { CheckCircle2, Circle, Smartphone } from "lucide-react";
-import Image from "next/image";
 import { useMemo } from "react";
 import { useGuideEditor } from "@/app/[locale]/(modules)/guide/_stores/guide-editor.store";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,12 @@ export function MobilePreview() {
   const stepTitle =
     activeStep?.translations?.find((translation) => translation.language === language)?.title ??
     "Step";
+
+  const summaryHtml = activeStep?.ui.summary ?? "";
+  const proTip = activeStep?.ui.proTip ?? "";
+  const checklistTitle = activeStep?.ui.checklistTitle ?? "Checklist";
+  const checklist = activeStep?.ui.checklist ?? [];
+  const imageUrl = activeStep?.ui.imageUrl ?? "";
 
   return (
     <aside className="hidden border-l bg-[#f9fafb] p-6 xl:block">
@@ -45,33 +50,51 @@ export function MobilePreview() {
               </p>
               <h3 className="text-xl font-semibold leading-tight text-slate-900">{stepTitle}</h3>
 
-              <p className="text-sm leading-6 text-slate-600">
-                {activeStep?.ui.summary.replace(/<[^>]*>?/gm, "")}
-              </p>
+              {/* Render HTML summary with Tailwind prose styling */}
+              <div
+                className="prose prose-sm prose-zinc max-w-none text-sm leading-6 text-slate-600"
+                // biome-ignore lint/security/noDangerouslySetInnerHtml: HTML from controlled tiptap editor
+                dangerouslySetInnerHTML={{ __html: summaryHtml }}
+              />
 
-              <div className="rounded-md border-l-4 border-blue-500 bg-blue-50 px-3 py-2 text-xs text-blue-700">
-                Pro Tip: {activeStep?.ui.proTip}
-              </div>
+              {/* Pro Tip - only if present */}
+              {proTip && (
+                <div className="rounded-md border-l-4 border-blue-500 bg-blue-50 px-3 py-2 text-xs text-blue-700">
+                  <span className="font-semibold">Pro Tip:</span> {proTip}
+                </div>
+              )}
 
-              <div>
-                <p className="mb-2 text-sm font-semibold text-slate-900">Checklist:</p>
-                <ul className="space-y-2">
-                  {activeStep?.ui.checklist.map((item) => (
-                    <li key={item.id} className="flex items-start gap-2 text-sm text-slate-600">
-                      {item.isCompleted ? (
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" />
-                      ) : (
-                        <Circle className="mt-0.5 h-4 w-4 text-slate-400" />
-                      )}
-                      <span>{item.label}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {/* Checklist - only if items exist */}
+              {checklist.length > 0 && (
+                <div>
+                  <p className="mb-2 text-sm font-semibold text-slate-900">{checklistTitle}</p>
+                  <ul className="space-y-2">
+                    {checklist.map((item) => (
+                      <li key={item.id} className="flex items-start gap-2 text-sm text-slate-600">
+                        {item.isCompleted ? (
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" />
+                        ) : (
+                          <Circle className="mt-0.5 h-4 w-4 text-slate-400" />
+                        )}
+                        <span>{item.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-              <div className="relative h-24 w-full overflow-hidden rounded-lg bg-slate-100">
-                <Image src="/window.svg" alt={stepTitle} fill className="object-cover p-2" />
-              </div>
+              {/* Image - only if URL present */}
+              {imageUrl && (
+                <div className="relative h-32 w-full overflow-hidden rounded-lg bg-slate-100">
+                  <img
+                    // biome-ignore lint/performance/noImgElement: external user-provided URL
+                    // eslint-disable-next-line @next/next/no-img-element
+                    src={imageUrl}
+                    alt={stepTitle}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
 
               <Button className="w-full">Mark Step Complete</Button>
             </div>
