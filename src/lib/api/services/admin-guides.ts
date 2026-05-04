@@ -12,6 +12,10 @@ import type {
   CreateGuideResponseBody,
   DeleteGuideResponseBody,
   ErrorModel,
+  GetGuideAdminParams,
+  GetGuideAdminResponseBody,
+  ListGuidesAdminParams,
+  ListGuidesAdminResponseBody,
   RemoveGuideConditionResponseBody,
   SetGuideTranslationsRequest,
   SetGuideTranslationsResponseBody,
@@ -56,6 +60,56 @@ export type HTTPStatusCode3xx = 300 | 301 | 302 | 303 | 304 | 305 | 307 | 308;
 export type HTTPStatusCode4xx = 400 | 401 | 402 | 403 | 404 | 405 | 406 | 407 | 408 | 409 | 410 | 411 | 412 | 413 | 414 | 415 | 416 | 417 | 418 | 419 | 420 | 421 | 422 | 423 | 424 | 426 | 428 | 429 | 431 | 451;
 export type HTTPStatusCode5xx = 500 | 501 | 502 | 503 | 504 | 505 | 507 | 511;
 export type HTTPStatusCodes = HTTPStatusCode1xx | HTTPStatusCode2xx | HTTPStatusCode3xx | HTTPStatusCode4xx | HTTPStatusCode5xx;
+
+/**
+ * Lists guides for admin management with pagination and filters.
+ * @summary List guides
+ */
+export type listGuidesAdminResponse200 = {
+  data: ListGuidesAdminResponseBody
+  status: 200
+}
+
+export type listGuidesAdminResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type listGuidesAdminResponseSuccess = (listGuidesAdminResponse200) & {
+  headers: Headers;
+};
+export type listGuidesAdminResponseError = (listGuidesAdminResponseDefault) & {
+  headers: Headers;
+};
+
+export type listGuidesAdminResponse = (listGuidesAdminResponseSuccess | listGuidesAdminResponseError)
+
+export const getListGuidesAdminUrl = (params?: ListGuidesAdminParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/admin/guides?${stringifiedParams}` : `/api/v1/admin/guides`
+}
+
+export const listGuidesAdmin = async (params?: ListGuidesAdminParams, options?: RequestInit): Promise<listGuidesAdminResponse> => {
+  
+  return customFetch<listGuidesAdminResponse>(getListGuidesAdminUrl(params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+  
 
 /**
  * Creates a new guide with optional translations and conditions.
@@ -181,6 +235,58 @@ export const deleteGuide = async (id: string, options?: RequestInit): Promise<de
   {      
     ...options,
     method: 'DELETE'
+    
+    
+  }
+);}
+  
+
+/**
+ * Retrieves guide detail for admin editor.
+ * @summary Get guide detail
+ */
+export type getGuideAdminResponse200 = {
+  data: GetGuideAdminResponseBody
+  status: 200
+}
+
+export type getGuideAdminResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type getGuideAdminResponseSuccess = (getGuideAdminResponse200) & {
+  headers: Headers;
+};
+export type getGuideAdminResponseError = (getGuideAdminResponseDefault) & {
+  headers: Headers;
+};
+
+export type getGuideAdminResponse = (getGuideAdminResponseSuccess | getGuideAdminResponseError)
+
+export const getGetGuideAdminUrl = (id: string,
+    params?: GetGuideAdminParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/admin/guides/${id}?${stringifiedParams}` : `/api/v1/admin/guides/${id}`
+}
+
+export const getGuideAdmin = async (id: string,
+    params?: GetGuideAdminParams, options?: RequestInit): Promise<getGuideAdminResponse> => {
+  
+  return customFetch<getGuideAdminResponse>(getGetGuideAdminUrl(id,params),
+  {      
+    ...options,
+    method: 'GET'
     
     
   }

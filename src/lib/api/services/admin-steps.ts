@@ -16,6 +16,8 @@ import type {
   ErrorModel,
   GetStepVersionsParams,
   GetStepVersionsResponseBody,
+  ListGuideStepsAdminParams,
+  ListGuideStepsAdminResponseBody,
   RemoveStepConditionResponseBody,
   RemoveStepDependencyResponseBody,
   ReorderStepsRequest,
@@ -553,6 +555,58 @@ export const revertStepToVersion = async (id: string,
   {      
     ...options,
     method: 'POST'
+    
+    
+  }
+);}
+  
+
+/**
+ * Lists steps of a guide for admin editor.
+ * @summary List guide steps
+ */
+export type listGuideStepsAdminResponse200 = {
+  data: ListGuideStepsAdminResponseBody
+  status: 200
+}
+
+export type listGuideStepsAdminResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type listGuideStepsAdminResponseSuccess = (listGuideStepsAdminResponse200) & {
+  headers: Headers;
+};
+export type listGuideStepsAdminResponseError = (listGuideStepsAdminResponseDefault) & {
+  headers: Headers;
+};
+
+export type listGuideStepsAdminResponse = (listGuideStepsAdminResponseSuccess | listGuideStepsAdminResponseError)
+
+export const getListGuideStepsAdminUrl = (id: string,
+    params?: ListGuideStepsAdminParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/admin/guides/${id}/steps?${stringifiedParams}` : `/api/v1/admin/guides/${id}/steps`
+}
+
+export const listGuideStepsAdmin = async (id: string,
+    params?: ListGuideStepsAdminParams, options?: RequestInit): Promise<listGuideStepsAdminResponse> => {
+  
+  return customFetch<listGuideStepsAdminResponse>(getListGuideStepsAdminUrl(id,params),
+  {      
+    ...options,
+    method: 'GET'
     
     
   }
