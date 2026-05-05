@@ -7,8 +7,14 @@
  */
 
 export interface ThreadDTO {
+  /** Author avatar URL */
+  authorAvatarUrl?: string;
+  /** Author display name */
+  authorDisplayName: string;
   /** Author account ID */
   authorId: string;
+  /** Author username */
+  authorUsername?: string;
   /** Category ID */
   categoryId: string;
   /** Created timestamp */
@@ -21,6 +27,8 @@ export interface ThreadDTO {
   isPinned: boolean;
   /** Last activity timestamp */
   lastActivityAt?: string;
+  /** Parent thread ID for sub-threads */
+  parentThreadId?: string;
   /** Reply count */
   replyCount: number;
   /** Share count */

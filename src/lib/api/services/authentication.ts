@@ -10,6 +10,8 @@ import type {
   AdminRegisterResponseBody,
   AdminUpdateRolesOutputBody,
   AdminUpdateRolesRequest,
+  CompleteAdminPasswordResetOutputBody,
+  CompleteAdminPasswordResetRequest,
   ErrorModel,
   GetCurrentUserResponseBody,
   LoginRequest,
@@ -102,6 +104,50 @@ export const registerAdmin = async (adminRegisterRequest: NonReadonly<AdminRegis
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
       adminRegisterRequest,)
+  }
+);}
+  
+
+/**
+ * Validates the reset token and sets a new password for the admin account.
+ * @summary Complete admin password reset
+ */
+export type completeAdminPasswordResetResponse200 = {
+  data: CompleteAdminPasswordResetOutputBody
+  status: 200
+}
+
+export type completeAdminPasswordResetResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type completeAdminPasswordResetResponseSuccess = (completeAdminPasswordResetResponse200) & {
+  headers: Headers;
+};
+export type completeAdminPasswordResetResponseError = (completeAdminPasswordResetResponseDefault) & {
+  headers: Headers;
+};
+
+export type completeAdminPasswordResetResponse = (completeAdminPasswordResetResponseSuccess | completeAdminPasswordResetResponseError)
+
+export const getCompleteAdminPasswordResetUrl = () => {
+
+
+  
+
+  return `/api/v1/auth/admin/reset-password`
+}
+
+export const completeAdminPasswordReset = async (completeAdminPasswordResetRequest: NonReadonly<CompleteAdminPasswordResetRequest>, options?: RequestInit): Promise<completeAdminPasswordResetResponse> => {
+  
+  return customFetch<completeAdminPasswordResetResponse>(getCompleteAdminPasswordResetUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      completeAdminPasswordResetRequest,)
   }
 );}
   

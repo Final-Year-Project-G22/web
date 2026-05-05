@@ -7,12 +7,12 @@
  */
 
 export type CreateCommunityThreadBody = {
+  /** Pre-uploaded attachment IDs (comma-separated) */
+  attachmentIds?: Blob | string;
   /** Category ID */
   categoryId: Blob | string;
   /** Thread description */
   description: Blob | string;
-  /** Optional attachment file */
-  file?: Blob;
   /** Initial post content */
   initialPostContent: Blob | string;
   /** Parent thread ID for sub-threads */

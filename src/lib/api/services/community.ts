@@ -17,6 +17,7 @@ import type {
   FollowResponseBody,
   GetCategoryResponseBody,
   GetThreadResponseBody,
+  ListAllCommunityThreadsParams,
   ListCategoriesResponseBody,
   ListCommunityCategoriesParams,
   ListCommunityPostsParams,
@@ -37,7 +38,9 @@ import type {
   ReportUserResponseBody,
   SearchCommunityThreadsParams,
   UpdateCommunityPostBody,
-  UpdatePostResponseBody
+  UpdatePostResponseBody,
+  UploadAttachmentsBody,
+  UploadAttachmentsResponseBody
 } from '../types';
 
 import { customFetch } from '../mutator/custom-fetch';
@@ -77,6 +80,95 @@ export type HTTPStatusCode3xx = 300 | 301 | 302 | 303 | 304 | 305 | 307 | 308;
 export type HTTPStatusCode4xx = 400 | 401 | 402 | 403 | 404 | 405 | 406 | 407 | 408 | 409 | 410 | 411 | 412 | 413 | 414 | 415 | 416 | 417 | 418 | 419 | 420 | 421 | 422 | 423 | 424 | 426 | 428 | 429 | 431 | 451;
 export type HTTPStatusCode5xx = 500 | 501 | 502 | 503 | 504 | 505 | 507 | 511;
 export type HTTPStatusCodes = HTTPStatusCode1xx | HTTPStatusCode2xx | HTTPStatusCode3xx | HTTPStatusCode4xx | HTTPStatusCode5xx;
+
+/**
+ * Uploads one or more attachments for later use when creating/updating posts.
+ * @summary Upload attachments
+ */
+export type uploadAttachmentsResponse200 = {
+  data: UploadAttachmentsResponseBody
+  status: 200
+}
+
+export type uploadAttachmentsResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type uploadAttachmentsResponseSuccess = (uploadAttachmentsResponse200) & {
+  headers: Headers;
+};
+export type uploadAttachmentsResponseError = (uploadAttachmentsResponseDefault) & {
+  headers: Headers;
+};
+
+export type uploadAttachmentsResponse = (uploadAttachmentsResponseSuccess | uploadAttachmentsResponseError)
+
+export const getUploadAttachmentsUrl = () => {
+
+
+  
+
+  return `/api/v1/community/attachments`
+}
+
+export const uploadAttachments = async (uploadAttachmentsBody: UploadAttachmentsBody, options?: RequestInit): Promise<uploadAttachmentsResponse> => {
+    const formData = new FormData();
+uploadAttachmentsBody.files.forEach(value => formData.append(`files`, value));
+
+  return customFetch<uploadAttachmentsResponse>(getUploadAttachmentsUrl(),
+  {      
+    ...options,
+    method: 'POST'
+    ,
+    body: 
+      formData,
+  }
+);}
+  
+
+/**
+ * Deletes a pending attachment that was uploaded but not yet linked to a post.
+ * @summary Delete orphan attachment
+ */
+export type deleteOrphanAttachmentResponse200 = {
+  data: DeletePostResponseBody
+  status: 200
+}
+
+export type deleteOrphanAttachmentResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type deleteOrphanAttachmentResponseSuccess = (deleteOrphanAttachmentResponse200) & {
+  headers: Headers;
+};
+export type deleteOrphanAttachmentResponseError = (deleteOrphanAttachmentResponseDefault) & {
+  headers: Headers;
+};
+
+export type deleteOrphanAttachmentResponse = (deleteOrphanAttachmentResponseSuccess | deleteOrphanAttachmentResponseError)
+
+export const getDeleteOrphanAttachmentUrl = (id: string,) => {
+
+
+  
+
+  return `/api/v1/community/attachments/${id}`
+}
+
+export const deleteOrphanAttachment = async (id: string, options?: RequestInit): Promise<deleteOrphanAttachmentResponse> => {
+  
+  return customFetch<deleteOrphanAttachmentResponse>(getDeleteOrphanAttachmentUrl(id),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+  
 
 /**
  * Lists active community categories.
@@ -486,11 +578,14 @@ export const getUpdateCommunityPostUrl = (id: string,) => {
 export const updateCommunityPost = async (id: string,
     updateCommunityPostBody: UpdateCommunityPostBody, options?: RequestInit): Promise<updateCommunityPostResponse> => {
     const formData = new FormData();
-formData.append(`content`, updateCommunityPostBody.content instanceof Blob ? updateCommunityPostBody.content : new Blob([updateCommunityPostBody.content], { type: 'text/plain' }));
-if(updateCommunityPostBody.file !== undefined) {
- formData.append(`file`, updateCommunityPostBody.file);
+if(updateCommunityPostBody.attachmentIds !== undefined) {
+ formData.append(`attachmentIds`, updateCommunityPostBody.attachmentIds instanceof Blob ? updateCommunityPostBody.attachmentIds : new Blob([updateCommunityPostBody.attachmentIds], { type: 'text/plain' }));
  }
-formData.append(`removeAttachment`, updateCommunityPostBody.removeAttachment.toString())
+formData.append(`content`, updateCommunityPostBody.content instanceof Blob ? updateCommunityPostBody.content : new Blob([updateCommunityPostBody.content], { type: 'text/plain' }));
+formData.append(`removeAllAttachments`, updateCommunityPostBody.removeAllAttachments.toString())
+if(updateCommunityPostBody.removeAttachmentIds !== undefined) {
+ formData.append(`removeAttachmentIds`, updateCommunityPostBody.removeAttachmentIds instanceof Blob ? updateCommunityPostBody.removeAttachmentIds : new Blob([updateCommunityPostBody.removeAttachmentIds], { type: 'text/plain' }));
+ }
 
   return customFetch<updateCommunityPostResponse>(getUpdateCommunityPostUrl(id),
   {      
@@ -499,6 +594,56 @@ formData.append(`removeAttachment`, updateCommunityPostBody.removeAttachment.toS
     ,
     body: 
       formData,
+  }
+);}
+  
+
+/**
+ * Lists discussion threads across categories, including sub-threads.
+ * @summary List discussion threads
+ */
+export type listAllCommunityThreadsResponse200 = {
+  data: ListThreadsResponseBody
+  status: 200
+}
+
+export type listAllCommunityThreadsResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type listAllCommunityThreadsResponseSuccess = (listAllCommunityThreadsResponse200) & {
+  headers: Headers;
+};
+export type listAllCommunityThreadsResponseError = (listAllCommunityThreadsResponseDefault) & {
+  headers: Headers;
+};
+
+export type listAllCommunityThreadsResponse = (listAllCommunityThreadsResponseSuccess | listAllCommunityThreadsResponseError)
+
+export const getListAllCommunityThreadsUrl = (params?: ListAllCommunityThreadsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/community/threads?${stringifiedParams}` : `/api/v1/community/threads`
+}
+
+export const listAllCommunityThreads = async (params?: ListAllCommunityThreadsParams, options?: RequestInit): Promise<listAllCommunityThreadsResponse> => {
+  
+  return customFetch<listAllCommunityThreadsResponse>(getListAllCommunityThreadsUrl(params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
   }
 );}
   
@@ -536,11 +681,11 @@ export const getCreateCommunityThreadUrl = () => {
 
 export const createCommunityThread = async (createCommunityThreadBody: CreateCommunityThreadBody, options?: RequestInit): Promise<createCommunityThreadResponse> => {
     const formData = new FormData();
+if(createCommunityThreadBody.attachmentIds !== undefined) {
+ formData.append(`attachmentIds`, createCommunityThreadBody.attachmentIds instanceof Blob ? createCommunityThreadBody.attachmentIds : new Blob([createCommunityThreadBody.attachmentIds], { type: 'text/plain' }));
+ }
 formData.append(`categoryId`, createCommunityThreadBody.categoryId instanceof Blob ? createCommunityThreadBody.categoryId : new Blob([createCommunityThreadBody.categoryId], { type: 'text/plain' }));
 formData.append(`description`, createCommunityThreadBody.description instanceof Blob ? createCommunityThreadBody.description : new Blob([createCommunityThreadBody.description], { type: 'text/plain' }));
-if(createCommunityThreadBody.file !== undefined) {
- formData.append(`file`, createCommunityThreadBody.file);
- }
 formData.append(`initialPostContent`, createCommunityThreadBody.initialPostContent instanceof Blob ? createCommunityThreadBody.initialPostContent : new Blob([createCommunityThreadBody.initialPostContent], { type: 'text/plain' }));
 if(createCommunityThreadBody.parentThreadId !== undefined) {
  formData.append(`parentThreadId`, createCommunityThreadBody.parentThreadId instanceof Blob ? createCommunityThreadBody.parentThreadId : new Blob([createCommunityThreadBody.parentThreadId], { type: 'text/plain' }));
@@ -914,10 +1059,10 @@ export const getCreateCommunityPostUrl = (id: string,) => {
 export const createCommunityPost = async (id: string,
     createCommunityPostBody: CreateCommunityPostBody, options?: RequestInit): Promise<createCommunityPostResponse> => {
     const formData = new FormData();
-formData.append(`content`, createCommunityPostBody.content instanceof Blob ? createCommunityPostBody.content : new Blob([createCommunityPostBody.content], { type: 'text/plain' }));
-if(createCommunityPostBody.file !== undefined) {
- formData.append(`file`, createCommunityPostBody.file);
+if(createCommunityPostBody.attachmentIds !== undefined) {
+ formData.append(`attachmentIds`, createCommunityPostBody.attachmentIds instanceof Blob ? createCommunityPostBody.attachmentIds : new Blob([createCommunityPostBody.attachmentIds], { type: 'text/plain' }));
  }
+formData.append(`content`, createCommunityPostBody.content instanceof Blob ? createCommunityPostBody.content : new Blob([createCommunityPostBody.content], { type: 'text/plain' }));
 
   return customFetch<createCommunityPostResponse>(getCreateCommunityPostUrl(id),
   {      
@@ -966,10 +1111,10 @@ export const replyCommunityPost = async (id: string,
     postId: string,
     replyCommunityPostBody: ReplyCommunityPostBody, options?: RequestInit): Promise<replyCommunityPostResponse> => {
     const formData = new FormData();
-formData.append(`content`, replyCommunityPostBody.content instanceof Blob ? replyCommunityPostBody.content : new Blob([replyCommunityPostBody.content], { type: 'text/plain' }));
-if(replyCommunityPostBody.file !== undefined) {
- formData.append(`file`, replyCommunityPostBody.file);
+if(replyCommunityPostBody.attachmentIds !== undefined) {
+ formData.append(`attachmentIds`, replyCommunityPostBody.attachmentIds instanceof Blob ? replyCommunityPostBody.attachmentIds : new Blob([replyCommunityPostBody.attachmentIds], { type: 'text/plain' }));
  }
+formData.append(`content`, replyCommunityPostBody.content instanceof Blob ? replyCommunityPostBody.content : new Blob([replyCommunityPostBody.content], { type: 'text/plain' }));
 
   return customFetch<replyCommunityPostResponse>(getReplyCommunityPostUrl(id,postId),
   {      

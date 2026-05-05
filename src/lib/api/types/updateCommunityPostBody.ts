@@ -7,10 +7,12 @@
  */
 
 export type UpdateCommunityPostBody = {
+  /** New attachment IDs to link (comma-separated) */
+  attachmentIds?: Blob | string;
   /** Post content */
   content: Blob | string;
-  /** Optional replacement attachment file */
-  file?: Blob;
-  /** Remove existing attachment */
-  removeAttachment: boolean;
+  /** Remove all attachments */
+  removeAllAttachments: boolean;
+  /** Attachment IDs to unlink (comma-separated) */
+  removeAttachmentIds?: Blob | string;
 };

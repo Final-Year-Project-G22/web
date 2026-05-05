@@ -5,14 +5,22 @@
  * Backend API for the Adisu platform
  * OpenAPI spec version: 1.0.0
  */
+import type { AttachmentDTO } from './attachmentDTO';
 
 export interface PostDTO {
-  /** Attachment type */
-  attachmentType?: string;
-  /** Attachment URL */
-  attachmentUrl?: string;
+  /**
+   * Post attachments
+   * @nullable
+   */
+  attachments?: AttachmentDTO[] | null;
+  /** Author avatar URL */
+  authorAvatarUrl?: string;
+  /** Author display name */
+  authorDisplayName: string;
   /** Author account ID */
   authorId: string;
+  /** Author username */
+  authorUsername?: string;
   /** Post content */
   content: string;
   /** Created timestamp */
