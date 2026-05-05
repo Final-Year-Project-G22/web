@@ -34,16 +34,6 @@ const STAGE_COLORS: Record<string, string> = {
   completed: "bg-green-500",
 };
 
-const STAGE_BG: Record<string, string> = {
-  queued: "bg-slate-50",
-  validating: "bg-blue-50",
-  fetching: "bg-sky-50",
-  chunking: "bg-orange-50",
-  embedding: "bg-amber-50",
-  indexing: "bg-yellow-50",
-  completed: "bg-green-50",
-};
-
 export function PipelineProgress() {
   const { data: documents } = useAIStatusList(1, 100);
 
@@ -72,7 +62,7 @@ export function PipelineProgress() {
         <div className="flex items-center gap-4">
           {/* Pipeline stages */}
           <div className="flex-1 flex items-center gap-0">
-            {STAGES.map((stage, i) => {
+            {STAGES.map((stage) => {
               const n = counts[stage];
               const isActive = n > 0 && stage !== "completed";
               const width = hasDocs
