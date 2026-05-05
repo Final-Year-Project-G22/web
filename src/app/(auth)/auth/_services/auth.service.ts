@@ -1,4 +1,5 @@
 import {
+  getCurrentUser,
   login as loginApi,
   logout as logoutApi,
   registerAdmin as registerAdminApi,
@@ -13,7 +14,18 @@ export const AuthService = {
 
     const data: LoginResponseBody = res.data;
 
-    useAuthStore.getState().setSession(data.accessToken, data.user, data.account, data.expiresAt);
+    // Fetch full profile to get roles and permissions
+    const meRes = await getCurrentUser();
+    let roles = null;
+    let permissions = null;
+    if (meRes.status === 200) {
+      roles = meRes.data.roles ?? null;
+      permissions = meRes.data.permissions ?? null;
+    }
+
+    useAuthStore
+      .getState()
+      .setSession(data.accessToken, data.user, data.account, data.expiresAt, roles, permissions);
     const maxAgeSec = Math.max(
       0,
       Math.floor((new Date(data.expiresAt).getTime() - Date.now()) / 1000)
@@ -38,5 +50,17 @@ export const AuthService = {
     if (res.status !== 200) throw res.data;
 
     return res.data;
+  },
+
+  /** Fetch current user and update roles/permissions in store */
+  hydrate: async () => {
+    const res = await getCurrentUser();
+    if (res.status === 200) {
+      useAuthStore
+        .getState()
+        .setRolesAndPermissions(res.data.roles ?? null, res.data.permissions ?? null);
+      return res.data;
+    }
+    return null;
   },
 };

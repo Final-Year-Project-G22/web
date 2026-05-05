@@ -7,10 +7,6 @@
  */
 
 export interface PostContentDTO {
-  /** Attachment type */
-  attachmentType?: string;
-  /** Attachment URL */
-  attachmentUrl?: string;
   /** Author first name */
   authorFirstName: string;
   /** Author account ID */

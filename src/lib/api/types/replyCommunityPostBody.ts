@@ -7,8 +7,8 @@
  */
 
 export type ReplyCommunityPostBody = {
+  /** Pre-uploaded attachment IDs (comma-separated) */
+  attachmentIds?: Blob | string;
   /** Post content */
   content: Blob | string;
-  /** Optional attachment file */
-  file?: Blob;
 };

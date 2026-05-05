@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Moon,
   Settings,
+  Shield,
   ShieldAlert,
   ShieldCheck,
   TriangleAlert,
@@ -18,6 +19,7 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { hasPermission } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 
 function DarkModeSwitch() {
@@ -162,6 +164,9 @@ export function Sidebar() {
                 icon={<BrainCircuit className="w-4 h-4" />}
                 label="AI Knowledge"
               />
+              {hasPermission("iam.admin.list") && (
+                <NavLink href="/admin" icon={<Shield className="w-4 h-4" />} label="Admin Hub" />
+              )}
               <Link
                 href="#"
                 className="flex items-center gap-3 px-2 py-2 text-muted-foreground hover:bg-accent rounded-md transition-colors"
