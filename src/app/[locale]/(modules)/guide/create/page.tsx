@@ -44,7 +44,7 @@ export default function CreateGuidePage() {
       },
       {
         onSuccess: (data) => {
-          router.push(`/guide/${data.id}/edit?step=step-1`);
+          router.push(`/guide/${data.id}`);
         },
       }
     );

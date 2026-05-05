@@ -1,7 +1,8 @@
 "use client";
 
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef } from "react";
+import { toast } from "sonner";
 import { EditGuideHeader } from "@/app/[locale]/(modules)/guide/_components/edit-guide-header";
 import { EditGuideSidebar } from "@/app/[locale]/(modules)/guide/_components/edit-guide-sidebar";
 import { EditStepForm } from "@/app/[locale]/(modules)/guide/_components/edit-step-form";
@@ -9,55 +10,23 @@ import { MobilePreview } from "@/app/[locale]/(modules)/guide/_components/mobile
 import {
   useAdminGuideDetail,
   useAdminGuideSteps,
+  useCreateStep,
+  useDeleteStep,
+  useReorderSteps,
+  useUpdateStep,
 } from "@/app/[locale]/(modules)/guide/_services/guide.hook";
-import type {
-  GuideEditorMeta,
-  GuideEditorStep,
-} from "@/app/[locale]/(modules)/guide/_stores/guide-editor.store";
-import { useGuideEditor } from "@/app/[locale]/(modules)/guide/_stores/guide-editor.store";
+import {
+  editGuideStore,
+  isDraft,
+  useEditGuide,
+} from "@/app/[locale]/(modules)/guide/_stores/edit-guide.store";
+import type { GuideEditorStep } from "@/app/[locale]/(modules)/guide/_stores/guide-editor.types";
+import type { AdminGuideStepDTO } from "@/lib/api/types";
 import { getErrorMessage } from "@/lib/utils";
 
-function mapApiToEditorMeta(detail: {
-  id: string;
-  categoryId: string;
-  slug: string;
-  sortOrder: number;
-  icon?: string;
-  translations?: { language: string; name: string; description?: string }[] | null;
-  conditions?: unknown[] | null;
-}): GuideEditorMeta {
-  return {
-    categoryId: detail.categoryId,
-    slug: detail.slug,
-    sortOrder: detail.sortOrder,
-    icon: detail.icon,
-    conditions: null,
-    translations: (detail.translations ?? []).map((t) => ({
-      language: t.language,
-      name: t.name,
-      description: t.description ?? "",
-    })),
-  };
-}
+// ─── Data mapping ──────────────────────────────────────────────
 
-function mapApiToEditorSteps(
-  apiSteps: {
-    id: string;
-    guideId: string;
-    slug: string;
-    stepType: string;
-    sortOrder: number;
-    isOptional: boolean;
-    estimatedTime?: number;
-    difficultyLevel?: number;
-    feeEstimate?: number;
-    effectiveDate?: string;
-    expiryDate?: string;
-    translations?:
-      | { language: string; title: string; description?: string; detailedContent?: unknown }[]
-      | null;
-  }[]
-): GuideEditorStep[] {
+function mapApiToEditorSteps(apiSteps: AdminGuideStepDTO[]): GuideEditorStep[] {
   return apiSteps.map((s) => {
     const richContent =
       (s.translations?.find((t) => t.language === "en")?.detailedContent as Record<
@@ -68,8 +37,8 @@ function mapApiToEditorSteps(
       clientId: s.id,
       guideId: s.guideId,
       slug: s.slug,
-      stepType: s.stepType,
       sortOrder: s.sortOrder,
+      stepType: s.stepType,
       isOptional: s.isOptional,
       estimatedTime: s.estimatedTime,
       difficultyLevel: s.difficultyLevel,
@@ -98,43 +67,268 @@ function mapApiToEditorSteps(
   });
 }
 
+function createEmptyStep(guideId: string, order: number): GuideEditorStep {
+  const clientId = `new-${Date.now()}`;
+  const ts = Date.now();
+  return {
+    clientId,
+    guideId,
+    slug: `step-${ts}`,
+    sortOrder: 0,
+    stepType: "startup",
+    isOptional: false,
+    estimatedTime: 15,
+    difficultyLevel: 1,
+    feeEstimate: 0,
+    conditions: null,
+    dependencies: null,
+    effectiveDate: undefined,
+    expiryDate: undefined,
+    translations: [
+      { language: "en", title: `Step ${order}`, description: "" },
+      { language: "am", title: `Step ${order}`, description: "" },
+    ],
+    ui: {
+      summary: "",
+      proTip: "",
+      checklistTitle: "",
+      checklist: [],
+      imageUrl: "",
+    },
+  };
+}
+
+function buildCreatePayload(step: GuideEditorStep) {
+  return {
+    guideId: step.guideId,
+    slug: step.slug,
+    sortOrder: 0,
+    stepType: step.stepType,
+    isOptional: step.isOptional ?? false,
+    estimatedTime: step.estimatedTime,
+    difficultyLevel: step.difficultyLevel,
+    feeEstimate: step.feeEstimate,
+    effectiveDate: step.effectiveDate,
+    expiryDate: step.expiryDate,
+    translations: (step.translations ?? []).map((t) => ({
+      language: t.language,
+      title: t.title,
+      description: t.description,
+      detailedContent: t.detailedContent,
+    })),
+  };
+}
+
+function buildUpdatePayload(step: GuideEditorStep) {
+  return {
+    slug: step.slug,
+    stepType: step.stepType,
+    isOptional: step.isOptional ?? false,
+    estimatedTime: step.estimatedTime,
+    difficultyLevel: step.difficultyLevel,
+    feeEstimate: step.feeEstimate,
+    translations: (step.translations ?? []).map((t) => ({
+      language: t.language,
+      title: t.title,
+      description: t.description,
+      detailedContent: t.detailedContent,
+    })),
+  };
+}
+
+// ─── Component ─────────────────────────────────────────────────
+
 export default function EditGuidePage() {
   const { id } = useParams<{ id: string }>();
-  const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const detailQuery = useAdminGuideDetail(id, { locale: "en" });
-  const stepsQuery = useAdminGuideSteps(id, { locale: "en" });
+  const guideQuery = useAdminGuideDetail(id, { locale: "en" });
+  const stepsQuery = useAdminGuideSteps(id, { locale: "en", pageSize: 100 });
 
-  const hydrate = useGuideEditor((state) => state.hydrate);
-  const steps = useGuideEditor((state) => state.steps);
-  const activeStepId = useGuideEditor((state) => state.activeStepId);
-  const setActiveStepId = useGuideEditor((state) => state.setActiveStepId);
+  const createStepMutation = useCreateStep();
+  const updateStepMutation = useUpdateStep();
+  const deleteStepMutation = useDeleteStep();
+  const reorderStepsMutation = useReorderSteps();
 
+  const setPersistedSteps = useEditGuide((s) => s.setPersistedSteps);
+  const setActiveStepId = useEditGuide((s) => s.setActiveStepId);
+  const persistedSteps = useEditGuide((s) => s.persistedSteps);
+  const draftSteps = useEditGuide((s) => s.draftSteps);
+  const addDraftStep = useEditGuide((s) => s.addDraftStep);
+  const activeStepId = useEditGuide((s) => s.activeStepId);
+
+  const allSteps = useMemo(() => [...persistedSteps, ...draftSteps], [persistedSteps, draftSteps]);
+
+  const stepParam = searchParams.get("step");
+
+  // Clear drafts when leaving the edit page (back to guide, etc.)
   useEffect(() => {
-    if (detailQuery.data && stepsQuery.data) {
-      hydrate(mapApiToEditorMeta(detailQuery.data), mapApiToEditorSteps(stepsQuery.data.steps));
+    return () => {
+      editGuideStore.setState({ draftSteps: [] });
+    };
+  }, []);
+
+  // Seed persistedSteps once on initial load. Never sync again — the store
+  // is the source of truth for the edit page to avoid race conditions.
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (stepsQuery.data && !seededRef.current) {
+      seededRef.current = true;
+      const serverSteps = mapApiToEditorSteps(stepsQuery.data.steps);
+      setPersistedSteps(serverSteps);
     }
-  }, [detailQuery.data, stepsQuery.data, hydrate]);
+  }, [stepsQuery.data, setPersistedSteps]);
 
+  // Handle ?step=new — create a fresh draft and activate it.
+  // Only runs once when entering the page with ?step=new.
+  const handledNewRef = useRef(false);
   useEffect(() => {
-    const requestedStep = searchParams.get("step");
-    if (!requestedStep) {
-      const fallback = steps[0]?.clientId;
-      if (fallback) {
-        router.replace(`?step=${fallback}`);
-        setActiveStepId(fallback);
+    if (stepParam !== "new") return;
+    if (handledNewRef.current) return;
+    handledNewRef.current = true;
+
+    // Clear any stale drafts so the user gets a fresh step every time
+    // they click "Add Step" from the guide page.
+    editGuideStore.setState({ draftSteps: [] });
+
+    const state = editGuideStore.getState();
+    const newStep = createEmptyStep(id, state.displaySteps().length + 1);
+    addDraftStep(newStep);
+  }, [stepParam, id, addDraftStep]);
+
+  // URL → activeStepId sync. Always honor the URL step param for persisted IDs.
+  useEffect(() => {
+    if (!stepParam) return;
+    if (stepParam === "new") return;
+    if (stepParam.startsWith("new-")) return;
+
+    const state = editGuideStore.getState();
+    if (state.activeStepId === stepParam) return;
+    if (state.persistedSteps.some((s) => s.clientId === stepParam)) {
+      setActiveStepId(stepParam);
+    }
+  }, [stepParam, setActiveStepId]);
+
+  const guideName =
+    guideQuery.data?.translations?.find((t) => t.language === "en")?.name ?? "Untitled";
+
+  // ─── Handlers ─────────────────────────────────────────────
+
+  function navigateToStep(stepId: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("step", stepId);
+    router.replace(`${pathname}?${params.toString()}`);
+  }
+
+  async function handleSave() {
+    const state = editGuideStore.getState();
+    const step = state.displaySteps().find((s) => s.clientId === state.activeStepId);
+    if (!step) return;
+
+    try {
+      if (isDraft(step)) {
+        const payload = buildCreatePayload(step);
+        const result = await createStepMutation.mutateAsync(payload);
+        // Remove draft and add the persisted step immediately (no refetch race)
+        const created: GuideEditorStep = {
+          ...step,
+          clientId: result.id,
+          sortOrder: state.persistedSteps.length + 1,
+        };
+        editGuideStore.setState((prev) => ({
+          draftSteps: prev.draftSteps.filter((s) => s.clientId !== step.clientId),
+          persistedSteps: [...prev.persistedSteps, created],
+          activeStepId: result.id,
+        }));
+        navigateToStep(result.id);
+        toast.success("Step created");
+      } else {
+        const payload = buildUpdatePayload(step);
+        await updateStepMutation.mutateAsync({
+          id: step.clientId,
+          guideId: id,
+          patch: payload,
+        });
+        toast.success("Step saved");
+      }
+    } catch (err) {
+      toast.error(`Failed to save: ${getErrorMessage(err)}`);
+    }
+  }
+
+  async function handleDeleteStep(stepId: string) {
+    if (stepId.startsWith("new-")) {
+      editGuideStore.getState().removeStep(stepId);
+      if (activeStepId === stepId) {
+        const state = editGuideStore.getState();
+        const remaining = state.displaySteps();
+        if (remaining.length > 0) {
+          setActiveStepId(remaining[0].clientId);
+          navigateToStep(remaining[0].clientId);
+        }
       }
       return;
     }
-
-    const exists = steps.some((step) => step.clientId === requestedStep);
-    if (exists && requestedStep !== activeStepId) {
-      setActiveStepId(requestedStep);
+    try {
+      await deleteStepMutation.mutateAsync({ id: stepId, guideId: id });
+      const state = editGuideStore.getState();
+      const wasActive = state.activeStepId === stepId;
+      state.removeStep(stepId);
+      if (wasActive) {
+        const fresh = editGuideStore.getState();
+        const remaining = fresh.displaySteps();
+        if (remaining.length > 0) {
+          setActiveStepId(remaining[0].clientId);
+          navigateToStep(remaining[0].clientId);
+        }
+      }
+      toast.success("Step deleted");
+    } catch (err) {
+      toast.error(`Failed to delete: ${getErrorMessage(err)}`);
     }
-  }, [activeStepId, router, searchParams, setActiveStepId, steps]);
+  }
 
-  if (detailQuery.isLoading || stepsQuery.isLoading) {
+  async function handleSaveOrder() {
+    const state = editGuideStore.getState();
+    const orderedIds = state.persistedStepIds();
+    if (orderedIds.length <= 1) return;
+
+    try {
+      await reorderStepsMutation.mutateAsync({
+        guideId: id,
+        stepIds: orderedIds,
+      });
+      editGuideStore.getState().setHasPendingReorder(false);
+      toast.success("Order saved");
+    } catch (err) {
+      toast.error(`Failed to save order: ${getErrorMessage(err)}`);
+    }
+  }
+
+  // ─── Preview data ─────────────────────────────────────────
+
+  const language = useEditGuide((s) => s.language);
+
+  const previewStep = useMemo(() => {
+    const step = allSteps.find((s) => s.clientId === activeStepId) ?? null;
+    if (!step) return null;
+    const translation = step.translations?.find((t) => t.language === language);
+    return {
+      sortOrder: step.sortOrder,
+      title: translation?.title ?? "Untitled Step",
+      summary: step.ui.summary,
+      proTip: step.ui.proTip,
+      checklistTitle: step.ui.checklistTitle,
+      checklist: step.ui.checklist,
+      imageUrl: step.ui.imageUrl,
+    };
+  }, [allSteps, activeStepId, language]);
+
+  // ─── Loading / Error ──────────────────────────────────────
+
+  if (guideQuery.isLoading || stepsQuery.isLoading) {
     return (
       <div className="-m-8 flex h-[calc(100vh-4rem)] items-center justify-center bg-[#f4f5f7]">
         <p className="text-sm text-muted-foreground">Loading guide&hellip;</p>
@@ -142,26 +336,49 @@ export default function EditGuidePage() {
     );
   }
 
-  if (detailQuery.isError || stepsQuery.isError) {
+  if (guideQuery.isError || stepsQuery.isError) {
     return (
       <div className="-m-8 flex h-[calc(100vh-4rem)] items-center justify-center bg-[#f4f5f7]">
         <p className="text-sm text-destructive">
-          Failed to load: {getErrorMessage(detailQuery.error ?? stepsQuery.error)}
+          Failed to load: {getErrorMessage(guideQuery.error ?? stepsQuery.error)}
         </p>
       </div>
     );
   }
 
+  // ─── Render ───────────────────────────────────────────────
+
   return (
     <div className="-m-8 flex h-[calc(100vh-4rem)] flex-col bg-[#f4f5f7]">
-      <EditGuideHeader />
+      <EditGuideHeader guideName={guideName} />
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[18rem_1fr] xl:grid-cols-[18rem_1fr_24rem]">
-        <EditGuideSidebar />
+        <EditGuideSidebar
+          onDelete={handleDeleteStep}
+          onSaveOrder={handleSaveOrder}
+          onSelect={navigateToStep}
+          onAdd={() => {
+            const state = editGuideStore.getState();
+            if (state.draftSteps.length > 0) {
+              setActiveStepId(state.draftSteps[0].clientId);
+              navigateToStep("new");
+              return;
+            }
+            const newStep = createEmptyStep(id, state.displaySteps().length + 1);
+            addDraftStep(newStep);
+            navigateToStep("new");
+          }}
+        />
+
         <main className="min-h-0 overflow-auto">
-          <EditStepForm />
+          <EditStepForm onSave={handleSave} />
         </main>
-        <MobilePreview />
+
+        <MobilePreview
+          guideName={guideName}
+          totalSteps={persistedSteps.length}
+          step={previewStep}
+        />
       </div>
     </div>
   );
