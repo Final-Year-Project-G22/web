@@ -178,7 +178,14 @@ export const customFetch = async <T>(
     ? { ...options, body: undefined }
     : options;
 
-  const res = await fetch(url, { ...safeOptions, credentials: "include" });
+  // Attach Bearer token if available (fallback if proxy middleware misses it)
+  const token = useAuthStore.getState().token;
+  const headers = new Headers(safeOptions.headers);
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const res = await fetch(url, { ...safeOptions, headers, credentials: "include" });
 
   if (res.status === 401) {
     const refreshed = await refreshToken();
