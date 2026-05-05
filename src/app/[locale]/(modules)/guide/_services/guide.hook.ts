@@ -186,7 +186,8 @@ export function useCreateStep() {
       return res.data;
     },
     onSuccess: async (_data, vars) => {
-      await queryClient.invalidateQueries({ queryKey: KEYS.steps(vars.guideId) });
+      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "steps", vars.guideId] });
+      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "detail", vars.guideId] });
     },
   });
 }
@@ -199,7 +200,8 @@ export function useUpdateStep() {
       if (res.status !== 200) throw res.data;
     },
     onSuccess: async (_data, vars) => {
-      await queryClient.invalidateQueries({ queryKey: KEYS.steps(vars.guideId) });
+      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "steps", vars.guideId] });
+      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "detail", vars.guideId] });
     },
   });
 }
@@ -212,7 +214,8 @@ export function useDeleteStep() {
       if (res.status !== 200) throw res.data;
     },
     onSuccess: async (_data, vars) => {
-      await queryClient.invalidateQueries({ queryKey: KEYS.steps(vars.guideId) });
+      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "steps", vars.guideId] });
+      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "detail", vars.guideId] });
     },
   });
 }
@@ -225,7 +228,8 @@ export function useReorderSteps() {
       if (res.status !== 200) throw res.data;
     },
     onSuccess: async (_data, vars) => {
-      await queryClient.invalidateQueries({ queryKey: KEYS.steps(vars.guideId) });
+      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "steps", vars.guideId] });
+      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "detail", vars.guideId] });
     },
   });
 }

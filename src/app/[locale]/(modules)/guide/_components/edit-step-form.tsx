@@ -4,9 +4,7 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import {
   CheckSquare,
-  Image as ImageIcon,
   Italic,
-  Link2,
   List,
   ListOrdered,
   Pilcrow,
@@ -17,8 +15,11 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo } from "react";
-import { useAdminGuideCategoryTree } from "@/app/[locale]/(modules)/guide/_services/guide.hook";
-import { useGuideEditor } from "@/app/[locale]/(modules)/guide/_stores/guide-editor.store";
+import {
+  editGuideStore,
+  useEditGuide,
+} from "@/app/[locale]/(modules)/guide/_stores/edit-guide.store";
+import type { GuideEditorRichContent } from "@/app/[locale]/(modules)/guide/_stores/guide-editor.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,9 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
-import type { CreateGuideTranslation } from "@/lib/api/types/createGuideTranslation";
 
-const targetTierOptions = [
+const stepTypeOptions = [
   { value: "startup", label: "Start-up" },
   { value: "small-business", label: "Small Business" },
   { value: "enterprise", label: "Enterprise" },
@@ -41,93 +41,66 @@ function generateId() {
   return Math.random().toString(36).slice(2, 9);
 }
 
-export function EditStepForm() {
-  const meta = useGuideEditor((state) => state.meta);
-  const steps = useGuideEditor((state) => state.steps);
-  const activeStepId = useGuideEditor((state) => state.activeStepId);
-  const language = useGuideEditor((state) => state.editorLanguage);
-  const setEditorLanguage = useGuideEditor((state) => state.setEditorLanguage);
-  const updateMeta = useGuideEditor((state) => state.updateMeta);
-  const updateStep = useGuideEditor((state) => state.updateStep);
+function upsertStepTranslation(
+  lang: string,
+  updates: Partial<{ title: string; description: string; detailedContent: unknown }>
+) {
+  const state = editGuideStore.getState();
+  const step = state.displaySteps().find((s) => s.clientId === state.activeStepId);
+  if (!step) return;
 
-  const categoriesQuery = useAdminGuideCategoryTree({ includeInactive: false });
-  const categories = categoriesQuery.data ?? [];
+  const currentTranslations = step.translations ?? [];
+  const nextTranslations = [...currentTranslations];
+  const index = nextTranslations.findIndex((t) => t.language === lang);
+
+  if (index >= 0) {
+    nextTranslations[index] = { ...nextTranslations[index], ...updates };
+  } else {
+    const activeTranslation = currentTranslations.find((t) => t.language === lang);
+    nextTranslations.push({
+      language: lang,
+      title: updates.title ?? activeTranslation?.title ?? "Untitled Step",
+      description: updates.description ?? activeTranslation?.description ?? "",
+      detailedContent: updates.detailedContent,
+    });
+  }
+
+  editGuideStore.getState().updateStep(step.clientId, { translations: nextTranslations });
+}
+
+function syncStepUi(updates: Partial<GuideEditorRichContent>) {
+  const state = editGuideStore.getState();
+  const step = state.displaySteps().find((s) => s.clientId === state.activeStepId);
+  if (!step) return;
+
+  const nextUi = { ...step.ui, ...updates };
+  state.updateStep(step.clientId, { ui: nextUi });
+  upsertStepTranslation(state.language, { detailedContent: nextUi });
+}
+
+interface EditStepFormProps {
+  onSave: () => void;
+}
+
+export function EditStepForm({ onSave }: EditStepFormProps) {
+  const language = useEditGuide((s) => s.language);
+  const setLanguage = useEditGuide((s) => s.setLanguage);
+  const persistedSteps = useEditGuide((s) => s.persistedSteps);
+  const draftSteps = useEditGuide((s) => s.draftSteps);
+  const activeStepId = useEditGuide((s) => s.activeStepId);
+  const updateStep = useEditGuide((s) => s.updateStep);
+
+  const steps = useMemo(() => [...persistedSteps, ...draftSteps], [persistedSteps, draftSteps]);
 
   const activeStep = useMemo(
-    () => steps.find((step) => step.clientId === activeStepId) ?? steps[0],
-    [activeStepId, steps]
+    () => steps.find((step) => step.clientId === activeStepId) ?? null,
+    [steps, activeStepId]
   );
 
   const activeTranslation = useMemo(
-    () => activeStep?.translations?.find((translation) => translation.language === language),
+    () => activeStep?.translations?.find((t) => t.language === language),
     [activeStep, language]
   );
-
-  const activeGuideTranslation = useMemo(
-    () => meta.translations?.find((translation) => translation.language === language),
-    [language, meta.translations]
-  );
-
-  function upsertGuideTranslation(languageCode: string, updates: Partial<CreateGuideTranslation>) {
-    const currentTranslations = meta.translations ?? [];
-    const nextTranslations = [...currentTranslations];
-    const index = nextTranslations.findIndex(
-      (translation) => translation.language === languageCode
-    );
-
-    if (index >= 0) {
-      const previous = nextTranslations[index];
-      nextTranslations[index] = {
-        ...previous,
-        ...updates,
-      };
-    } else {
-      nextTranslations.push({
-        language: languageCode,
-        name: updates.name ?? "Untitled Guide",
-        description: updates.description ?? "",
-      });
-    }
-
-    updateMeta({ translations: nextTranslations });
-  }
-
-  function upsertStepTranslation(
-    stepId: string,
-    lang: string,
-    updates: Partial<{ title: string; description: string; detailedContent: unknown }>
-  ) {
-    if (!activeStep) return;
-    const currentTranslations = activeStep.translations ?? [];
-    const nextTranslations = [...currentTranslations];
-    const index = nextTranslations.findIndex((translation) => translation.language === lang);
-
-    if (index >= 0) {
-      const previous = nextTranslations[index];
-      nextTranslations[index] = {
-        ...previous,
-        ...updates,
-      };
-    } else {
-      nextTranslations.push({
-        language: lang,
-        title: updates.title ?? activeTranslation?.title ?? "Untitled Step",
-        description: updates.description ?? activeTranslation?.description ?? "",
-        detailedContent: updates.detailedContent,
-      });
-    }
-
-    updateStep(stepId, { translations: nextTranslations });
-  }
-
-  function syncStepUi(updates: Partial<typeof activeStep.ui>) {
-    if (!activeStep) return;
-    const nextUi = { ...activeStep.ui, ...updates };
-    updateStep(activeStep.clientId, { ui: nextUi });
-    upsertStepTranslation(activeStep.clientId, language, {
-      detailedContent: nextUi,
-    });
-  }
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -140,12 +113,9 @@ export function EditStepForm() {
       },
     },
     onUpdate: ({ editor: tiptapEditor }) => {
-      if (!activeStep) return;
       const html = tiptapEditor.getHTML();
       syncStepUi({ summary: html });
-      upsertStepTranslation(activeStep.clientId, language, {
-        description: html,
-      });
+      upsertStepTranslation(language, { description: html });
     },
   });
 
@@ -166,11 +136,11 @@ export function EditStepForm() {
 
   return (
     <section className="space-y-6 p-6">
-      {/* --- Language + Category + Tier + Time --- */}
-      <div className="grid gap-3 md:grid-cols-4">
+      {/* --- Language + Step Type + Reading Time --- */}
+      <div className="grid gap-3 md:grid-cols-3">
         <div className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground">Language</p>
-          <Select value={language} onValueChange={setEditorLanguage}>
+          <Select value={language} onValueChange={setLanguage}>
             <SelectTrigger>
               <SelectValue placeholder="Select language" />
             </SelectTrigger>
@@ -182,43 +152,18 @@ export function EditStepForm() {
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">Category</p>
-          {categoriesQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading categories&hellip;</p>
-          ) : (
-            <Select
-              value={meta.categoryId}
-              onValueChange={(value) => updateMeta({ categoryId: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">Target Tier</p>
+          <p className="text-xs font-medium text-muted-foreground">Step Type</p>
           <Select
             value={activeStep.stepType}
-            onValueChange={(value) =>
-              updateStep(activeStep.clientId, {
-                stepType: value,
-              })
-            }
+            onValueChange={(value) => {
+              updateStep(activeStep.clientId, { stepType: value });
+            }}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select tier" />
+              <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
-              {targetTierOptions.map((option) => (
+              {stepTypeOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -231,11 +176,9 @@ export function EditStepForm() {
           <p className="text-xs font-medium text-muted-foreground">Reading Time</p>
           <Select
             value={String(activeStep.estimatedTime ?? 15)}
-            onValueChange={(value) =>
-              updateStep(activeStep.clientId, {
-                estimatedTime: Number(value),
-              })
-            }
+            onValueChange={(value) => {
+              updateStep(activeStep.clientId, { estimatedTime: Number(value) });
+            }}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select time" />
@@ -250,35 +193,6 @@ export function EditStepForm() {
         </div>
       </div>
 
-      {/* --- Guide Name + Description --- */}
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">
-            Guide Name ({language.toUpperCase()})
-          </p>
-          <Input
-            value={activeGuideTranslation?.name ?? ""}
-            onChange={(e) => {
-              upsertGuideTranslation(language, { name: e.target.value });
-            }}
-            placeholder="Enter guide name"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">
-            Guide Description ({language.toUpperCase()})
-          </p>
-          <Input
-            value={activeGuideTranslation?.description ?? ""}
-            onChange={(e) => {
-              upsertGuideTranslation(language, { description: e.target.value });
-            }}
-            placeholder="Enter short guide description"
-          />
-        </div>
-      </div>
-
       {/* --- Step Title --- */}
       <div className="space-y-2">
         <p className="text-xs font-medium text-muted-foreground">
@@ -287,9 +201,7 @@ export function EditStepForm() {
         <Input
           value={activeTranslation?.title ?? ""}
           onChange={(e) => {
-            upsertStepTranslation(activeStep.clientId, language, {
-              title: e.target.value,
-            });
+            upsertStepTranslation(language, { title: e.target.value });
           }}
           placeholder="Enter step title"
         />
@@ -336,12 +248,6 @@ export function EditStepForm() {
             aria-label="Quote"
           >
             <Quote className="h-4 w-4" />
-          </Toggle>
-          <Toggle disabled aria-label="Link">
-            <Link2 className="h-4 w-4" />
-          </Toggle>
-          <Toggle disabled aria-label="Image">
-            <ImageIcon className="h-4 w-4" />
           </Toggle>
           <Toggle
             pressed={editor?.isActive("paragraph")}
@@ -393,9 +299,8 @@ export function EditStepForm() {
         />
         {activeStep.ui.imageUrl && (
           <div className="relative mt-2 h-32 w-full overflow-hidden rounded-lg border bg-slate-50">
+            {/* biome-ignore lint/performance/noImgElement: external image preview */}
             <img
-              // biome-ignore lint/performance/noImgElement: external user-provided URL
-              // eslint-disable-next-line @next/next/no-img-element
               src={activeStep.ui.imageUrl}
               alt="Step preview"
               className="h-full w-full object-contain"
@@ -492,6 +397,13 @@ export function EditStepForm() {
           }}
           placeholder="e.g. Checklist of items"
         />
+      </div>
+
+      {/* --- Save --- */}
+      <div className="border-t pt-4">
+        <Button onClick={onSave} className="w-full">
+          Save
+        </Button>
       </div>
     </section>
   );
