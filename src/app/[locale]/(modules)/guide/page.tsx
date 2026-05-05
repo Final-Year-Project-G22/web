@@ -136,7 +136,7 @@ export default function GuideListPage() {
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
                               <Button asChild size="sm" variant="outline">
-                                <Link href={`/guide/${guide.id}/edit`}>Edit</Link>
+                                <Link href={`/guide/${guide.id}`}>Edit</Link>
                               </Button>
                               <ConfirmDialog
                                 title="Delete Guide"
