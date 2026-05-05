@@ -14,23 +14,21 @@ export const AuthService = {
 
     const data: LoginResponseBody = res.data;
 
-    // Fetch full profile to get roles and permissions
-    const meRes = await getCurrentUser();
-    let roles = null;
-    let permissions = null;
-    if (meRes.status === 200) {
-      roles = meRes.data.roles ?? null;
-      permissions = meRes.data.permissions ?? null;
-    }
-
-    useAuthStore
-      .getState()
-      .setSession(data.accessToken, data.user, data.account, data.expiresAt, roles, permissions);
+    // Set session and cookie FIRST so getCurrentUser can authenticate
+    useAuthStore.getState().setSession(data.accessToken, data.user, data.account, data.expiresAt);
     const maxAgeSec = Math.max(
       0,
       Math.floor((new Date(data.expiresAt).getTime() - Date.now()) / 1000)
     );
     document.cookie = `access_token=${data.accessToken}; path=/; max-age=${maxAgeSec}; SameSite=Lax`;
+
+    // Now fetch full profile (token is in store + cookie)
+    const meRes = await getCurrentUser();
+    if (meRes.status === 200) {
+      useAuthStore
+        .getState()
+        .setRolesAndPermissions(meRes.data.roles ?? null, meRes.data.permissions ?? null);
+    }
 
     return data;
   },
