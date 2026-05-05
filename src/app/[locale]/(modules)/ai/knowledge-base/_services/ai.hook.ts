@@ -2,6 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import {
+  ensureFreshSession,
+  logoutAndRedirect,
+  refreshToken,
+} from "@/lib/api/mutator/custom-fetch";
 import { ask } from "@/lib/api/services/ai-ask";
 import {
   archiveConversation,
@@ -80,6 +85,32 @@ function waitForReconnect(ms: number, signal: AbortSignal): Promise<void> {
   });
 }
 
+async function fetchSseWithAuth(url: string, init: RequestInit): Promise<Response> {
+  const fresh = await ensureFreshSession();
+  if (!fresh) {
+    return new Response(null, { status: 401 });
+  }
+  const buildInit = (): RequestInit => {
+    const headers = new Headers(init.headers);
+    const latestToken = useAuthStore.getState().token;
+    if (latestToken) {
+      headers.set("Authorization", `Bearer ${latestToken}`);
+    } else {
+      headers.delete("Authorization");
+    }
+    return { ...init, headers };
+  };
+  let response = await fetch(url, buildInit());
+  if (response.status !== 401) return response;
+  const refreshed = await refreshToken();
+  if (refreshed) {
+    response = await fetch(url, buildInit());
+    if (response.status !== 401) return response;
+  }
+  logoutAndRedirect();
+  return response;
+}
+
 /** Merge one SSE JSON row into a cached projection (handles snake_case + partial patches). */
 function applySseIngestionPatch(
   previous: IngestionStatusProjectionResponse | undefined,
@@ -107,30 +138,31 @@ function applySseIngestionPatch(
     } satisfies IngestionStatusProjectionResponse);
 
   const next: IngestionStatusProjectionResponse = { ...base, documentId };
+  const nextRecord = next as unknown as Record<string, unknown>;
 
   const takeStr = (camel: keyof IngestionStatusProjectionResponse, snake: string) => {
     if (camel in r && r[camel] != null) {
-      (next as Record<string, unknown>)[camel as string] = String(r[camel]);
+      nextRecord[camel as string] = String(r[camel]);
     } else if (snake in r && r[snake] != null) {
-      (next as Record<string, unknown>)[camel as string] = String(r[snake]);
+      nextRecord[camel as string] = String(r[snake]);
     }
   };
   const takeNum = (camel: keyof IngestionStatusProjectionResponse, snake: string) => {
     if (!(camel in r) && !(snake in r)) return;
     const v = camel in r ? r[camel] : r[snake];
     const n = typeof v === "number" ? v : Number(v);
-    if (!Number.isNaN(n)) (next as Record<string, unknown>)[camel as string] = n;
+    if (!Number.isNaN(n)) nextRecord[camel as string] = n;
   };
   const takeBool = (camel: keyof IngestionStatusProjectionResponse, snake: string) => {
     if (!(camel in r) && !(snake in r)) return;
     const v = camel in r ? r[camel] : r[snake];
-    if (typeof v === "boolean") (next as Record<string, unknown>)[camel as string] = v;
+    if (typeof v === "boolean") nextRecord[camel as string] = v;
   };
   const takeOptStr = (camel: keyof IngestionStatusProjectionResponse, snake: string) => {
     if (!(camel in r) && !(snake in r)) return;
     const v = camel in r ? r[camel] : r[snake];
-    if (v == null || v === "") delete (next as Record<string, unknown>)[camel as string];
-    else (next as Record<string, unknown>)[camel as string] = String(v);
+    if (v == null || v === "") delete nextRecord[camel as string];
+    else nextRecord[camel as string] = String(v);
   };
 
   takeStr("accountId", "account_id");
@@ -183,7 +215,7 @@ export function useAIStatusList(page = 1, pageSize = 50) {
         const url = getIngestionSseStreamUrl();
         try {
           console.log("[SSE] Connecting to", url.toString());
-          const response = await fetch(url.toString(), {
+          const response = await fetchSseWithAuth(url.toString(), {
             headers: {
               Accept: "text/event-stream",
               Authorization: `Bearer ${token}`,
@@ -524,7 +556,7 @@ export function useAskAIStream() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(getAskStreamSseUrl().toString(), {
+      const response = await fetchSseWithAuth(getAskStreamSseUrl().toString(), {
         method: "POST",
         headers,
         credentials: "include",
@@ -584,7 +616,9 @@ export function useAskAIStream() {
                   queryKey: QUERY_KEYS.conversation(sessionId),
                 });
               }
-              queryClient.invalidateQueries({ queryKey: QUERY_KEYS.conversations });
+              queryClient.invalidateQueries({
+                queryKey: QUERY_KEYS.conversations,
+              });
 
               setIsStreaming(false);
               controllerRef.current = null;
