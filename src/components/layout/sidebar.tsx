@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Bell,
   BookOpen,
   BrainCircuit,
   ChevronRight,
@@ -83,6 +84,12 @@ export function Sidebar() {
 
   useEffect(() => {
     if (pathname.startsWith("/guide")) setGuideOpen(true);
+  }, [pathname]);
+
+  const [notificationOpen, setNotificationOpen] = useState(pathname.startsWith("/notifications"));
+
+  useEffect(() => {
+    if (pathname.startsWith("/notifications")) setNotificationOpen(true);
   }, [pathname]);
 
   return (
@@ -174,6 +181,67 @@ export function Sidebar() {
                 <span className="text-sm">Manage Templates</span>
               </Link>
             </nav>
+            <div className="space-y-1">
+              <button
+                type="button"
+                onClick={() => setNotificationOpen((prev) => !prev)}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-md px-2 py-2 text-muted-foreground transition-colors hover:bg-accent",
+                  pathname.startsWith("/notifications")
+                    ? "bg-primary/5 font-medium text-primary"
+                    : ""
+                )}
+              >
+                <Bell className="w-4 h-4" />
+                <span className="text-sm flex-1 text-left">Notifications</span>
+                <ChevronRight
+                  className={cn(
+                    "h-3 w-3 transition-transform",
+                    notificationOpen ? "rotate-90" : ""
+                  )}
+                />
+              </button>
+
+              {notificationOpen && (
+                <div className="ml-6 space-y-1 border-l pl-3">
+                  <Link
+                    href="/notifications/campaign-templates"
+                    className={cn(
+                      "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
+                      pathname.startsWith("/notifications/campaign-templates")
+                        ? "bg-primary/5 font-medium text-primary"
+                        : "text-muted-foreground hover:bg-accent"
+                    )}
+                  >
+                    Campaign Templates
+                  </Link>
+
+                  <Link
+                    href="/notifications/campaigns"
+                    className={cn(
+                      "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
+                      pathname.startsWith("/notifications/campaigns")
+                        ? "bg-primary/5 font-medium text-primary"
+                        : "text-muted-foreground hover:bg-accent"
+                    )}
+                  >
+                    Campaigns
+                  </Link>
+
+                  <Link
+                    href="/notifications/queue"
+                    className={cn(
+                      "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
+                      pathname.startsWith("/notifications/queue")
+                        ? "bg-primary/5 font-medium text-primary"
+                        : "text-muted-foreground hover:bg-accent"
+                    )}
+                  >
+                    Queue
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
 
           <div>

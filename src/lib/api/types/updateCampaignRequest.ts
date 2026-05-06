@@ -5,16 +5,11 @@
  * Backend API for the Adisu platform
  * OpenAPI spec version: 1.0.0
  */
-import type { UpdateCampaignRequestCustomContent } from './updateCampaignRequestCustomContent';
 import type { UpdateCampaignRequestTargetSegment } from './updateCampaignRequestTargetSegment';
 
 export interface UpdateCampaignRequest {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
-  /** Override multi-channel content */
-  customContent?: UpdateCampaignRequestCustomContent;
-  /** Override email subject */
-  customSubject?: string;
   /** Campaign description */
   description?: string;
   /**

@@ -5,18 +5,15 @@
  * Backend API for the Adisu platform
  * OpenAPI spec version: 1.0.0
  */
-import type { CreateCampaignRequestCustomContent } from './createCampaignRequestCustomContent';
 import type { CreateCampaignRequestTargetSegment } from './createCampaignRequestTargetSegment';
 
 export interface CreateCampaignRequest {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
+  /** Campaign template ID */
+  campaignTemplateId: string;
   /** Campaign type (broadcast or segmented) */
   campaignType: string;
-  /** Override multi-channel content */
-  customContent?: CreateCampaignRequestCustomContent;
-  /** Override email subject */
-  customSubject?: string;
   /** Campaign description */
   description?: string;
   /**
@@ -29,6 +26,4 @@ export interface CreateCampaignRequest {
   scheduledFor?: string;
   /** Segment filters for segmented campaigns */
   targetSegment?: CreateCampaignRequestTargetSegment;
-  /** Notification template ID */
-  templateId: string;
 }
