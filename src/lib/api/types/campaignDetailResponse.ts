@@ -5,22 +5,23 @@
  * Backend API for the Adisu platform
  * OpenAPI spec version: 1.0.0
  */
-import type { CampaignDetailResponseCustomContent } from './campaignDetailResponseCustomContent';
+import type { CampaignCreatedByResponse } from './campaignCreatedByResponse';
 import type { CampaignDetailResponseTargetSegment } from './campaignDetailResponseTargetSegment';
+import type { CampaignTemplateInfoResponse } from './campaignTemplateInfoResponse';
 
 export interface CampaignDetailResponse {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
+  /** Campaign template details */
+  campaignTemplate?: CampaignTemplateInfoResponse;
+  /** Campaign template ID */
+  campaignTemplateId: string;
   /** Campaign type */
   campaignType: string;
   /** Creation time */
   createdAt: string;
-  /** Creator account ID */
-  createdBy: string;
-  /** Override multi-channel content */
-  customContent?: CampaignDetailResponseCustomContent;
-  /** Override email subject */
-  customSubject?: string;
+  /** Creator account info */
+  createdBy: CampaignCreatedByResponse;
   /** Campaign description */
   description?: string;
   /** Campaign ID */
@@ -35,6 +36,4 @@ export interface CampaignDetailResponse {
   status: string;
   /** Segment filters or resolved recipients */
   targetSegment?: CampaignDetailResponseTargetSegment;
-  /** Notification template ID */
-  templateId: string;
 }
