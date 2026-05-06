@@ -7,6 +7,6 @@
  */
 
 /**
- * Override multi-channel content
+ * Multi-channel localized content
  */
-export type UpdateCampaignRequestCustomContent = {[key: string]: unknown};
+export type CampaignTemplateTranslationResponseContent = {[key: string]: unknown};

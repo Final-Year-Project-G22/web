@@ -7,6 +7,6 @@
  */
 
 /**
- * Override multi-channel content
+ * Multi-channel content
  */
-export type CampaignDetailResponseCustomContent = {[key: string]: unknown};
+export type CampaignTemplateInfoResponseDefaultContent = {[key: string]: unknown};
