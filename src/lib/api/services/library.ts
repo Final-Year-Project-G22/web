@@ -203,7 +203,7 @@ export type libraryGetTemplateGroupResponseError = (libraryGetTemplateGroupRespo
 
 export type libraryGetTemplateGroupResponse = (libraryGetTemplateGroupResponseSuccess | libraryGetTemplateGroupResponseError)
 
-export const getLibraryGetTemplateGroupUrl = (slug: string,
+export const getLibraryGetTemplateGroupUrl = (groupId: string,
     params?: LibraryGetTemplateGroupParams,) => {
   const normalizedParams = new URLSearchParams();
 
@@ -216,13 +216,13 @@ export const getLibraryGetTemplateGroupUrl = (slug: string,
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/library/templates/${slug}?${stringifiedParams}` : `/api/v1/library/templates/${slug}`
+  return stringifiedParams.length > 0 ? `/api/v1/library/templates/${groupId}?${stringifiedParams}` : `/api/v1/library/templates/${groupId}`
 }
 
-export const libraryGetTemplateGroup = async (slug: string,
+export const libraryGetTemplateGroup = async (groupId: string,
     params?: LibraryGetTemplateGroupParams, options?: RequestInit): Promise<libraryGetTemplateGroupResponse> => {
   
-  return customFetch<libraryGetTemplateGroupResponse>(getLibraryGetTemplateGroupUrl(slug,params),
+  return customFetch<libraryGetTemplateGroupResponse>(getLibraryGetTemplateGroupUrl(groupId,params),
   {      
     ...options,
     method: 'GET'
@@ -255,7 +255,7 @@ export type libraryDownloadTemplateResponseError = (libraryDownloadTemplateRespo
 
 export type libraryDownloadTemplateResponse = (libraryDownloadTemplateResponseSuccess | libraryDownloadTemplateResponseError)
 
-export const getLibraryDownloadTemplateUrl = (slug: string,
+export const getLibraryDownloadTemplateUrl = (groupId: string,
     params?: LibraryDownloadTemplateParams,) => {
   const normalizedParams = new URLSearchParams();
 
@@ -268,13 +268,13 @@ export const getLibraryDownloadTemplateUrl = (slug: string,
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/library/templates/${slug}/download?${stringifiedParams}` : `/api/v1/library/templates/${slug}/download`
+  return stringifiedParams.length > 0 ? `/api/v1/library/templates/${groupId}/download?${stringifiedParams}` : `/api/v1/library/templates/${groupId}/download`
 }
 
-export const libraryDownloadTemplate = async (slug: string,
+export const libraryDownloadTemplate = async (groupId: string,
     params?: LibraryDownloadTemplateParams, options?: RequestInit): Promise<libraryDownloadTemplateResponse> => {
   
-  return customFetch<libraryDownloadTemplateResponse>(getLibraryDownloadTemplateUrl(slug,params),
+  return customFetch<libraryDownloadTemplateResponse>(getLibraryDownloadTemplateUrl(groupId,params),
   {      
     ...options,
     method: 'GET'

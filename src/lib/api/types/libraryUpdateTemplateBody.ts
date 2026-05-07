@@ -8,11 +8,11 @@
 
 export type LibraryUpdateTemplateBody = {
   /** Template description */
-  'description,omitempty': Blob | string;
+  description: Blob | string;
   /** Template file (optional) */
   file: Blob;
   /** Active flag (true/false) */
-  'isActive,omitempty': Blob | string;
+  isActive: Blob | string;
   /** Template title */
-  'title,omitempty': Blob | string;
+  title: Blob | string;
 };

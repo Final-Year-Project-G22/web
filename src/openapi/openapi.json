@@ -13061,7 +13061,7 @@
           "content": {
             "multipart/form-data": {
               "encoding": {
-                "description,omitempty": {
+                "description": {
                   "contentType": "text/plain"
                 },
                 "file": {
@@ -13076,7 +13076,7 @@
               },
               "schema": {
                 "properties": {
-                  "description,omitempty": {
+                  "description": {
                     "description": "Template description",
                     "type": "string"
                   },
@@ -13096,7 +13096,7 @@
                     "type": "string"
                   }
                 },
-                "required": ["file", "language", "title", "description,omitempty"],
+                "required": ["file", "language", "title", "description"],
                 "type": "object"
               }
             }
@@ -13243,22 +13243,22 @@
           "content": {
             "multipart/form-data": {
               "encoding": {
-                "description,omitempty": {
+                "description": {
                   "contentType": "text/plain"
                 },
                 "file": {
                   "contentType": "application/octet-stream"
                 },
-                "isActive,omitempty": {
+                "isActive": {
                   "contentType": "text/plain"
                 },
-                "title,omitempty": {
+                "title": {
                   "contentType": "text/plain"
                 }
               },
               "schema": {
                 "properties": {
-                  "description,omitempty": {
+                  "description": {
                     "description": "Template description",
                     "type": "string"
                   },
@@ -13269,21 +13269,16 @@
                     "format": "binary",
                     "type": "string"
                   },
-                  "isActive,omitempty": {
+                  "isActive": {
                     "description": "Active flag (true/false)",
                     "type": "string"
                   },
-                  "title,omitempty": {
+                  "title": {
                     "description": "Template title",
                     "type": "string"
                   }
                 },
-                "required": [
-                  "file",
-                  "title,omitempty",
-                  "description,omitempty",
-                  "isActive,omitempty"
-                ],
+                "required": ["file", "title", "description", "isActive"],
                 "type": "object"
               }
             }
@@ -19041,18 +19036,18 @@
         "tags": ["Library"]
       }
     },
-    "/api/v1/library/templates/{slug}": {
+    "/api/v1/library/templates/{groupId}": {
       "get": {
         "description": "Gets a template group with its language variants.",
         "operationId": "LibraryGetTemplateGroup",
         "parameters": [
           {
-            "description": "Template group slug",
+            "description": "Template group ID",
             "in": "path",
-            "name": "slug",
+            "name": "groupId",
             "required": true,
             "schema": {
-              "description": "Template group slug",
+              "description": "Template group ID",
               "type": "string"
             }
           },
@@ -19093,18 +19088,18 @@
         "tags": ["Library"]
       }
     },
-    "/api/v1/library/templates/{slug}/download": {
+    "/api/v1/library/templates/{groupId}/download": {
       "get": {
         "description": "Generates a presigned download URL for a template.",
         "operationId": "LibraryDownloadTemplate",
         "parameters": [
           {
-            "description": "Template group slug",
+            "description": "Template group ID",
             "in": "path",
-            "name": "slug",
+            "name": "groupId",
             "required": true,
             "schema": {
-              "description": "Template group slug",
+              "description": "Template group ID",
               "type": "string"
             }
           },
