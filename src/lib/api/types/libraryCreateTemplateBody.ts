@@ -8,7 +8,7 @@
 
 export type LibraryCreateTemplateBody = {
   /** Template description */
-  'description,omitempty': Blob | string;
+  description: Blob | string;
   /** Template file */
   file: Blob;
   /** Language code */
