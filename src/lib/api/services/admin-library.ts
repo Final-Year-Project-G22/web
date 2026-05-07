@@ -881,7 +881,7 @@ export const getLibraryCreateTemplateUrl = (groupId: string,) => {
 export const libraryCreateTemplate = async (groupId: string,
     libraryCreateTemplateBody: LibraryCreateTemplateBody, options?: RequestInit): Promise<libraryCreateTemplateResponse> => {
     const formData = new FormData();
-formData.append(`description,omitempty`, libraryCreateTemplateBody['description,omitempty'] instanceof Blob ? libraryCreateTemplateBody['description,omitempty'] : new Blob([libraryCreateTemplateBody['description,omitempty']], { type: 'text/plain' }));
+formData.append(`description`, libraryCreateTemplateBody.description instanceof Blob ? libraryCreateTemplateBody.description : new Blob([libraryCreateTemplateBody.description], { type: 'text/plain' }));
 formData.append(`file`, libraryCreateTemplateBody.file);
 formData.append(`language`, libraryCreateTemplateBody.language instanceof Blob ? libraryCreateTemplateBody.language : new Blob([libraryCreateTemplateBody.language], { type: 'text/plain' }));
 formData.append(`title`, libraryCreateTemplateBody.title instanceof Blob ? libraryCreateTemplateBody.title : new Blob([libraryCreateTemplateBody.title], { type: 'text/plain' }));
@@ -1017,10 +1017,10 @@ export const getLibraryUpdateTemplateUrl = (templateId: string,) => {
 export const libraryUpdateTemplate = async (templateId: string,
     libraryUpdateTemplateBody: LibraryUpdateTemplateBody, options?: RequestInit): Promise<libraryUpdateTemplateResponse> => {
     const formData = new FormData();
-formData.append(`description,omitempty`, libraryUpdateTemplateBody['description,omitempty'] instanceof Blob ? libraryUpdateTemplateBody['description,omitempty'] : new Blob([libraryUpdateTemplateBody['description,omitempty']], { type: 'text/plain' }));
+formData.append(`description`, libraryUpdateTemplateBody.description instanceof Blob ? libraryUpdateTemplateBody.description : new Blob([libraryUpdateTemplateBody.description], { type: 'text/plain' }));
 formData.append(`file`, libraryUpdateTemplateBody.file);
-formData.append(`isActive,omitempty`, libraryUpdateTemplateBody['isActive,omitempty'] instanceof Blob ? libraryUpdateTemplateBody['isActive,omitempty'] : new Blob([libraryUpdateTemplateBody['isActive,omitempty']], { type: 'text/plain' }));
-formData.append(`title,omitempty`, libraryUpdateTemplateBody['title,omitempty'] instanceof Blob ? libraryUpdateTemplateBody['title,omitempty'] : new Blob([libraryUpdateTemplateBody['title,omitempty']], { type: 'text/plain' }));
+formData.append(`isActive`, libraryUpdateTemplateBody.isActive instanceof Blob ? libraryUpdateTemplateBody.isActive : new Blob([libraryUpdateTemplateBody.isActive], { type: 'text/plain' }));
+formData.append(`title`, libraryUpdateTemplateBody.title instanceof Blob ? libraryUpdateTemplateBody.title : new Blob([libraryUpdateTemplateBody.title], { type: 'text/plain' }));
 
   return customFetch<libraryUpdateTemplateResponse>(getLibraryUpdateTemplateUrl(templateId),
   {      

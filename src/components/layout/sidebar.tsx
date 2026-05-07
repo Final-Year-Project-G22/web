@@ -6,6 +6,7 @@ import {
   BrainCircuit,
   ChevronRight,
   Folder,
+  Folders,
   LayoutDashboard,
   Moon,
   Settings,
@@ -86,7 +87,17 @@ export function Sidebar() {
     if (pathname.startsWith("/guide")) setGuideOpen(true);
   }, [pathname]);
 
+  const [libraryOpen, setLibraryOpen] = useState(pathname.startsWith("/library"));
+
+  useEffect(() => {
+    if (pathname.startsWith("/library")) setLibraryOpen(true);
+  }, [pathname]);
+
   const [notificationOpen, setNotificationOpen] = useState(pathname.startsWith("/notifications"));
+
+  useEffect(() => {
+    if (pathname.startsWith("/notifications")) setNotificationOpen(true);
+  }, [pathname]);
 
   useEffect(() => {
     if (pathname.startsWith("/notifications")) setNotificationOpen(true);
@@ -174,12 +185,62 @@ export function Sidebar() {
               {hasPermission("iam.admin.list") && (
                 <NavLink href="/admin" icon={<Shield className="w-4 h-4" />} label="Admin Hub" />
               )}
-              <Link
-                href="#"
-                className="flex items-center gap-3 px-2 py-2 text-muted-foreground hover:bg-accent rounded-md transition-colors"
-              >
-                <span className="text-sm">Manage Templates</span>
-              </Link>
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => setLibraryOpen((prev) => !prev)}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-md px-2 py-2 text-muted-foreground transition-colors hover:bg-accent",
+                    pathname.startsWith("/library") ? "bg-primary/5 font-medium text-primary" : ""
+                  )}
+                  aria-expanded={libraryOpen}
+                >
+                  <Folders className="w-4 h-4" />
+                  <span className="text-sm flex-1 text-left">Library</span>
+                  <ChevronRight
+                    className={cn("h-3 w-3 transition-transform", libraryOpen ? "rotate-90" : "")}
+                  />
+                </button>
+
+                {libraryOpen ? (
+                  <div className="ml-6 space-y-1 border-l pl-3">
+                    <Link
+                      href="/library/categories"
+                      className={cn(
+                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
+                        pathname === "/library/categories"
+                          ? "bg-primary/5 font-medium text-primary"
+                          : "text-muted-foreground hover:bg-accent"
+                      )}
+                    >
+                      Categories
+                    </Link>
+                    <Link
+                      href="/library/template-groups"
+                      className={cn(
+                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
+                        pathname === "/library/template-groups" ||
+                          pathname.startsWith("/library/template-groups/")
+                          ? "bg-primary/5 font-medium text-primary"
+                          : "text-muted-foreground hover:bg-accent"
+                      )}
+                    >
+                      Template Groups
+                    </Link>
+                    <Link
+                      href="/library/downloads"
+                      className={cn(
+                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
+                        pathname === "/library/downloads"
+                          ? "bg-primary/5 font-medium text-primary"
+                          : "text-muted-foreground hover:bg-accent"
+                      )}
+                    >
+                      Download Logs
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
             </nav>
             <div className="space-y-1">
               <button
