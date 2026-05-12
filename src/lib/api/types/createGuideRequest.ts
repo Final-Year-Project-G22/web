@@ -11,8 +11,6 @@ import type { CreateGuideTranslation } from './createGuideTranslation';
 export interface CreateGuideRequest {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
-  /** Parent category ID */
-  categoryId: string;
   /**
    * Visibility conditions
    * @nullable
@@ -24,6 +22,11 @@ export interface CreateGuideRequest {
    */
   icon?: string;
   /**
+   * Target sector IDs
+   * @nullable
+   */
+  sectorIds: string[] | null;
+  /**
    * Guide slug
    * @minLength 1
    * @maxLength 100
@@ -31,6 +34,11 @@ export interface CreateGuideRequest {
   slug: string;
   /** Display order */
   sortOrder: number;
+  /**
+   * Target tag IDs
+   * @nullable
+   */
+  tagIds: string[] | null;
   /**
    * Localized translations
    * @nullable

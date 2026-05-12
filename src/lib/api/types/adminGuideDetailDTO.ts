@@ -9,13 +9,16 @@ import type { AdminConditionDTO } from './adminConditionDTO';
 import type { AdminTranslationDTO } from './adminTranslationDTO';
 
 export interface AdminGuideDetailDTO {
-  categoryId: string;
   /** @nullable */
   conditions: AdminConditionDTO[] | null;
   icon?: string;
   id: string;
+  /** @nullable */
+  sectorIds: string[] | null;
   slug: string;
   sortOrder: number;
+  /** @nullable */
+  tagIds: string[] | null;
   /** @nullable */
   translations: AdminTranslationDTO[] | null;
 }

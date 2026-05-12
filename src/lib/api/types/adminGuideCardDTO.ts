@@ -7,11 +7,14 @@
  */
 
 export interface AdminGuideCardDTO {
-  categoryId: string;
   description?: string;
   icon?: string;
   id: string;
   name: string;
+  /** @nullable */
+  sectorIds: string[] | null;
   slug: string;
   sortOrder: number;
+  /** @nullable */
+  tagIds: string[] | null;
 }

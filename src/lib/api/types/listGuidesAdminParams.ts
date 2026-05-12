@@ -30,10 +30,6 @@ sortBy?: string[] | null;
  */
 sortOrder?: string[] | null;
 /**
- * Category ID filter (UUID)
- */
-categoryId?: string;
-/**
  * Language locale (en, am)
  */
 locale?: string;

@@ -17,6 +17,7 @@ import type {
   ListGuidesAdminParams,
   ListGuidesAdminResponseBody,
   RemoveGuideConditionResponseBody,
+  SetGuideTranslationsParams,
   SetGuideTranslationsRequest,
   SetGuideTranslationsResponseBody,
   UpdateGuideRequest,
@@ -406,18 +407,27 @@ export type setGuideTranslationsResponseError = (setGuideTranslationsResponseDef
 
 export type setGuideTranslationsResponse = (setGuideTranslationsResponseSuccess | setGuideTranslationsResponseError)
 
-export const getSetGuideTranslationsUrl = (id: string,) => {
+export const getSetGuideTranslationsUrl = (id: string,
+    params?: SetGuideTranslationsParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
-  
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/v1/admin/guides/${id}/translations`
+  return stringifiedParams.length > 0 ? `/api/v1/admin/guides/${id}/translations?${stringifiedParams}` : `/api/v1/admin/guides/${id}/translations`
 }
 
 export const setGuideTranslations = async (id: string,
-    setGuideTranslationsRequest: NonReadonly<SetGuideTranslationsRequest>, options?: RequestInit): Promise<setGuideTranslationsResponse> => {
+    setGuideTranslationsRequest: NonReadonly<SetGuideTranslationsRequest>,
+    params?: SetGuideTranslationsParams, options?: RequestInit): Promise<setGuideTranslationsResponse> => {
   
-  return customFetch<setGuideTranslationsResponse>(getSetGuideTranslationsUrl(id),
+  return customFetch<setGuideTranslationsResponse>(getSetGuideTranslationsUrl(id,params),
   {      
     ...options,
     method: 'PUT',
