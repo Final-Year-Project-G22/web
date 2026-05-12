@@ -13,6 +13,7 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Tags,
   TriangleAlert,
   Users,
 } from "lucide-react";
@@ -103,6 +104,15 @@ export function Sidebar() {
     if (pathname.startsWith("/notifications")) setNotificationOpen(true);
   }, [pathname]);
 
+  const [taxonomyOpen, setTaxonomyOpen] = useState(
+    pathname.startsWith("/admin/sectors") || pathname.startsWith("/admin/tags")
+  );
+
+  useEffect(() => {
+    if (pathname.startsWith("/admin/sectors") || pathname.startsWith("/admin/tags"))
+      setTaxonomyOpen(true);
+  }, [pathname]);
+
   return (
     <aside className="w-64 border-r bg-background h-screen flex flex-col hidden md:flex sticky top-0">
       <div className="p-6">
@@ -163,17 +173,6 @@ export function Sidebar() {
                     >
                       Guides
                     </Link>
-                    <Link
-                      href="/guide/categories"
-                      className={cn(
-                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                        pathname === "/guide/categories"
-                          ? "bg-primary/5 font-medium text-primary"
-                          : "text-muted-foreground hover:bg-accent"
-                      )}
-                    >
-                      Categories
-                    </Link>
                   </div>
                 ) : null}
               </div>
@@ -185,6 +184,51 @@ export function Sidebar() {
               {hasPermission("iam.admin.list") && (
                 <NavLink href="/admin" icon={<Shield className="w-4 h-4" />} label="Admin Hub" />
               )}
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => setTaxonomyOpen((prev) => !prev)}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-md px-2 py-2 text-muted-foreground transition-colors hover:bg-accent",
+                    pathname.startsWith("/admin/sectors") || pathname.startsWith("/admin/tags")
+                      ? "bg-primary/5 font-medium text-primary"
+                      : ""
+                  )}
+                >
+                  <Tags className="w-4 h-4" />
+                  <span className="text-sm flex-1 text-left">Taxonomy</span>
+                  <ChevronRight
+                    className={cn("h-3 w-3 transition-transform", taxonomyOpen ? "rotate-90" : "")}
+                  />
+                </button>
+
+                {taxonomyOpen ? (
+                  <div className="ml-6 space-y-1 border-l pl-3">
+                    <Link
+                      href="/admin/sectors"
+                      className={cn(
+                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
+                        pathname === "/admin/sectors"
+                          ? "bg-primary/5 font-medium text-primary"
+                          : "text-muted-foreground hover:bg-accent"
+                      )}
+                    >
+                      Sectors
+                    </Link>
+                    <Link
+                      href="/admin/tags"
+                      className={cn(
+                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
+                        pathname === "/admin/tags"
+                          ? "bg-primary/5 font-medium text-primary"
+                          : "text-muted-foreground hover:bg-accent"
+                      )}
+                    >
+                      Tags
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
               <div className="space-y-1">
                 <button
                   type="button"
