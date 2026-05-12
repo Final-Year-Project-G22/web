@@ -23,6 +23,7 @@ import {
 import type { GuideEditorStep } from "@/app/[locale]/(modules)/guide/_stores/guide-editor.types";
 import type { AdminGuideStepDTO } from "@/lib/api/types";
 import { getErrorMessage } from "@/lib/utils";
+import { useAdminLanguageStore } from "@/stores/admin-language.store";
 
 // ─── Data mapping ──────────────────────────────────────────────
 
@@ -309,7 +310,7 @@ export default function EditGuidePage() {
 
   // ─── Preview data ─────────────────────────────────────────
 
-  const language = useEditGuide((s) => s.language);
+  const language = useAdminLanguageStore((s) => s.language);
 
   const previewStep = useMemo(() => {
     const step = allSteps.find((s) => s.clientId === activeStepId) ?? null;

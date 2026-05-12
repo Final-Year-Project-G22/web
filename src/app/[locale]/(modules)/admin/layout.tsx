@@ -1,6 +1,6 @@
 "use client";
 
-import { KeyRound, Shield, Tags, UserPlus, Users } from "lucide-react";
+import { KeyRound, Shield, UserPlus, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -26,18 +26,6 @@ const navItems = [
     icon: UserPlus,
     permission: "iam.admin.create",
   },
-  {
-    href: "/admin/sectors",
-    label: "Sectors",
-    icon: Shield,
-    permission: null,
-  },
-  {
-    href: "/admin/tags",
-    label: "Tags",
-    icon: Tags,
-    permission: null,
-  },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -59,7 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <nav className="flex gap-1 border-b pb-px">
         {navItems.map((item) => {
-          if (item.permission && !hasPermission(item.permission)) return null;
+          if (!hasPermission(item.permission)) return null;
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (

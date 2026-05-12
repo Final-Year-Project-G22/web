@@ -19,6 +19,7 @@ import {
 import type { GuideEditorStep } from "@/app/[locale]/(modules)/guide/_stores/guide-editor.types";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAdminLanguageStore } from "@/stores/admin-language.store";
 
 interface SidebarStep {
   clientId: string;
@@ -110,7 +111,7 @@ export function EditGuideSidebar({
   const persistedSteps = useEditGuide((s) => s.persistedSteps);
   const draftSteps = useEditGuide((s) => s.draftSteps);
   const activeStepId = useEditGuide((s) => s.activeStepId);
-  const language = useEditGuide((s) => s.language);
+  const language = useAdminLanguageStore((s) => s.language);
   const hasPendingReorder = useEditGuide((s) => s.hasPendingReorder);
 
   const steps = useMemo(() => [...persistedSteps, ...draftSteps], [persistedSteps, draftSteps]);
