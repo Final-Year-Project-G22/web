@@ -1,12 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  createCategory,
-  deleteCategory,
-  getCategoryTreeAdmin,
-  updateCategory,
-} from "@/lib/api/services/admin-categories";
+
 import {
   createGuide,
   deleteGuide,
@@ -22,7 +17,6 @@ import {
   updateStep,
 } from "@/lib/api/services/admin-steps";
 import type {
-  AdminCategoryDTO,
   AdminGuideCardDTO,
   AdminGuideDetailDTO,
   AdminGuideStepDTO,
@@ -31,15 +25,12 @@ import type {
   CreateStepRequest,
   CreateStepResponseBody,
   ErrorModel,
-  GetCategoryTreeAdminParams,
   GetGuideAdminParams,
   ListGuideStepsAdminParams,
   ListGuidesAdminParams,
-  UpdateCategoryRequest,
   UpdateGuideRequest,
   UpdateStepRequest,
 } from "@/lib/api/types";
-import type { CreateCategoryRequest } from "@/lib/api/types/createCategoryRequest";
 
 // ─── Query Keys ───────────────────────────────────────────────
 
@@ -50,8 +41,6 @@ const KEYS = {
     [...KEYS.all, "detail", id, params] as const,
   steps: (id: string, params?: ListGuideStepsAdminParams) =>
     [...KEYS.all, "steps", id, params] as const,
-  categories: (params?: GetCategoryTreeAdminParams) =>
-    [...KEYS.all, "categories", ...(params ? [params] : [])] as const,
 };
 
 // ─── Read Hooks ───────────────────────────────────────────────
@@ -121,17 +110,6 @@ export function useAdminGuideSteps(id: string | undefined, params?: ListGuideSte
   });
 }
 
-export function useAdminGuideCategoryTree(params?: GetCategoryTreeAdminParams) {
-  return useQuery<AdminCategoryDTO[], ErrorModel>({
-    queryKey: KEYS.categories(params),
-    queryFn: async () => {
-      const res = await getCategoryTreeAdmin(params);
-      if (res.status !== 200) throw res.data;
-      return res.data.categories ?? [];
-    },
-  });
-}
-
 // ─── Guide Mutations ──────────────────────────────────────────
 
 export function useCreateGuide() {
@@ -186,8 +164,12 @@ export function useCreateStep() {
       return res.data;
     },
     onSuccess: async (_data, vars) => {
-      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "steps", vars.guideId] });
-      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "detail", vars.guideId] });
+      await queryClient.invalidateQueries({
+        queryKey: [...KEYS.all, "steps", vars.guideId],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: [...KEYS.all, "detail", vars.guideId],
+      });
     },
   });
 }
@@ -200,8 +182,12 @@ export function useUpdateStep() {
       if (res.status !== 200) throw res.data;
     },
     onSuccess: async (_data, vars) => {
-      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "steps", vars.guideId] });
-      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "detail", vars.guideId] });
+      await queryClient.invalidateQueries({
+        queryKey: [...KEYS.all, "steps", vars.guideId],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: [...KEYS.all, "detail", vars.guideId],
+      });
     },
   });
 }
@@ -214,8 +200,12 @@ export function useDeleteStep() {
       if (res.status !== 200) throw res.data;
     },
     onSuccess: async (_data, vars) => {
-      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "steps", vars.guideId] });
-      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "detail", vars.guideId] });
+      await queryClient.invalidateQueries({
+        queryKey: [...KEYS.all, "steps", vars.guideId],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: [...KEYS.all, "detail", vars.guideId],
+      });
     },
   });
 }
@@ -228,49 +218,12 @@ export function useReorderSteps() {
       if (res.status !== 200) throw res.data;
     },
     onSuccess: async (_data, vars) => {
-      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "steps", vars.guideId] });
-      await queryClient.invalidateQueries({ queryKey: [...KEYS.all, "detail", vars.guideId] });
-    },
-  });
-}
-
-// ─── Category Mutations ───────────────────────────────────────
-
-export function useCreateGuideCategory() {
-  const queryClient = useQueryClient();
-  return useMutation<void, ErrorModel, CreateCategoryRequest>({
-    mutationFn: async (payload) => {
-      const res = await createCategory(payload);
-      if (res.status !== 200) throw res.data;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: KEYS.categories() });
-    },
-  });
-}
-
-export function useUpdateGuideCategory() {
-  const queryClient = useQueryClient();
-  return useMutation<void, ErrorModel, { id: string; patch: UpdateCategoryRequest }>({
-    mutationFn: async ({ id, patch }) => {
-      const res = await updateCategory(id, patch);
-      if (res.status !== 200) throw res.data;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: KEYS.categories() });
-    },
-  });
-}
-
-export function useDeleteGuideCategory() {
-  const queryClient = useQueryClient();
-  return useMutation<void, ErrorModel, string>({
-    mutationFn: async (id) => {
-      const res = await deleteCategory(id);
-      if (res.status !== 200) throw res.data;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: KEYS.categories() });
+      await queryClient.invalidateQueries({
+        queryKey: [...KEYS.all, "steps", vars.guideId],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: [...KEYS.all, "detail", vars.guideId],
+      });
     },
   });
 }

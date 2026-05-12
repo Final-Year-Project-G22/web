@@ -24,6 +24,7 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { hasPermission } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
+import { LanguageToggle } from "./language-toggle";
 
 function DarkModeSwitch() {
   const { theme, setTheme } = useTheme();
@@ -62,9 +63,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-function NavLink({ href, icon, label }: { href: string; icon?: ReactNode; label: string }) {
+function NavLink({
+  href,
+  icon,
+  label,
+  excludePaths,
+}: {
+  href: string;
+  icon?: ReactNode;
+  label: string;
+  excludePaths?: string[];
+}) {
   const pathname = usePathname();
-  const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
+  const isSubPath = href !== "/dashboard" && pathname.startsWith(`${href}/`);
+  const isExcluded = excludePaths?.some((p) => pathname.startsWith(p));
+  const isActive = (pathname === href || isSubPath) && !isExcluded;
 
   return (
     <Link
@@ -104,13 +117,10 @@ export function Sidebar() {
     if (pathname.startsWith("/notifications")) setNotificationOpen(true);
   }, [pathname]);
 
-  const [taxonomyOpen, setTaxonomyOpen] = useState(
-    pathname.startsWith("/admin/sectors") || pathname.startsWith("/admin/tags")
-  );
+  const [taxonomyOpen, setTaxonomyOpen] = useState(pathname.startsWith("/taxonomy"));
 
   useEffect(() => {
-    if (pathname.startsWith("/admin/sectors") || pathname.startsWith("/admin/tags"))
-      setTaxonomyOpen(true);
+    if (pathname.startsWith("/taxonomy")) setTaxonomyOpen(true);
   }, [pathname]);
 
   return (
@@ -190,9 +200,7 @@ export function Sidebar() {
                   onClick={() => setTaxonomyOpen((prev) => !prev)}
                   className={cn(
                     "flex w-full items-center gap-3 rounded-md px-2 py-2 text-muted-foreground transition-colors hover:bg-accent",
-                    pathname.startsWith("/admin/sectors") || pathname.startsWith("/admin/tags")
-                      ? "bg-primary/5 font-medium text-primary"
-                      : ""
+                    pathname.startsWith("/taxonomy") ? "bg-primary/5 font-medium text-primary" : ""
                   )}
                 >
                   <Tags className="w-4 h-4" />
@@ -205,10 +213,10 @@ export function Sidebar() {
                 {taxonomyOpen ? (
                   <div className="ml-6 space-y-1 border-l pl-3">
                     <Link
-                      href="/admin/sectors"
+                      href="/taxonomy/sectors"
                       className={cn(
                         "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                        pathname === "/admin/sectors"
+                        pathname.startsWith("/taxonomy/sectors")
                           ? "bg-primary/5 font-medium text-primary"
                           : "text-muted-foreground hover:bg-accent"
                       )}
@@ -216,10 +224,10 @@ export function Sidebar() {
                       Sectors
                     </Link>
                     <Link
-                      href="/admin/tags"
+                      href="/taxonomy/tags"
                       className={cn(
                         "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                        pathname === "/admin/tags"
+                        pathname.startsWith("/taxonomy/tags")
                           ? "bg-primary/5 font-medium text-primary"
                           : "text-muted-foreground hover:bg-accent"
                       )}
@@ -429,6 +437,9 @@ export function Sidebar() {
       </div>
 
       <div className="p-6 mt-auto border-t">
+        <div className="mb-4">
+          <LanguageToggle />
+        </div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Moon className="w-4 h-4" />

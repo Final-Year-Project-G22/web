@@ -2,40 +2,27 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import {
-  useAdminGuideCategoryTree,
-  useCreateGuide,
-} from "@/app/[locale]/(modules)/guide/_services/guide.hook";
+import { useCreateGuide } from "@/app/[locale]/(modules)/guide/_services/guide.hook";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { getErrorMessage } from "@/lib/utils";
 
 export default function CreateGuidePage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
-  const [categoryId, setCategoryId] = useState("");
 
   const createGuide = useCreateGuide();
-  const categoriesQuery = useAdminGuideCategoryTree({ includeInactive: false });
-
-  const categories = categoriesQuery.data ?? [];
 
   function onCreateGuide(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     createGuide.mutate(
       {
         slug,
-        categoryId,
+        sectorIds: null,
+        tagIds: null,
         sortOrder: 1,
         translations: [
           { language: "en", name: title, description: "" },
@@ -82,26 +69,6 @@ export default function CreateGuidePage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>Category</Label>
-              {categoriesQuery.isLoading ? (
-                <p className="text-sm text-muted-foreground">Loading categories&hellip;</p>
-              ) : (
-                <Select value={categoryId} onValueChange={setCategoryId} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
             {createGuide.isError ? (
               <p className="text-sm text-destructive">
                 Failed to create: {getErrorMessage(createGuide.error)}
@@ -112,7 +79,7 @@ export default function CreateGuidePage() {
               <Button type="button" variant="outline" onClick={() => router.push("/guide")}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={createGuide.isPending || !categoryId}>
+              <Button type="submit" disabled={createGuide.isPending}>
                 {createGuide.isPending ? "Creating..." : "Create & Continue"}
               </Button>
             </div>
