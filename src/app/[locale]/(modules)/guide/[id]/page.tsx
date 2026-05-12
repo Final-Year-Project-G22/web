@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  useAdminGuideCategoryTree,
   useAdminGuideDetail,
   useAdminGuideSteps,
   useDeleteStep,
@@ -52,19 +51,16 @@ export default function GuideDetailPage() {
 
   const guideQuery = useAdminGuideDetail(id, { locale: "en" });
   const stepsQuery = useAdminGuideSteps(id, { locale: "en", pageSize: 100 });
-  const categoriesQuery = useAdminGuideCategoryTree({ includeInactive: false });
 
   const updateGuide = useUpdateGuide();
   const deleteStepMutation = useDeleteStep();
 
-  const categories = categoriesQuery.data ?? [];
   const guide = guideQuery.data;
   const steps = stepsQuery.data?.steps ?? [];
 
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editSlug, setEditSlug] = useState("");
-  const [editCategoryId, setEditCategoryId] = useState("");
 
   useEffect(() => {
     if (guide) {
@@ -72,7 +68,6 @@ export default function GuideDetailPage() {
       setEditName(enTranslation?.name ?? "");
       setEditDescription(enTranslation?.description ?? "");
       setEditSlug(guide.slug);
-      setEditCategoryId(guide.categoryId);
     }
   }, [guide]);
 
@@ -81,7 +76,6 @@ export default function GuideDetailPage() {
       await updateGuide.mutateAsync({
         id,
         patch: {
-          categoryId: editCategoryId,
           slug: editSlug,
           translations: [
             { language: "en", name: editName, description: editDescription },
@@ -179,26 +173,6 @@ export default function GuideDetailPage() {
                 rows={2}
                 className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Category</Label>
-              {categoriesQuery.isLoading ? (
-                <p className="text-sm text-muted-foreground">Loading categories&hellip;</p>
-              ) : (
-                <Select value={editCategoryId} onValueChange={setEditCategoryId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
             </div>
           </div>
         </CardContent>

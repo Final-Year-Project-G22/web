@@ -11,7 +11,6 @@ interface EditGuideState {
   persistedSteps: GuideEditorStep[];
   draftSteps: GuideEditorStep[];
   activeStepId: string;
-  language: string;
   hasPendingReorder: boolean;
 
   setPersistedSteps: (steps: GuideEditorStep[]) => void;
@@ -19,7 +18,6 @@ interface EditGuideState {
   removeStep: (stepId: string) => void;
   updateStep: (stepId: string, updates: Partial<GuideEditorStep>) => void;
   setActiveStepId: (id: string) => void;
-  setLanguage: (lang: string) => void;
   setHasPendingReorder: (pending: boolean) => void;
   reorderStep: (oldIndex: number, newIndex: number) => void;
   displaySteps: () => GuideEditorStep[];
@@ -31,7 +29,6 @@ const createEditGuideStore = () =>
     persistedSteps: [],
     draftSteps: [],
     activeStepId: "",
-    language: "en",
     hasPendingReorder: false,
 
     setPersistedSteps: (steps) => set({ persistedSteps: steps }),
@@ -83,8 +80,6 @@ const createEditGuideStore = () =>
       }),
 
     setActiveStepId: (id) => set({ activeStepId: id }),
-
-    setLanguage: (lang) => set({ language: lang }),
 
     setHasPendingReorder: (pending) => set({ hasPendingReorder: pending }),
 

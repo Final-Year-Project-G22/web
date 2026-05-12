@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
+import { useAdminLanguageStore } from "@/stores/admin-language.store";
 
 const stepTypeOptions = [
   { value: "startup", label: "Start-up" },
@@ -75,7 +76,7 @@ function syncStepUi(updates: Partial<GuideEditorRichContent>) {
 
   const nextUi = { ...step.ui, ...updates };
   state.updateStep(step.clientId, { ui: nextUi });
-  upsertStepTranslation(state.language, { detailedContent: nextUi });
+  upsertStepTranslation(useAdminLanguageStore.getState().language, { detailedContent: nextUi });
 }
 
 interface EditStepFormProps {
@@ -83,8 +84,8 @@ interface EditStepFormProps {
 }
 
 export function EditStepForm({ onSave }: EditStepFormProps) {
-  const language = useEditGuide((s) => s.language);
-  const setLanguage = useEditGuide((s) => s.setLanguage);
+  const language = useAdminLanguageStore((s) => s.language);
+  const setLanguage = useAdminLanguageStore((s) => s.setLanguage);
   const persistedSteps = useEditGuide((s) => s.persistedSteps);
   const draftSteps = useEditGuide((s) => s.draftSteps);
   const activeStepId = useEditGuide((s) => s.activeStepId);
