@@ -15,8 +15,6 @@ export interface ThreadDTO {
   authorId: string;
   /** Author username */
   authorUsername?: string;
-  /** Category ID */
-  categoryId: string;
   /** Created timestamp */
   createdAt?: string;
   /** Thread description */
@@ -31,12 +29,22 @@ export interface ThreadDTO {
   parentThreadId?: string;
   /** Reply count */
   replyCount: number;
+  /**
+   * Sector IDs
+   * @nullable
+   */
+  sectorIds: string[] | null;
   /** Share count */
   shareCount: number;
   /** Thread slug */
   slug: string;
   /** Thread status */
   status: string;
+  /**
+   * Tag IDs
+   * @nullable
+   */
+  tagIds: string[] | null;
   /** Thread title */
   title: string;
   /** Updated timestamp */

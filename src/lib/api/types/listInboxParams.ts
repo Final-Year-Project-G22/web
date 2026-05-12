@@ -8,10 +8,6 @@
 
 export type ListInboxParams = {
 /**
- * Filter by notification category
- */
-category?: string;
-/**
  * Page number
  */
 page?: number;

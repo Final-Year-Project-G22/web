@@ -11,8 +11,6 @@ import type { CreateTemplateRequestVariablesSchema } from './createTemplateReque
 export interface CreateTemplateRequest {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
-  /** Notification category */
-  category: string;
   /** Multi-channel content */
   defaultContent: CreateTemplateRequestDefaultContent;
   /** Default TTL in seconds */
@@ -29,6 +27,8 @@ export interface CreateTemplateRequest {
   notificationType: string;
   /** Default priority */
   priority: number;
+  /** Template group */
+  templateGroup: string;
   /** Template variable schema */
   variablesSchema?: CreateTemplateRequestVariablesSchema;
 }

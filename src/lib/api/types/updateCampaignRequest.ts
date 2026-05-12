@@ -17,8 +17,22 @@ export interface UpdateCampaignRequest {
    * @maxLength 200
    */
   name?: string;
+  /** Target region */
+  region?: string;
   /** Scheduled sending time */
   scheduledFor?: string;
+  /**
+   * Target sector IDs
+   * @nullable
+   */
+  sectorIds?: string[] | null;
+  /** Target business stage */
+  stage?: string;
+  /**
+   * Target tag IDs
+   * @nullable
+   */
+  tagIds?: string[] | null;
   /** Segment filters for segmented campaigns */
   targetSegment?: UpdateCampaignRequestTargetSegment;
 }
