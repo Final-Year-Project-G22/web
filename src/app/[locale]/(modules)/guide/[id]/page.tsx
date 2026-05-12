@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useSectorList, useTagList } from "@/app/[locale]/(modules)/admin/_services/taxonomy.hook";
 import {
   useAdminGuideDetail,
   useAdminGuideSteps,
@@ -29,13 +30,7 @@ import {
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { TagSelect } from "@/components/ui/multi-select";
 import {
   Table,
   TableBody,
@@ -45,31 +40,42 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getErrorMessage } from "@/lib/utils";
+import { useAdminLanguageStore } from "@/stores/admin-language.store";
 
 export default function GuideDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const language = useAdminLanguageStore((s) => s.language);
 
-  const guideQuery = useAdminGuideDetail(id, { locale: "en" });
-  const stepsQuery = useAdminGuideSteps(id, { locale: "en", pageSize: 100 });
+  const guideQuery = useAdminGuideDetail(id, { locale: language });
+  const stepsQuery = useAdminGuideSteps(id, { locale: language, pageSize: 100 });
+  const sectorsQuery = useSectorList({ pageSize: 200 });
+  const tagsQuery = useTagList({ pageSize: 200 });
 
   const updateGuide = useUpdateGuide();
   const deleteStepMutation = useDeleteStep();
 
+  const sectors = sectorsQuery.data?.data ?? [];
+  const tags = tagsQuery.data?.data ?? [];
   const guide = guideQuery.data;
   const steps = stepsQuery.data?.steps ?? [];
 
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editSlug, setEditSlug] = useState("");
+  const [editSectorIds, setEditSectorIds] = useState<string[]>([]);
+  const [editTagIds, setEditTagIds] = useState<string[]>([]);
+  const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
     if (guide) {
-      const enTranslation = guide.translations?.find((t) => t.language === "en");
-      setEditName(enTranslation?.name ?? "");
-      setEditDescription(enTranslation?.description ?? "");
+      const translation = guide.translations?.find((t) => t.language === language);
+      setEditName(translation?.name ?? "");
+      setEditDescription(translation?.description ?? "");
       setEditSlug(guide.slug);
+      setEditSectorIds(guide.sectorIds ?? []);
+      setEditTagIds(guide.tagIds ?? []);
     }
-  }, [guide]);
+  }, [guide, language]);
 
   async function handleSaveGuide() {
     try {
@@ -77,12 +83,13 @@ export default function GuideDetailPage() {
         id,
         patch: {
           slug: editSlug,
-          translations: [
-            { language: "en", name: editName, description: editDescription },
-            { language: "am", name: editName, description: editDescription },
-          ],
+          sectorIds: editSectorIds.length > 0 ? editSectorIds : null,
+          tagIds: editTagIds.length > 0 ? editTagIds : null,
+          translations: [{ language, name: editName, description: editDescription }],
+          translationMode: "merge" as const,
         },
       });
+      setDirty(false);
       toast.success("Guide saved");
     } catch (err) {
       toast.error(`Failed to save: ${getErrorMessage(err)}`);
@@ -107,7 +114,7 @@ export default function GuideDetailPage() {
     );
   }
 
-  const guideTitle = guide?.translations?.find((t) => t.language === "en")?.name ?? "Untitled";
+  const guideTitle = guide?.translations?.find((t) => t.language === language)?.name ?? "Untitled";
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -144,11 +151,14 @@ export default function GuideDetailPage() {
         <CardContent className="space-y-4 pt-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="guide-name">Name (EN)</Label>
+              <Label htmlFor="guide-name">Name ({language.toUpperCase()})</Label>
               <Input
                 id="guide-name"
                 value={editName}
-                onChange={(e) => setEditName(e.target.value)}
+                onChange={(e) => {
+                  setEditName(e.target.value);
+                  setDirty(true);
+                }}
                 placeholder="Guide name"
               />
             </div>
@@ -158,21 +168,61 @@ export default function GuideDetailPage() {
               <Input
                 id="guide-slug"
                 value={editSlug}
-                onChange={(e) => setEditSlug(e.target.value)}
+                onChange={(e) => {
+                  setEditSlug(e.target.value);
+                  setDirty(true);
+                }}
                 placeholder="guide-slug"
               />
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="guide-description">Description (EN)</Label>
+              <Label htmlFor="guide-description">Description ({language.toUpperCase()})</Label>
               <textarea
                 id="guide-description"
                 value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
+                onChange={(e) => {
+                  setEditDescription(e.target.value);
+                  setDirty(true);
+                }}
                 placeholder="Short guide description"
                 rows={2}
                 className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Sectors</Label>
+              {sectorsQuery.isLoading ? (
+                <p className="text-sm text-muted-foreground">Loading sectors&hellip;</p>
+              ) : (
+                <TagSelect
+                  options={sectors.map((s) => ({ id: s.id, label: s.nameEn }))}
+                  selected={editSectorIds}
+                  onChange={(ids) => {
+                    setEditSectorIds(ids);
+                    setDirty(true);
+                  }}
+                  placeholder="Search sectors..."
+                />
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Tags</Label>
+              {tagsQuery.isLoading ? (
+                <p className="text-sm text-muted-foreground">Loading tags&hellip;</p>
+              ) : (
+                <TagSelect
+                  options={tags.map((t) => ({ id: t.id, label: t.nameEn, group: t.group }))}
+                  selected={editTagIds}
+                  onChange={(ids) => {
+                    setEditTagIds(ids);
+                    setDirty(true);
+                  }}
+                  placeholder="Search tags..."
+                />
+              )}
             </div>
           </div>
         </CardContent>
@@ -211,7 +261,7 @@ export default function GuideDetailPage() {
                 <TableBody>
                   {steps.map((step, idx) => {
                     const stepTitle =
-                      step.translations?.find((t) => t.language === "en")?.title ??
+                      step.translations?.find((t) => t.language === language)?.title ??
                       `Step ${idx + 1}`;
                     return (
                       <TableRow key={step.id}>

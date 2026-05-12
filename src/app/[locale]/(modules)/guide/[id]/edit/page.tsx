@@ -144,9 +144,10 @@ export default function EditGuidePage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const language = useAdminLanguageStore((s) => s.language);
 
-  const guideQuery = useAdminGuideDetail(id, { locale: "en" });
-  const stepsQuery = useAdminGuideSteps(id, { locale: "en", pageSize: 100 });
+  const guideQuery = useAdminGuideDetail(id, { locale: language });
+  const stepsQuery = useAdminGuideSteps(id, { locale: language, pageSize: 100 });
 
   const createStepMutation = useCreateStep();
   const updateStepMutation = useUpdateStep();
@@ -213,7 +214,7 @@ export default function EditGuidePage() {
   }, [stepParam, setActiveStepId]);
 
   const guideName =
-    guideQuery.data?.translations?.find((t) => t.language === "en")?.name ?? "Untitled";
+    guideQuery.data?.translations?.find((t) => t.language === language)?.name ?? "Untitled";
 
   // ─── Handlers ─────────────────────────────────────────────
 
@@ -309,8 +310,6 @@ export default function EditGuidePage() {
   }
 
   // ─── Preview data ─────────────────────────────────────────
-
-  const language = useAdminLanguageStore((s) => s.language);
 
   const previewStep = useMemo(() => {
     const step = allSteps.find((s) => s.clientId === activeStepId) ?? null;

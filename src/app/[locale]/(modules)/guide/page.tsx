@@ -30,17 +30,23 @@ import {
 } from "@/components/ui/table";
 import type { ListGuidesAdminParams } from "@/lib/api/types";
 import { getErrorMessage } from "@/lib/utils";
+import { useAdminLanguageStore } from "@/stores/admin-language.store";
 
 export default function GuideListPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const language = useAdminLanguageStore((s) => s.language);
 
   const page = Number(searchParams.get("page") ?? "1");
   const search = searchParams.get("search") ?? "";
 
   const [searchInput, setSearchInput] = useState(search);
 
-  const queryParams: ListGuidesAdminParams = { page, search: search || undefined };
+  const queryParams: ListGuidesAdminParams = {
+    page,
+    search: search || undefined,
+    locale: language,
+  };
   const guidesQuery = useAdminGuideList(queryParams);
 
   const deleteMutation = useDeleteGuide();
