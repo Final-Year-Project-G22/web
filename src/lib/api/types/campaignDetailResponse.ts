@@ -28,12 +28,26 @@ export interface CampaignDetailResponse {
   id: string;
   /** Campaign name */
   name: string;
+  /** Target region */
+  region?: string;
   /** Scheduled sending time */
   scheduledFor?: string;
+  /**
+   * Target sector IDs
+   * @nullable
+   */
+  sectorIds: string[] | null;
   /** Actual sending time */
   sentAt?: string;
+  /** Target business stage */
+  stage?: string;
   /** Campaign status */
   status: string;
+  /**
+   * Target tag IDs
+   * @nullable
+   */
+  tagIds: string[] | null;
   /** Segment filters or resolved recipients */
   targetSegment?: CampaignDetailResponseTargetSegment;
 }

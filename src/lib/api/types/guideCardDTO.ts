@@ -7,8 +7,6 @@
  */
 
 export interface GuideCardDTO {
-  /** Parent category ID */
-  categoryId: string;
   /** Localized description */
   description?: string;
   /** Icon identifier */
@@ -17,6 +15,16 @@ export interface GuideCardDTO {
   id: string;
   /** Localized guide name */
   name: string;
+  /**
+   * Target sector IDs
+   * @nullable
+   */
+  sectorIds: string[] | null;
   /** Guide slug */
   slug: string;
+  /**
+   * Target tag IDs
+   * @nullable
+   */
+  tagIds: string[] | null;
 }

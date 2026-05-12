@@ -6,13 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { UpdateGuideCondition } from './updateGuideCondition';
+import type { UpdateGuideRequestTranslationMode } from './updateGuideRequestTranslationMode';
 import type { UpdateGuideTranslation } from './updateGuideTranslation';
 
 export interface UpdateGuideRequest {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
-  /** Parent category ID */
-  categoryId?: string;
   /**
    * Visibility conditions
    * @nullable
@@ -24,12 +23,24 @@ export interface UpdateGuideRequest {
    */
   icon?: string;
   /**
+   * Target sector IDs
+   * @nullable
+   */
+  sectorIds?: string[] | null;
+  /**
    * Guide slug
    * @maxLength 100
    */
   slug?: string;
   /** Display order */
   sortOrder?: number;
+  /**
+   * Target tag IDs
+   * @nullable
+   */
+  tagIds?: string[] | null;
+  /** Translation mode: 'merge' to upsert without deleting, anything else or absent for full replacement */
+  translationMode?: UpdateGuideRequestTranslationMode;
   /**
    * Localized translations
    * @nullable

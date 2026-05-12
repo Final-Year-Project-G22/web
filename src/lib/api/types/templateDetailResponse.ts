@@ -12,8 +12,6 @@ import type { TranslationResponse } from './translationResponse';
 export interface TemplateDetailResponse {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
-  /** Notification category */
-  category: string;
   /** Multi-channel content */
   defaultContent: TemplateDetailResponseDefaultContent;
   /** Default TTL in seconds */
@@ -30,6 +28,8 @@ export interface TemplateDetailResponse {
   notificationType: string;
   /** Default priority */
   priority: number;
+  /** Template group */
+  templateGroup: string;
   /**
    * Template translations
    * @nullable

@@ -8,6 +8,10 @@
 
 export type ListCommunityThreadsParams = {
 /**
+ * Search term
+ */
+search?: string;
+/**
  * Page number
  */
 page?: number;
@@ -15,8 +19,4 @@ page?: number;
  * Page size
  */
 pageSize?: number;
-/**
- * Search term
- */
-search?: string;
 };

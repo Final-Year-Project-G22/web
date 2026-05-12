@@ -31,6 +31,13 @@ export interface FinalizeUploadRequest {
    * @maxLength 255
    */
   idempotencyKey: string;
+  /** Target region for document taxonomy */
+  region?: string;
+  /**
+   * Target sector IDs for document taxonomy
+   * @nullable
+   */
+  sectorIds?: string[] | null;
   /**
    * Uploaded object size in bytes
    * @minimum 0
@@ -38,9 +45,16 @@ export interface FinalizeUploadRequest {
   sizeBytes: number;
   /** Optional original filename */
   sourceFilename?: string;
+  /** Target business stage for document taxonomy */
+  stage?: string;
   /**
    * Uploaded object key
    * @minLength 1
    */
   storageKey: string;
+  /**
+   * Target tag IDs for document taxonomy
+   * @nullable
+   */
+  tagIds?: string[] | null;
 }

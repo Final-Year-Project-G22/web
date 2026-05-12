@@ -23,6 +23,7 @@ import type {
   ReorderStepsRequest,
   ReorderStepsResponseBody,
   RevertStepToVersionResponseBody,
+  SetStepTranslationsParams,
   SetStepTranslationsRequest,
   SetStepTranslationsResponseBody,
   UpdateStepRequest,
@@ -442,18 +443,27 @@ export type setStepTranslationsResponseError = (setStepTranslationsResponseDefau
 
 export type setStepTranslationsResponse = (setStepTranslationsResponseSuccess | setStepTranslationsResponseError)
 
-export const getSetStepTranslationsUrl = (id: string,) => {
+export const getSetStepTranslationsUrl = (id: string,
+    params?: SetStepTranslationsParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
-  
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/v1/admin/guides/steps/${id}/translations`
+  return stringifiedParams.length > 0 ? `/api/v1/admin/guides/steps/${id}/translations?${stringifiedParams}` : `/api/v1/admin/guides/steps/${id}/translations`
 }
 
 export const setStepTranslations = async (id: string,
-    setStepTranslationsRequest: NonReadonly<SetStepTranslationsRequest>, options?: RequestInit): Promise<setStepTranslationsResponse> => {
+    setStepTranslationsRequest: NonReadonly<SetStepTranslationsRequest>,
+    params?: SetStepTranslationsParams, options?: RequestInit): Promise<setStepTranslationsResponse> => {
   
-  return customFetch<setStepTranslationsResponse>(getSetStepTranslationsUrl(id),
+  return customFetch<setStepTranslationsResponse>(getSetStepTranslationsUrl(id,params),
   {      
     ...options,
     method: 'PUT',

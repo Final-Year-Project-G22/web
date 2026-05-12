@@ -8,10 +8,6 @@
 
 export type ListAllCommunityThreadsParams = {
 /**
- * Category ID
- */
-categoryId?: string;
-/**
  * Search term
  */
 search?: string;

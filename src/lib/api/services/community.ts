@@ -13,6 +13,7 @@ import type {
   CreatePostResponseBody,
   CreateThreadResponseBody,
   DeletePostResponseBody,
+  DeleteThreadResponseBody,
   ErrorModel,
   FollowResponseBody,
   GetCategoryResponseBody,
@@ -38,7 +39,9 @@ import type {
   ReportUserResponseBody,
   SearchCommunityThreadsParams,
   UpdateCommunityPostBody,
+  UpdateCommunityThreadBody,
   UpdatePostResponseBody,
+  UpdateThreadResponseBody,
   UploadAttachmentsBody,
   UploadAttachmentsResponseBody
 } from '../types';
@@ -350,58 +353,6 @@ export const followCommunityCategory = async (id: string, options?: RequestInit)
   
 
 /**
- * Lists discussion threads in a category.
- * @summary List threads by category
- */
-export type listCommunityThreadsResponse200 = {
-  data: ListThreadsResponseBody
-  status: 200
-}
-
-export type listCommunityThreadsResponseDefault = {
-  data: ErrorModel
-  status: Exclude<HTTPStatusCodes, 200>
-}
-
-export type listCommunityThreadsResponseSuccess = (listCommunityThreadsResponse200) & {
-  headers: Headers;
-};
-export type listCommunityThreadsResponseError = (listCommunityThreadsResponseDefault) & {
-  headers: Headers;
-};
-
-export type listCommunityThreadsResponse = (listCommunityThreadsResponseSuccess | listCommunityThreadsResponseError)
-
-export const getListCommunityThreadsUrl = (id: string,
-    params?: ListCommunityThreadsParams,) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0 ? `/api/v1/community/categories/${id}/threads?${stringifiedParams}` : `/api/v1/community/categories/${id}/threads`
-}
-
-export const listCommunityThreads = async (id: string,
-    params?: ListCommunityThreadsParams, options?: RequestInit): Promise<listCommunityThreadsResponse> => {
-  
-  return customFetch<listCommunityThreadsResponse>(getListCommunityThreadsUrl(id,params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-  
-
-/**
  * Lists categories followed by the current user.
  * @summary List followed categories
  */
@@ -599,29 +550,29 @@ if(updateCommunityPostBody.removeAttachmentIds !== undefined) {
   
 
 /**
- * Lists discussion threads across categories, including sub-threads.
+ * Lists discussion threads filtered by user's business profile taxonomy.
  * @summary List discussion threads
  */
-export type listAllCommunityThreadsResponse200 = {
+export type listCommunityThreadsResponse200 = {
   data: ListThreadsResponseBody
   status: 200
 }
 
-export type listAllCommunityThreadsResponseDefault = {
+export type listCommunityThreadsResponseDefault = {
   data: ErrorModel
   status: Exclude<HTTPStatusCodes, 200>
 }
 
-export type listAllCommunityThreadsResponseSuccess = (listAllCommunityThreadsResponse200) & {
+export type listCommunityThreadsResponseSuccess = (listCommunityThreadsResponse200) & {
   headers: Headers;
 };
-export type listAllCommunityThreadsResponseError = (listAllCommunityThreadsResponseDefault) & {
+export type listCommunityThreadsResponseError = (listCommunityThreadsResponseDefault) & {
   headers: Headers;
 };
 
-export type listAllCommunityThreadsResponse = (listAllCommunityThreadsResponseSuccess | listAllCommunityThreadsResponseError)
+export type listCommunityThreadsResponse = (listCommunityThreadsResponseSuccess | listCommunityThreadsResponseError)
 
-export const getListAllCommunityThreadsUrl = (params?: ListAllCommunityThreadsParams,) => {
+export const getListCommunityThreadsUrl = (params?: ListCommunityThreadsParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -636,9 +587,9 @@ export const getListAllCommunityThreadsUrl = (params?: ListAllCommunityThreadsPa
   return stringifiedParams.length > 0 ? `/api/v1/community/threads?${stringifiedParams}` : `/api/v1/community/threads`
 }
 
-export const listAllCommunityThreads = async (params?: ListAllCommunityThreadsParams, options?: RequestInit): Promise<listAllCommunityThreadsResponse> => {
+export const listCommunityThreads = async (params?: ListCommunityThreadsParams, options?: RequestInit): Promise<listCommunityThreadsResponse> => {
   
-  return customFetch<listAllCommunityThreadsResponse>(getListAllCommunityThreadsUrl(params),
+  return customFetch<listCommunityThreadsResponse>(getListCommunityThreadsUrl(params),
   {      
     ...options,
     method: 'GET'
@@ -684,13 +635,18 @@ export const createCommunityThread = async (createCommunityThreadBody: CreateCom
 if(createCommunityThreadBody.attachmentIds !== undefined) {
  formData.append(`attachmentIds`, createCommunityThreadBody.attachmentIds instanceof Blob ? createCommunityThreadBody.attachmentIds : new Blob([createCommunityThreadBody.attachmentIds], { type: 'text/plain' }));
  }
-formData.append(`categoryId`, createCommunityThreadBody.categoryId instanceof Blob ? createCommunityThreadBody.categoryId : new Blob([createCommunityThreadBody.categoryId], { type: 'text/plain' }));
 formData.append(`description`, createCommunityThreadBody.description instanceof Blob ? createCommunityThreadBody.description : new Blob([createCommunityThreadBody.description], { type: 'text/plain' }));
 formData.append(`initialPostContent`, createCommunityThreadBody.initialPostContent instanceof Blob ? createCommunityThreadBody.initialPostContent : new Blob([createCommunityThreadBody.initialPostContent], { type: 'text/plain' }));
 if(createCommunityThreadBody.parentThreadId !== undefined) {
  formData.append(`parentThreadId`, createCommunityThreadBody.parentThreadId instanceof Blob ? createCommunityThreadBody.parentThreadId : new Blob([createCommunityThreadBody.parentThreadId], { type: 'text/plain' }));
  }
+if(createCommunityThreadBody.sectorIds !== undefined) {
+ formData.append(`sectorIds`, createCommunityThreadBody.sectorIds instanceof Blob ? createCommunityThreadBody.sectorIds : new Blob([createCommunityThreadBody.sectorIds], { type: 'text/plain' }));
+ }
 formData.append(`slug`, createCommunityThreadBody.slug instanceof Blob ? createCommunityThreadBody.slug : new Blob([createCommunityThreadBody.slug], { type: 'text/plain' }));
+if(createCommunityThreadBody.tagIds !== undefined) {
+ formData.append(`tagIds`, createCommunityThreadBody.tagIds instanceof Blob ? createCommunityThreadBody.tagIds : new Blob([createCommunityThreadBody.tagIds], { type: 'text/plain' }));
+ }
 formData.append(`title`, createCommunityThreadBody.title instanceof Blob ? createCommunityThreadBody.title : new Blob([createCommunityThreadBody.title], { type: 'text/plain' }));
 
   return customFetch<createCommunityThreadResponse>(getCreateCommunityThreadUrl(),
@@ -705,7 +661,57 @@ formData.append(`title`, createCommunityThreadBody.title instanceof Blob ? creat
   
 
 /**
- * Searches threads by keyword and category.
+ * Lists all discussion threads without taxonomy filtering.
+ * @summary List all discussion threads
+ */
+export type listAllCommunityThreadsResponse200 = {
+  data: ListThreadsResponseBody
+  status: 200
+}
+
+export type listAllCommunityThreadsResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type listAllCommunityThreadsResponseSuccess = (listAllCommunityThreadsResponse200) & {
+  headers: Headers;
+};
+export type listAllCommunityThreadsResponseError = (listAllCommunityThreadsResponseDefault) & {
+  headers: Headers;
+};
+
+export type listAllCommunityThreadsResponse = (listAllCommunityThreadsResponseSuccess | listAllCommunityThreadsResponseError)
+
+export const getListAllCommunityThreadsUrl = (params?: ListAllCommunityThreadsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/community/threads/all?${stringifiedParams}` : `/api/v1/community/threads/all`
+}
+
+export const listAllCommunityThreads = async (params?: ListAllCommunityThreadsParams, options?: RequestInit): Promise<listAllCommunityThreadsResponse> => {
+  
+  return customFetch<listAllCommunityThreadsResponse>(getListAllCommunityThreadsUrl(params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+  
+
+/**
+ * Searches threads by keyword, filtered by user's business profile taxonomy.
  * @summary Search discussion threads
  */
 export type searchCommunityThreadsResponse200 = {
@@ -755,6 +761,49 @@ export const searchCommunityThreads = async (params?: SearchCommunityThreadsPara
   
 
 /**
+ * Deletes a thread (author only, no replies beyond the initial post).
+ * @summary Delete discussion thread
+ */
+export type deleteCommunityThreadResponse200 = {
+  data: DeleteThreadResponseBody
+  status: 200
+}
+
+export type deleteCommunityThreadResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type deleteCommunityThreadResponseSuccess = (deleteCommunityThreadResponse200) & {
+  headers: Headers;
+};
+export type deleteCommunityThreadResponseError = (deleteCommunityThreadResponseDefault) & {
+  headers: Headers;
+};
+
+export type deleteCommunityThreadResponse = (deleteCommunityThreadResponseSuccess | deleteCommunityThreadResponseError)
+
+export const getDeleteCommunityThreadUrl = (id: string,) => {
+
+
+  
+
+  return `/api/v1/community/threads/${id}`
+}
+
+export const deleteCommunityThread = async (id: string, options?: RequestInit): Promise<deleteCommunityThreadResponse> => {
+  
+  return customFetch<deleteCommunityThreadResponse>(getDeleteCommunityThreadUrl(id),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+  
+
+/**
  * Retrieves thread details.
  * @summary Get discussion thread
  */
@@ -793,6 +842,70 @@ export const getCommunityThread = async (id: string, options?: RequestInit): Pro
     method: 'GET'
     
     
+  }
+);}
+  
+
+/**
+ * Updates a thread's metadata (author only, active threads only).
+ * @summary Update discussion thread
+ */
+export type updateCommunityThreadResponse200 = {
+  data: UpdateThreadResponseBody
+  status: 200
+}
+
+export type updateCommunityThreadResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type updateCommunityThreadResponseSuccess = (updateCommunityThreadResponse200) & {
+  headers: Headers;
+};
+export type updateCommunityThreadResponseError = (updateCommunityThreadResponseDefault) & {
+  headers: Headers;
+};
+
+export type updateCommunityThreadResponse = (updateCommunityThreadResponseSuccess | updateCommunityThreadResponseError)
+
+export const getUpdateCommunityThreadUrl = (id: string,) => {
+
+
+  
+
+  return `/api/v1/community/threads/${id}`
+}
+
+export const updateCommunityThread = async (id: string,
+    updateCommunityThreadBody: UpdateCommunityThreadBody, options?: RequestInit): Promise<updateCommunityThreadResponse> => {
+    const formData = new FormData();
+if(updateCommunityThreadBody.description !== undefined) {
+ formData.append(`description`, updateCommunityThreadBody.description instanceof Blob ? updateCommunityThreadBody.description : new Blob([updateCommunityThreadBody.description], { type: 'text/plain' }));
+ }
+if(updateCommunityThreadBody.isPinned !== undefined) {
+ formData.append(`isPinned`, updateCommunityThreadBody.isPinned instanceof Blob ? updateCommunityThreadBody.isPinned : new Blob([updateCommunityThreadBody.isPinned], { type: 'text/plain' }));
+ }
+if(updateCommunityThreadBody.sectorIds !== undefined) {
+ formData.append(`sectorIds`, updateCommunityThreadBody.sectorIds instanceof Blob ? updateCommunityThreadBody.sectorIds : new Blob([updateCommunityThreadBody.sectorIds], { type: 'text/plain' }));
+ }
+if(updateCommunityThreadBody.status !== undefined) {
+ formData.append(`status`, updateCommunityThreadBody.status instanceof Blob ? updateCommunityThreadBody.status : new Blob([updateCommunityThreadBody.status], { type: 'text/plain' }));
+ }
+if(updateCommunityThreadBody.tagIds !== undefined) {
+ formData.append(`tagIds`, updateCommunityThreadBody.tagIds instanceof Blob ? updateCommunityThreadBody.tagIds : new Blob([updateCommunityThreadBody.tagIds], { type: 'text/plain' }));
+ }
+if(updateCommunityThreadBody.title !== undefined) {
+ formData.append(`title`, updateCommunityThreadBody.title instanceof Blob ? updateCommunityThreadBody.title : new Blob([updateCommunityThreadBody.title], { type: 'text/plain' }));
+ }
+
+  return customFetch<updateCommunityThreadResponse>(getUpdateCommunityThreadUrl(id),
+  {      
+    ...options,
+    method: 'PATCH'
+    ,
+    body: 
+      formData,
   }
 );}
   

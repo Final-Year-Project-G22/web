@@ -7,8 +7,6 @@
  */
 
 export interface TemplateSummaryResponse {
-  /** Notification category */
-  category: string;
   /** Template ID */
   id: string;
   /** Whether template is system-managed */
@@ -17,4 +15,6 @@ export interface TemplateSummaryResponse {
   name: string;
   /** Notification type */
   notificationType: string;
+  /** Template group */
+  templateGroup: string;
 }

@@ -7,6 +7,7 @@
  */
 import type { UpdateStepCondition } from './updateStepCondition';
 import type { UpdateStepDependency } from './updateStepDependency';
+import type { UpdateStepRequestTranslationMode } from './updateStepRequestTranslationMode';
 import type { UpdateStepTranslation } from './updateStepTranslation';
 
 export interface UpdateStepRequest {
@@ -43,6 +44,8 @@ export interface UpdateStepRequest {
   sortOrder?: number;
   /** Step type */
   stepType?: string;
+  /** Translation mode: 'merge' to upsert without deleting, anything else or absent for full replacement */
+  translationMode?: UpdateStepRequestTranslationMode;
   /**
    * Localized translations
    * @nullable

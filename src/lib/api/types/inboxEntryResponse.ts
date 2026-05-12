@@ -10,8 +10,6 @@ import type { NotificationSummaryResponse } from './notificationSummaryResponse'
 export interface InboxEntryResponse {
   /** Action URL */
   actionUrl?: string;
-  /** Notification category */
-  category: string;
   /** Expiration time */
   expiresAt?: string;
   /** Inbox entry ID */

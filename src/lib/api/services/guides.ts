@@ -9,17 +9,20 @@ import type {
   AddBookmarkResponseBody,
   CompleteStepRequest,
   CompleteStepResponseBody,
+  CompletionStatsDTO,
   ErrorModel,
-  GetCategoryTreeParams,
-  GetCategoryTreeResponseBody,
   GetCurrentStepParams,
   GetCurrentStepResponseBody,
+  GetInProgressGuidesParams,
+  GetInProgressGuidesResponseBody,
   GetPersonalizedGuideParams,
   GetPersonalizedGuideResponseBody,
   GetRecentlyViewedParams,
   GetRecentlyViewedResponseBody,
   ListBookmarksParams,
   ListBookmarksResponseBody,
+  ListGuidesParams,
+  ListGuidesResponseBody,
   MarkStepIncompleteResponseBody,
   RemoveBookmarkResponseBody,
   SearchGuidesParams,
@@ -69,6 +72,56 @@ export type HTTPStatusCode3xx = 300 | 301 | 302 | 303 | 304 | 305 | 307 | 308;
 export type HTTPStatusCode4xx = 400 | 401 | 402 | 403 | 404 | 405 | 406 | 407 | 408 | 409 | 410 | 411 | 412 | 413 | 414 | 415 | 416 | 417 | 418 | 419 | 420 | 421 | 422 | 423 | 424 | 426 | 428 | 429 | 431 | 451;
 export type HTTPStatusCode5xx = 500 | 501 | 502 | 503 | 504 | 505 | 507 | 511;
 export type HTTPStatusCodes = HTTPStatusCode1xx | HTTPStatusCode2xx | HTTPStatusCode3xx | HTTPStatusCode4xx | HTTPStatusCode5xx;
+
+/**
+ * Lists guides filtered by the user's business profile taxonomy (sector, tags, region, stage).
+ * @summary List guides
+ */
+export type listGuidesResponse200 = {
+  data: ListGuidesResponseBody
+  status: 200
+}
+
+export type listGuidesResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type listGuidesResponseSuccess = (listGuidesResponse200) & {
+  headers: Headers;
+};
+export type listGuidesResponseError = (listGuidesResponseDefault) & {
+  headers: Headers;
+};
+
+export type listGuidesResponse = (listGuidesResponseSuccess | listGuidesResponseError)
+
+export const getListGuidesUrl = (params?: ListGuidesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/guides?${stringifiedParams}` : `/api/v1/guides`
+}
+
+export const listGuides = async (params?: ListGuidesParams, options?: RequestInit): Promise<listGuidesResponse> => {
+  
+  return customFetch<listGuidesResponse>(getListGuidesUrl(params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+  
 
 /**
  * Lists all bookmarks for the user.
@@ -121,29 +174,72 @@ export const listBookmarks = async (params?: ListBookmarksParams, options?: Requ
   
 
 /**
- * Retrieves the hierarchical category tree for guides with localized names.
- * @summary Get guide category tree
+ * Returns aggregate completion statistics for dashboard.
+ * @summary Get completion statistics
  */
-export type getCategoryTreeResponse200 = {
-  data: GetCategoryTreeResponseBody
+export type getCompletionStatsResponse200 = {
+  data: CompletionStatsDTO
   status: 200
 }
 
-export type getCategoryTreeResponseDefault = {
+export type getCompletionStatsResponseDefault = {
   data: ErrorModel
   status: Exclude<HTTPStatusCodes, 200>
 }
 
-export type getCategoryTreeResponseSuccess = (getCategoryTreeResponse200) & {
+export type getCompletionStatsResponseSuccess = (getCompletionStatsResponse200) & {
   headers: Headers;
 };
-export type getCategoryTreeResponseError = (getCategoryTreeResponseDefault) & {
+export type getCompletionStatsResponseError = (getCompletionStatsResponseDefault) & {
   headers: Headers;
 };
 
-export type getCategoryTreeResponse = (getCategoryTreeResponseSuccess | getCategoryTreeResponseError)
+export type getCompletionStatsResponse = (getCompletionStatsResponseSuccess | getCompletionStatsResponseError)
 
-export const getGetCategoryTreeUrl = (params?: GetCategoryTreeParams,) => {
+export const getGetCompletionStatsUrl = () => {
+
+
+  
+
+  return `/api/v1/guides/completion-stats`
+}
+
+export const getCompletionStats = async ( options?: RequestInit): Promise<getCompletionStatsResponse> => {
+  
+  return customFetch<getCompletionStatsResponse>(getGetCompletionStatsUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+  
+
+/**
+ * Retrieves guides the user has started but not completed, with progress data.
+ * @summary Get in-progress guides
+ */
+export type getInProgressGuidesResponse200 = {
+  data: GetInProgressGuidesResponseBody
+  status: 200
+}
+
+export type getInProgressGuidesResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type getInProgressGuidesResponseSuccess = (getInProgressGuidesResponse200) & {
+  headers: Headers;
+};
+export type getInProgressGuidesResponseError = (getInProgressGuidesResponseDefault) & {
+  headers: Headers;
+};
+
+export type getInProgressGuidesResponse = (getInProgressGuidesResponseSuccess | getInProgressGuidesResponseError)
+
+export const getGetInProgressGuidesUrl = (params?: GetInProgressGuidesParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -155,12 +251,12 @@ export const getGetCategoryTreeUrl = (params?: GetCategoryTreeParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/guides/categories/tree?${stringifiedParams}` : `/api/v1/guides/categories/tree`
+  return stringifiedParams.length > 0 ? `/api/v1/guides/in-progress?${stringifiedParams}` : `/api/v1/guides/in-progress`
 }
 
-export const getCategoryTree = async (params?: GetCategoryTreeParams, options?: RequestInit): Promise<getCategoryTreeResponse> => {
+export const getInProgressGuides = async (params?: GetInProgressGuidesParams, options?: RequestInit): Promise<getInProgressGuidesResponse> => {
   
-  return customFetch<getCategoryTreeResponse>(getGetCategoryTreeUrl(params),
+  return customFetch<getInProgressGuidesResponse>(getGetInProgressGuidesUrl(params),
   {      
     ...options,
     method: 'GET'

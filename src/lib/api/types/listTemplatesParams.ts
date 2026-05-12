@@ -8,9 +8,9 @@
 
 export type ListTemplatesParams = {
 /**
- * Filter by category
+ * Filter by template group
  */
-category?: string;
+templateGroup?: string;
 /**
  * Page number
  */

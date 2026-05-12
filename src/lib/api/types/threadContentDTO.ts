@@ -13,10 +13,6 @@ export interface ThreadContentDTO {
   authorId: string;
   /** Author last name */
   authorLastName: string;
-  /** Category ID */
-  categoryId: string;
-  /** Category name */
-  categoryName?: string;
   /** Created timestamp */
   createdAt: string;
   /** Thread description */
@@ -25,10 +21,20 @@ export interface ThreadContentDTO {
   id: string;
   /** Reply count */
   replyCount: number;
+  /**
+   * Sector IDs
+   * @nullable
+   */
+  sectorIds: string[] | null;
   /** Thread slug */
   slug: string;
   /** Thread status */
   status: string;
+  /**
+   * Tag IDs
+   * @nullable
+   */
+  tagIds: string[] | null;
   /** Thread title */
   title: string;
   /** Updated timestamp */

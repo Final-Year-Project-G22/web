@@ -21,7 +21,6 @@ import type {
   ListMutesResponseBody,
   MarkAllAsReadResponseBody,
   MarkAsReadResponseBody,
-  MarkCategoryAsReadResponseBody,
   MuteAccountRequest,
   MuteAccountResponseBody,
   PreferenceResponse,
@@ -384,49 +383,6 @@ export const listInbox = async (params?: ListInboxParams, options?: RequestInit)
   {      
     ...options,
     method: 'GET'
-    
-    
-  }
-);}
-  
-
-/**
- * Marks all inbox notifications in a category as read.
- * @summary Mark category as read
- */
-export type markCategoryAsReadResponse200 = {
-  data: MarkCategoryAsReadResponseBody
-  status: 200
-}
-
-export type markCategoryAsReadResponseDefault = {
-  data: ErrorModel
-  status: Exclude<HTTPStatusCodes, 200>
-}
-
-export type markCategoryAsReadResponseSuccess = (markCategoryAsReadResponse200) & {
-  headers: Headers;
-};
-export type markCategoryAsReadResponseError = (markCategoryAsReadResponseDefault) & {
-  headers: Headers;
-};
-
-export type markCategoryAsReadResponse = (markCategoryAsReadResponseSuccess | markCategoryAsReadResponseError)
-
-export const getMarkCategoryAsReadUrl = (category: string,) => {
-
-
-  
-
-  return `/api/v1/notifications/inbox/category/${category}/read`
-}
-
-export const markCategoryAsRead = async (category: string, options?: RequestInit): Promise<markCategoryAsReadResponse> => {
-  
-  return customFetch<markCategoryAsReadResponse>(getMarkCategoryAsReadUrl(category),
-  {      
-    ...options,
-    method: 'POST'
     
     
   }

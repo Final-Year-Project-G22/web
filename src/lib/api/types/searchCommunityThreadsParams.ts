@@ -12,10 +12,6 @@ export type SearchCommunityThreadsParams = {
  */
 keyword?: string;
 /**
- * Category ID
- */
-categoryId?: string;
-/**
  * Page number
  */
 page?: number;
