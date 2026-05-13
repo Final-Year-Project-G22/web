@@ -17,6 +17,8 @@ export interface UpdateStepTranslation {
    * @maxLength 5
    */
   language: string;
+  /** Required documents as JSON array */
+  requiredDocuments?: unknown;
   /**
    * Localized title
    * @minLength 1

@@ -63,6 +63,8 @@ function mapApiToEditorSteps(apiSteps: AdminGuideStepDTO[], language: string): G
         checklistTitle: (richContent.checklistTitle as string) ?? "",
         checklist: (richContent.checklist as GuideEditorStep["ui"]["checklist"]) ?? [],
         imageUrl: (richContent.imageUrl as string) ?? "",
+        requiredDocuments:
+          (richContent.requiredDocuments as GuideEditorStep["ui"]["requiredDocuments"]) ?? [],
       },
     };
   });
@@ -92,6 +94,7 @@ function createEmptyStep(guideId: string, order: number, language: string): Guid
       checklistTitle: "",
       checklist: [],
       imageUrl: "",
+      requiredDocuments: [],
     },
   };
 }

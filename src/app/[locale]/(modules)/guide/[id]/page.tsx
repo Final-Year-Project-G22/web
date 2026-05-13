@@ -39,6 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { uploadGuideImage } from "@/lib/api/services/admin-guides";
 import { getErrorMessage } from "@/lib/utils";
 import { useAdminLanguageStore } from "@/stores/admin-language.store";
 
@@ -66,6 +67,7 @@ export default function GuideDetailPage() {
   const [editSectorIds, setEditSectorIds] = useState<string[]>([]);
   const [editTagIds, setEditTagIds] = useState<string[]>([]);
   const [dirty, setDirty] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -83,12 +85,15 @@ export default function GuideDetailPage() {
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      setEditImageUrl(ev.target?.result as string);
-      setDirty(true);
-    };
-    reader.readAsDataURL(file);
+    setUploading(true);
+    uploadGuideImage(id, { file })
+      .then((res) => {
+        if (res.status !== 200) throw res.data;
+        setEditImageUrl(res.data.imageUrl);
+        setDirty(true);
+      })
+      .catch((err) => toast.error(getErrorMessage(err)))
+      .finally(() => setUploading(false));
   }
 
   async function handleSaveGuide() {
@@ -97,7 +102,6 @@ export default function GuideDetailPage() {
         id,
         patch: {
           slug: editSlug,
-          imageUrl: editImageUrl || undefined,
           sectorIds: editSectorIds.length > 0 ? editSectorIds : null,
           tagIds: editTagIds.length > 0 ? editTagIds : null,
           translations: [{ language, name: editName, description: editDescription }],

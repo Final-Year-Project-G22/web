@@ -21,7 +21,9 @@ import type {
   SetGuideTranslationsRequest,
   SetGuideTranslationsResponseBody,
   UpdateGuideRequest,
-  UpdateGuideResponseBody
+  UpdateGuideResponseBody,
+  UploadGuideImageBody,
+  UploadGuideImageResponseBody
 } from '../types';
 
 import { customFetch } from '../mutator/custom-fetch';
@@ -380,6 +382,53 @@ export const addGuideCondition = async (id: string,
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
       addGuideConditionRequest,)
+  }
+);}
+  
+
+/**
+ * Uploads and sets the cover image for a guide.
+ * @summary Upload guide image
+ */
+export type uploadGuideImageResponse200 = {
+  data: UploadGuideImageResponseBody
+  status: 200
+}
+
+export type uploadGuideImageResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type uploadGuideImageResponseSuccess = (uploadGuideImageResponse200) & {
+  headers: Headers;
+};
+export type uploadGuideImageResponseError = (uploadGuideImageResponseDefault) & {
+  headers: Headers;
+};
+
+export type uploadGuideImageResponse = (uploadGuideImageResponseSuccess | uploadGuideImageResponseError)
+
+export const getUploadGuideImageUrl = (id: string,) => {
+
+
+  
+
+  return `/api/v1/admin/guides/${id}/image`
+}
+
+export const uploadGuideImage = async (id: string,
+    uploadGuideImageBody: UploadGuideImageBody, options?: RequestInit): Promise<uploadGuideImageResponse> => {
+    const formData = new FormData();
+formData.append(`file`, uploadGuideImageBody.file);
+
+  return customFetch<uploadGuideImageResponse>(getUploadGuideImageUrl(id),
+  {      
+    ...options,
+    method: 'POST'
+    ,
+    body: 
+      formData,
   }
 );}
   

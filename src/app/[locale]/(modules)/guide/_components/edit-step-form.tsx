@@ -310,6 +310,71 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
         )}
       </div>
 
+      {/* --- Required Documents --- */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-muted-foreground">
+            Required Documents ({language.toUpperCase()})
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const docs = activeStep.ui.requiredDocuments ?? [];
+              syncStepUi({
+                requiredDocuments: [...docs, { clientId: generateId(), name: "", description: "" }],
+              });
+            }}
+          >
+            <Plus className="mr-1 h-3 w-3" />
+            Add Document
+          </Button>
+        </div>
+
+        {(activeStep.ui.requiredDocuments ?? []).length === 0 ? (
+          <p className="text-sm text-muted-foreground">No required documents defined.</p>
+        ) : (
+          <div className="space-y-2">
+            {(activeStep.ui.requiredDocuments ?? []).map((doc, idx) => (
+              <div key={doc.clientId} className="flex items-start gap-2 rounded-md border p-2">
+                <div className="flex-1 space-y-2">
+                  <Input
+                    value={doc.name}
+                    onChange={(e) => {
+                      const docs = [...(activeStep.ui.requiredDocuments ?? [])];
+                      docs[idx] = { ...docs[idx], name: e.target.value };
+                      syncStepUi({ requiredDocuments: docs });
+                    }}
+                    placeholder="Document name"
+                  />
+                  <Input
+                    value={doc.description ?? ""}
+                    onChange={(e) => {
+                      const docs = [...(activeStep.ui.requiredDocuments ?? [])];
+                      docs[idx] = { ...docs[idx], description: e.target.value };
+                      syncStepUi({ requiredDocuments: docs });
+                    }}
+                    placeholder="Optional description"
+                  />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const docs = (activeStep.ui.requiredDocuments ?? []).filter(
+                      (_, i) => i !== idx
+                    );
+                    syncStepUi({ requiredDocuments: docs });
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* --- Checklist Editor --- */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
