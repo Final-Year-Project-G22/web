@@ -9,6 +9,7 @@
 export interface CitationDTO {
   chunkId: string;
   documentId: string;
+  excerpt?: string;
   score: number;
   sourceType: string;
   title?: string;
