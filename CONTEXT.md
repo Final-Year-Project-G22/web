@@ -36,6 +36,15 @@ src/app/
         reported-users/
       settings/
         password/
+      ai/
+        knowledge-base/          # Document upload, pipeline status, DLQ
+          _components/           # upload-dialog, sidebar-documents, header-tools, dlq-panel, pipeline-progress
+          _services/             # ai.hook (upload, delete, ingestion status SSE, ingestion toggle)
+          page.tsx               # KB landing page (admin default)
+        ask/                     # Chat with AI
+          _components/           # conversation-sidebar, chat-panel, chunk-inspector
+          _services/             # ask.hook (streaming chat, conversation list, archive)
+          page.tsx               # Ask AI page
       admin/
         register/
         sectors/                 # Taxonomy CRUD (application-wide)
@@ -67,6 +76,12 @@ Each module under `(modules)/` follows the same structure:
 | **Admin Language**| Persistent EN/AM toggle for admin content entry. Drives per-language API queries and saves.
 | **Moderation**    | Content moderation: blocked users, post/thread/user reports, content takedown.
 | **Settings**      | User settings (change password, profile).
+| **AI Knowledge Base**| Admin document management for RAG: upload, pipeline ingestion status, dead letter queue. Documents tagged with sectors/tags/language.
+| **AI Ask**        | Conversational AI interface with session management, conversation history, and RAG against the knowledge base.
+| **Document**      | Uploaded file (PDF/DOCX) processed through an ingestion pipeline (chunking → embedding → indexing) into the vector store. Has metadata: title, language, sector associations, tag associations.
+| **Conversation**  | AI chat session with a title, language, and ordered message history. Can be archived (soft-deleted). Linked to a user account.
+| **AI Tool**       | A registered capability exposed by a Go module (e.g., guide, taxonomy) that the AI can invoke via gRPC at inference time. Each tool has a name, description, and JSON Schema for parameters.
+| **AI Persona**    | The system prompt and behavioral guardrails injected into every LLM call. Defines what the AI is, its tone, its restrictions, and available tools.
 
 ## Key Concepts
 
@@ -97,6 +112,12 @@ Each module under `(modules)/` follows the same structure:
 ### Discriminated Union Narrowing
 - All API calls use `if (res.status !== 200) throw res.data` to narrow the Orval-generated response type
 - No `as any` casts anywhere in application code
+
+### AI Module Design
+- `docs/ai-upgrade/0000-overview.md`
+- Full design document covering the 4-phase upgrade: document metadata, localization, conversation history + page split, and agentic AI with tool calling.
+- Architecture: Frontend (Next.js) → Core-backend (Go) via REST/SSE, Core-backend → AI Service (Python) via gRPC.
+- AI Tool Service: gRPC service where Go modules register tool definitions (name, description, JSON Schema). AI service calls `ListTools` and `ExecuteTool` at inference time.
 
 ### Admin Language Toggle
 - `src/stores/admin-language.store.ts`

@@ -3,7 +3,7 @@ import { act, renderHook } from "@testing-library/react";
 import type React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useAuthStore } from "@/store/auth.store";
-import { useAskAIStream } from "./ai.hook";
+import { useAskAIStream } from "./ask.hook";
 
 const encoder = new TextEncoder();
 
