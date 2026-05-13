@@ -8,18 +8,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { CitationDTO } from "@/lib/api/types";
 import { useAdminLanguageStore } from "@/stores/admin-language.store";
+import type { ToolUseEvent } from "../_services/ask.hook";
 import {
   useAIGetConversation,
   useArchiveConversation,
   useAskAIStream,
 } from "../_services/ask.hook";
 import { ChunkInspector } from "./chunk-inspector";
+import { ToolUseIndicator } from "./tool-use-indicator";
 
 type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
   citations?: CitationDTO[];
+  toolUses?: ToolUseEvent[];
 };
 
 type ChatPanelProps = {
@@ -113,6 +116,7 @@ export function ChatPanel({ sessionId, onSessionChange }: ChatPanelProps) {
                     ...msg,
                     content: payload.answer || "",
                     citations: payload.citations ?? undefined,
+                    toolUses: payload.toolUses?.length ? payload.toolUses : undefined,
                   }
                 : msg
             )
@@ -201,6 +205,9 @@ export function ChatPanel({ sessionId, onSessionChange }: ChatPanelProps) {
                   }`}
                 >
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  {msg.toolUses && msg.toolUses.length > 0 && (
+                    <ToolUseIndicator toolUses={msg.toolUses} />
+                  )}
                 </div>
                 {msg.citations && msg.citations.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1">
