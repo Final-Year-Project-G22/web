@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useSectorList, useTagList } from "@/app/[locale]/(modules)/admin/_services/taxonomy.hook";
 import {
@@ -62,9 +62,11 @@ export default function GuideDetailPage() {
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editSlug, setEditSlug] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState("");
   const [editSectorIds, setEditSectorIds] = useState<string[]>([]);
   const [editTagIds, setEditTagIds] = useState<string[]>([]);
   const [dirty, setDirty] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (guide) {
@@ -72,10 +74,22 @@ export default function GuideDetailPage() {
       setEditName(translation?.name ?? "");
       setEditDescription(translation?.description ?? "");
       setEditSlug(guide.slug);
+      setEditImageUrl(guide.imageUrl ?? "");
       setEditSectorIds(guide.sectorIds ?? []);
       setEditTagIds(guide.tagIds ?? []);
     }
   }, [guide, language]);
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setEditImageUrl(ev.target?.result as string);
+      setDirty(true);
+    };
+    reader.readAsDataURL(file);
+  }
 
   async function handleSaveGuide() {
     try {
@@ -83,6 +97,7 @@ export default function GuideDetailPage() {
         id,
         patch: {
           slug: editSlug,
+          imageUrl: editImageUrl || undefined,
           sectorIds: editSectorIds.length > 0 ? editSectorIds : null,
           tagIds: editTagIds.length > 0 ? editTagIds : null,
           translations: [{ language, name: editName, description: editDescription }],
@@ -174,6 +189,55 @@ export default function GuideDetailPage() {
                 }}
                 placeholder="guide-slug"
               />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label>Cover Image</Label>
+              <div className="flex items-start gap-4">
+                {editImageUrl ? (
+                  <div className="relative h-24 w-40 overflow-hidden rounded-lg border bg-slate-50">
+                    <img
+                      src={editImageUrl}
+                      alt="Guide cover"
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-24 w-40 items-center justify-center rounded-lg border border-dashed bg-muted/20 text-xs text-muted-foreground">
+                    No image
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {editImageUrl ? "Replace" : "Upload"}
+                  </Button>
+                  {editImageUrl ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditImageUrl("");
+                        setDirty(true);
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  ) : null}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2 md:col-span-2">
