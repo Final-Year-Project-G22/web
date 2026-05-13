@@ -19,8 +19,12 @@ export interface ThreadDTO {
   createdAt?: string;
   /** Thread description */
   description?: string;
+  /** Whether thread has an accepted solution */
+  hasSolution: boolean;
   /** Thread ID */
   id: string;
+  /** Whether current user follows this thread */
+  isFollowed: boolean;
   /** Pinned flag */
   isPinned: boolean;
   /** Last activity timestamp */
@@ -47,6 +51,8 @@ export interface ThreadDTO {
   tagIds: string[] | null;
   /** Thread title */
   title: string;
+  /** Number of unread posts/replies */
+  unreadCount: number;
   /** Updated timestamp */
   updatedAt?: string;
   /** View count */

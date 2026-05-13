@@ -261,6 +261,7 @@ export * from './markAllAsReadResponseBody';
 export * from './markAsReadResponseBody';
 export * from './markSolutionResponseBody';
 export * from './markStepIncompleteResponseBody';
+export * from './markThreadReadResponseBody';
 export * from './messageDTO';
 export * from './muteAccountRequest';
 export * from './muteAccountResponseBody';

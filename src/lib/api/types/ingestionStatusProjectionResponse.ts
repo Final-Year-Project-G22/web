@@ -19,6 +19,8 @@ export interface IngestionStatusProjectionResponse {
   completedAt?: string;
   /** Current ingestion stage */
   currentStage: string;
+  /** Declared language hint (en/am) */
+  declaredLanguage?: string;
   /** Document identifier */
   documentId: string;
   /** Monotonic event sequence number */
@@ -27,8 +29,20 @@ export interface IngestionStatusProjectionResponse {
   isTerminal: boolean;
   /** Last error message if failed */
   lastError?: string;
+  /**
+   * Associated sector IDs
+   * @nullable
+   */
+  sectorIds?: string[] | null;
+  /** Original source filename */
+  sourceFilename?: string;
   /** Ingestion start timestamp */
   startedAt: string;
+  /**
+   * Associated tag IDs
+   * @nullable
+   */
+  tagIds?: string[] | null;
   /** Last update timestamp */
   updatedAt: string;
   /** User identifier */
