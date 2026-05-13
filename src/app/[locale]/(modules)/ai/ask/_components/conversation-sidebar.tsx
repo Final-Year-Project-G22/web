@@ -40,38 +40,38 @@ export function ConversationSidebar({ activeId, onSelect, onNewChat }: Conversat
           <p className="text-sm text-muted-foreground text-center py-4">No conversations yet.</p>
         )}
         {conversations?.map((conv) => (
-          <button
+          <div
             key={conv.id}
-            type="button"
-            onClick={() => onSelect(conv.id)}
-            className={`w-full text-left p-3 rounded-lg border transition-colors ${
+            className={`flex items-start gap-2 p-3 rounded-lg border transition-colors ${
               conv.id === activeId
                 ? "bg-muted border-primary/30"
                 : "bg-card hover:bg-muted/50 border-transparent"
             }`}
           >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-start gap-2 min-w-0">
-                <MessageSquare className="w-4 h-4 mt-0.5 shrink-0 text-muted-foreground" />
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{conv.title}</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                    <span>{conv.language === "am" ? "Amharic" : "English"}</span>
-                    <span>·</span>
-                    <span>{new Date(conv.updatedAt).toLocaleDateString()}</span>
-                  </div>
+            <button
+              type="button"
+              onClick={() => onSelect(conv.id)}
+              className="flex items-start gap-2 min-w-0 flex-1 text-left bg-transparent border-none p-0 cursor-pointer"
+            >
+              <MessageSquare className="w-4 h-4 mt-0.5 shrink-0 text-muted-foreground" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">{conv.title}</p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                  <span>{conv.language === "am" ? "Amharic" : "English"}</span>
+                  <span>·</span>
+                  <span>{new Date(conv.updatedAt).toLocaleDateString()}</span>
                 </div>
               </div>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6 shrink-0 text-muted-foreground hover:text-destructive"
-                onClick={(e) => handleArchive(e, conv.id)}
-              >
-                <Trash2 className="w-3 h-3" />
-              </Button>
-            </div>
-          </button>
+            </button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6 shrink-0 text-muted-foreground hover:text-destructive"
+              onClick={(e) => handleArchive(e, conv.id)}
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          </div>
         ))}
       </div>
     </div>
