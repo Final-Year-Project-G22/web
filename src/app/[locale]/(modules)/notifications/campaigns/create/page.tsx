@@ -7,6 +7,8 @@ import { useState } from "react";
 import {
   useCreateCampaign,
   useListCampaignTemplates,
+  useListSectors,
+  useListTags,
 } from "@/app/[locale]/(modules)/notifications/_services/notification.hook";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,25 @@ import { getErrorMessage } from "@/lib/utils";
 
 const steps = ["Template", "Details", "Review"];
 
+const REGIONS = [
+  "ADDIS_ABABA",
+  "DIRE_DAWA",
+  "OROMIA",
+  "AMHARA",
+  "SIDAMA",
+  "SOMALI",
+  "TIGRAY",
+  "AFAR",
+  "HARARI",
+  "BENISHANGUL_GUMUZ",
+  "SWEPR",
+  "CENTRAL_ETHIOPIA",
+  "SOUTH_ETHIOPIA",
+  "FEDERAL",
+];
+
+const STAGES = ["IDEA", "REGISTRATION", "OPERATIONAL", "SCALING"];
+
 export default function CreateCampaignPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
@@ -38,10 +59,29 @@ export default function CreateCampaignPage() {
   const [campaignTemplateId, setCampaignTemplateId] = useState("");
   const [scheduledFor, setScheduledFor] = useState("");
 
+  const [selectedSectorIds, setSelectedSectorIds] = useState<string[]>([]);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [selectedRegion, setSelectedRegion] = useState("");
+  const [selectedStage, setSelectedStage] = useState("");
+
   const templatesQuery = useListCampaignTemplates({ page: 1, pageSize: 200 });
+  const sectorsQuery = useListSectors();
+  const tagsQuery = useListTags();
   const createMutation = useCreateCampaign();
 
   const templates = templatesQuery.data?.data ?? [];
+  const sectors = sectorsQuery.data?.data ?? [];
+  const tags = tagsQuery.data?.data ?? [];
+
+  function toggleSectorId(id: string) {
+    setSelectedSectorIds((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
+  }
+
+  function toggleTagId(id: string) {
+    setSelectedTagIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+  }
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,6 +93,14 @@ export default function CreateCampaignPage() {
         campaignType,
         campaignTemplateId,
         scheduledFor: scheduledFor ? new Date(scheduledFor).toISOString() : undefined,
+        sectorIds:
+          campaignType === "segmented" && selectedSectorIds.length > 0
+            ? selectedSectorIds
+            : undefined,
+        tagIds:
+          campaignType === "segmented" && selectedTagIds.length > 0 ? selectedTagIds : undefined,
+        region: campaignType === "segmented" && selectedRegion ? selectedRegion : undefined,
+        stage: campaignType === "segmented" && selectedStage ? selectedStage : undefined,
       },
       {
         onSuccess: () => router.push("/notifications/campaigns"),
@@ -140,6 +188,92 @@ export default function CreateCampaignPage() {
                     />
                   </div>
 
+                  {campaignType === "segmented" && (
+                    <div className="space-y-4 border rounded-lg p-4 bg-muted/20">
+                      <p className="text-sm font-medium text-muted-foreground">Segment Filters</p>
+
+                      <div className="space-y-2">
+                        <Label>Sectors</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {(sectors ?? []).map((s) => (
+                            <button
+                              key={s.id}
+                              type="button"
+                              onClick={() => toggleSectorId(s.id)}
+                              className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${
+                                selectedSectorIds.includes(s.id)
+                                  ? "bg-primary text-primary-foreground border-primary"
+                                  : "bg-background text-muted-foreground border-border hover:border-primary/50"
+                              }`}
+                            >
+                              {s.nameEn}
+                            </button>
+                          ))}
+                          {sectorsQuery.isLoading && (
+                            <p className="text-xs text-muted-foreground">Loading sectors...</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Tags</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {(tags ?? []).map((t) => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              onClick={() => toggleTagId(t.id)}
+                              className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${
+                                selectedTagIds.includes(t.id)
+                                  ? "bg-primary text-primary-foreground border-primary"
+                                  : "bg-background text-muted-foreground border-border hover:border-primary/50"
+                              }`}
+                            >
+                              {t.nameEn}
+                            </button>
+                          ))}
+                          {tagsQuery.isLoading && (
+                            <p className="text-xs text-muted-foreground">Loading tags...</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Region</Label>
+                          <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                            <SelectTrigger className="h-11">
+                              <SelectValue placeholder="Any region" />
+                            </SelectTrigger>
+                            <SelectContent position="popper" className="z-50">
+                              {REGIONS.map((r) => (
+                                <SelectItem key={r} value={r}>
+                                  {r.replace(/_/g, " ")}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Stage</Label>
+                          <Select value={selectedStage} onValueChange={setSelectedStage}>
+                            <SelectTrigger className="h-11">
+                              <SelectValue placeholder="Any stage" />
+                            </SelectTrigger>
+                            <SelectContent position="popper" className="z-50">
+                              {STAGES.map((s) => (
+                                <SelectItem key={s} value={s}>
+                                  {s.charAt(0) + s.slice(1).toLowerCase()}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <Label>Campaign Type</Label>
                     <Select value={campaignType} onValueChange={setCampaignType}>
@@ -208,6 +342,40 @@ export default function CreateCampaignPage() {
                     <span className="font-medium">Schedule:</span>{" "}
                     {scheduledFor ? new Date(scheduledFor).toLocaleString() : "Immediately"}
                   </p>
+                  {campaignType === "segmented" && (
+                    <>
+                      {selectedSectorIds.length > 0 && (
+                        <p>
+                          <span className="font-medium">Sectors:</span>{" "}
+                          {sectors
+                            .filter((s) => selectedSectorIds.includes(s.id))
+                            .map((s) => s.nameEn)
+                            .join(", ")}
+                        </p>
+                      )}
+                      {selectedTagIds.length > 0 && (
+                        <p>
+                          <span className="font-medium">Tags:</span>{" "}
+                          {tags
+                            .filter((t) => selectedTagIds.includes(t.id))
+                            .map((t) => t.nameEn)
+                            .join(", ")}
+                        </p>
+                      )}
+                      {selectedRegion && (
+                        <p>
+                          <span className="font-medium">Region:</span>{" "}
+                          {selectedRegion.replace(/_/g, " ")}
+                        </p>
+                      )}
+                      {selectedStage && (
+                        <p>
+                          <span className="font-medium">Stage:</span>{" "}
+                          {selectedStage.charAt(0) + selectedStage.slice(1).toLowerCase()}
+                        </p>
+                      )}
+                    </>
+                  )}
                 </div>
 
                 {createMutation.isError && (

@@ -64,6 +64,7 @@ export default function EditCampaignTemplatePage() {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [enablePushMirror, setEnablePushMirror] = useState(false);
 
   const [channels, setChannels] = useState<Record<string, ChannelContent>>({
     in_app: { title: "", body: "" },
@@ -75,6 +76,7 @@ export default function EditCampaignTemplatePage() {
     if (templateQuery.data) {
       setName(templateQuery.data.name);
       setDescription(templateQuery.data.description ?? "");
+      setEnablePushMirror(templateQuery.data.enablePushMirror ?? false);
       setChannels(parseContentToChannels(templateQuery.data.defaultContent));
     }
   }, [templateQuery.data]);
@@ -94,6 +96,7 @@ export default function EditCampaignTemplatePage() {
         name,
         description: description || undefined,
         defaultContent: buildContentFromChannels(channels),
+        enablePushMirror,
       },
     });
   }
@@ -151,6 +154,20 @@ export default function EditCampaignTemplatePage() {
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
+            </div>
+
+            {/* PUSH MIRROR */}
+            <div className="flex items-center gap-2">
+              <input
+                id="enablePushMirror"
+                type="checkbox"
+                checked={enablePushMirror}
+                onChange={(e) => setEnablePushMirror(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="enablePushMirror" className="text-sm cursor-pointer">
+                Auto-mirror in-app content as push notification
+              </Label>
             </div>
 
             {/* CHANNELS */}
