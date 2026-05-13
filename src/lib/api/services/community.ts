@@ -30,6 +30,7 @@ import type {
   ListPostsResponseBody,
   ListThreadsResponseBody,
   MarkSolutionResponseBody,
+  MarkThreadReadResponseBody,
   ReplyCommunityPostBody,
   ReportPostRequest,
   ReportPostResponseBody,
@@ -635,7 +636,9 @@ export const createCommunityThread = async (createCommunityThreadBody: CreateCom
 if(createCommunityThreadBody.attachmentIds !== undefined) {
  formData.append(`attachmentIds`, createCommunityThreadBody.attachmentIds instanceof Blob ? createCommunityThreadBody.attachmentIds : new Blob([createCommunityThreadBody.attachmentIds], { type: 'text/plain' }));
  }
-formData.append(`description`, createCommunityThreadBody.description instanceof Blob ? createCommunityThreadBody.description : new Blob([createCommunityThreadBody.description], { type: 'text/plain' }));
+if(createCommunityThreadBody.description !== undefined) {
+ formData.append(`description`, createCommunityThreadBody.description instanceof Blob ? createCommunityThreadBody.description : new Blob([createCommunityThreadBody.description], { type: 'text/plain' }));
+ }
 formData.append(`initialPostContent`, createCommunityThreadBody.initialPostContent instanceof Blob ? createCommunityThreadBody.initialPostContent : new Blob([createCommunityThreadBody.initialPostContent], { type: 'text/plain' }));
 if(createCommunityThreadBody.parentThreadId !== undefined) {
  formData.append(`parentThreadId`, createCommunityThreadBody.parentThreadId instanceof Blob ? createCommunityThreadBody.parentThreadId : new Blob([createCommunityThreadBody.parentThreadId], { type: 'text/plain' }));
@@ -1283,6 +1286,49 @@ export const reportPost = async (id: string,
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
       reportPostRequest,)
+  }
+);}
+  
+
+/**
+ * Marks a thread as read for the current user.
+ * @summary Mark thread as read
+ */
+export type markThreadReadResponse200 = {
+  data: MarkThreadReadResponseBody
+  status: 200
+}
+
+export type markThreadReadResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type markThreadReadResponseSuccess = (markThreadReadResponse200) & {
+  headers: Headers;
+};
+export type markThreadReadResponseError = (markThreadReadResponseDefault) & {
+  headers: Headers;
+};
+
+export type markThreadReadResponse = (markThreadReadResponseSuccess | markThreadReadResponseError)
+
+export const getMarkThreadReadUrl = (id: string,) => {
+
+
+  
+
+  return `/api/v1/community/threads/${id}/read`
+}
+
+export const markThreadRead = async (id: string, options?: RequestInit): Promise<markThreadReadResponse> => {
+  
+  return customFetch<markThreadReadResponse>(getMarkThreadReadUrl(id),
+  {      
+    ...options,
+    method: 'POST'
+    
+    
   }
 );}
   

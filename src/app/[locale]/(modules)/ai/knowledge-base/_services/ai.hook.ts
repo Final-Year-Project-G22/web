@@ -667,11 +667,21 @@ export function useAskAIStream() {
   return { start, cancel, isStreaming, error };
 }
 
+export type UploadDocumentInput = {
+  file: File;
+  title?: string;
+  language?: string;
+  sectorIds?: string[];
+  tagIds?: string[];
+};
+
 export function useUploadDocument() {
   const queryClient = useQueryClient();
 
-  return useMutation<void, ErrorModel, File>({
-    mutationFn: async (file) => {
+  return useMutation<void, ErrorModel, UploadDocumentInput>({
+    mutationFn: async (input) => {
+      const { file, title, language, sectorIds, tagIds } = input;
+
       // 1. Compute SHA-256 checksum
       const arrayBuffer = await file.arrayBuffer();
       const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
@@ -691,7 +701,6 @@ export function useUploadDocument() {
         body: file,
         headers: {
           "Content-Type": file.type || "application/octet-stream",
-          // Merge custom headers from the intent if any
           ...((intent.headers as Record<string, string>) || {}),
         },
       });
@@ -699,21 +708,22 @@ export function useUploadDocument() {
         throw new Error("Failed to upload to storage provider");
       }
 
-      // 4. Finalize upload
+      // 4. Finalize upload with metadata
       const idempotencyKey = crypto.randomUUID();
       const finalizeRes = await finalizeIngestionUpload({
         checksumSha256,
         contentType: file.type || "application/octet-stream",
         idempotencyKey,
         sizeBytes: file.size,
-        sourceFilename: file.name,
+        sourceFilename: title || file.name,
+        declaredLanguage: language,
         storageKey: intent.key,
+        sectorIds: sectorIds && sectorIds.length > 0 ? sectorIds : null,
+        tagIds: tagIds && tagIds.length > 0 ? tagIds : null,
       });
       if (finalizeRes.status !== 200) throw finalizeRes.data;
     },
     onSuccess: () => {
-      // Invalidate all AI status queries regardless of accountId to ensure
-      // the sidebar refreshes even if accountId wasn't hydrated yet.
       queryClient.invalidateQueries({ queryKey: ["ai", "status"] });
     },
   });
