@@ -21,6 +21,7 @@ import {
   scheduleCampaign,
   updateCampaign,
 } from "@/lib/api/services/admin-notifications";
+import { listTaxonomySectors, listTaxonomyTags } from "@/lib/api/services/taxonomy";
 import type {
   AddCampaignTemplateTranslationRequest,
   AddCampaignTemplateTranslationResponseBody,
@@ -37,6 +38,8 @@ import type {
   ErrorModel,
   ListCampaignsParams,
   ListCampaignTemplatesParams,
+  ListSectorsResponseBody,
+  ListTagsResponseBody,
   QueueStatusResponse,
   RetryFailedParams,
   RetryFailedResponseBody,
@@ -52,6 +55,8 @@ import type {
 const CAMPAIGN_TEMPLATES_KEY = ["admin", "notifications", "campaign-templates"];
 const CAMPAIGNS_KEY = ["admin", "notifications", "campaigns"];
 const QUEUE_KEY = ["admin", "notifications", "queue"];
+const SECTORS_KEY = ["taxonomy", "sectors"];
+const TAGS_KEY = ["taxonomy", "tags"];
 
 // ── Campaign Templates ──
 
@@ -301,6 +306,30 @@ export function useCancelCampaign() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: CAMPAIGNS_KEY });
+    },
+  });
+}
+
+// ── Taxonomy (Sectors & Tags) ──
+
+export function useListSectors() {
+  return useQuery<ListSectorsResponseBody, ErrorModel>({
+    queryKey: SECTORS_KEY,
+    queryFn: async () => {
+      const res = await listTaxonomySectors();
+      if (res.status !== 200) throw res.data;
+      return res.data;
+    },
+  });
+}
+
+export function useListTags() {
+  return useQuery<ListTagsResponseBody, ErrorModel>({
+    queryKey: TAGS_KEY,
+    queryFn: async () => {
+      const res = await listTaxonomyTags();
+      if (res.status !== 200) throw res.data;
+      return res.data;
     },
   });
 }

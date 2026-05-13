@@ -32,6 +32,7 @@ export default function CreateCampaignTemplatePage() {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [enablePushMirror, setEnablePushMirror] = useState(false);
 
   const [channels, setChannels] = useState<Record<string, ChannelContent>>(defaultChannels);
 
@@ -64,7 +65,7 @@ export default function CreateCampaignTemplatePage() {
     }
 
     createMutation.mutate(
-      { name, description: description || undefined, defaultContent },
+      { name, description: description || undefined, defaultContent, enablePushMirror },
       {
         onSuccess: () => router.push("/notifications/campaign-templates"),
       }
@@ -110,6 +111,20 @@ export default function CreateCampaignTemplatePage() {
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
+            </div>
+
+            {/* PUSH MIRROR */}
+            <div className="flex items-center gap-2">
+              <input
+                id="enablePushMirror"
+                type="checkbox"
+                checked={enablePushMirror}
+                onChange={(e) => setEnablePushMirror(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="enablePushMirror" className="text-sm cursor-pointer">
+                Auto-mirror in-app content as push notification
+              </Label>
             </div>
 
             {/* CHANNELS */}
