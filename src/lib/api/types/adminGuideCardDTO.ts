@@ -10,6 +10,7 @@ export interface AdminGuideCardDTO {
   description?: string;
   icon?: string;
   id: string;
+  imageUrl?: string;
   name: string;
   /** @nullable */
   sectorIds: string[] | null;
