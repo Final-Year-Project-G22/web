@@ -73,9 +73,6 @@ export default function GuideListPage() {
           <CardTitle>Guides</CardTitle>
           <CardDescription>Manage admin guides and their publishing state</CardDescription>
           <CardAction className="flex gap-2">
-            <Button asChild variant="outline">
-              <Link href="/guide/categories">Categories</Link>
-            </Button>
             <Button asChild>
               <Link href="/guide/create">Create Guide</Link>
             </Button>

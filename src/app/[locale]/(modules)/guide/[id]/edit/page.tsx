@@ -27,10 +27,10 @@ import { useAdminLanguageStore } from "@/stores/admin-language.store";
 
 // ─── Data mapping ──────────────────────────────────────────────
 
-function mapApiToEditorSteps(apiSteps: AdminGuideStepDTO[]): GuideEditorStep[] {
+function mapApiToEditorSteps(apiSteps: AdminGuideStepDTO[], language: string): GuideEditorStep[] {
   return apiSteps.map((s) => {
     const richContent =
-      (s.translations?.find((t) => t.language === "en")?.detailedContent as Record<
+      (s.translations?.find((t) => t.language === language)?.detailedContent as Record<
         string,
         unknown
       >) ?? {};
@@ -57,7 +57,7 @@ function mapApiToEditorSteps(apiSteps: AdminGuideStepDTO[]): GuideEditorStep[] {
       ui: {
         summary:
           (richContent.summary as string) ??
-          s.translations?.find((t) => t.language === "en")?.description ??
+          s.translations?.find((t) => t.language === language)?.description ??
           "",
         proTip: (richContent.proTip as string) ?? "",
         checklistTitle: (richContent.checklistTitle as string) ?? "",
@@ -68,7 +68,7 @@ function mapApiToEditorSteps(apiSteps: AdminGuideStepDTO[]): GuideEditorStep[] {
   });
 }
 
-function createEmptyStep(guideId: string, order: number): GuideEditorStep {
+function createEmptyStep(guideId: string, order: number, language: string): GuideEditorStep {
   const clientId = `new-${Date.now()}`;
   const ts = Date.now();
   return {
@@ -85,10 +85,7 @@ function createEmptyStep(guideId: string, order: number): GuideEditorStep {
     dependencies: null,
     effectiveDate: undefined,
     expiryDate: undefined,
-    translations: [
-      { language: "en", title: `Step ${order}`, description: "" },
-      { language: "am", title: `Step ${order}`, description: "" },
-    ],
+    translations: [{ language, title: `Step ${order}`, description: "" }],
     ui: {
       summary: "",
       proTip: "",
@@ -134,6 +131,7 @@ function buildUpdatePayload(step: GuideEditorStep) {
       description: t.description,
       detailedContent: t.detailedContent,
     })),
+    translationMode: "merge" as const,
   };
 }
 
@@ -174,14 +172,14 @@ export default function EditGuidePage() {
 
   // Seed persistedSteps once on initial load. Never sync again — the store
   // is the source of truth for the edit page to avoid race conditions.
-  const seededRef = useRef(false);
+  const seededRef = useRef<string | null>(null);
   useEffect(() => {
-    if (stepsQuery.data && !seededRef.current) {
-      seededRef.current = true;
-      const serverSteps = mapApiToEditorSteps(stepsQuery.data.steps);
+    if (stepsQuery.data && seededRef.current !== language) {
+      seededRef.current = language;
+      const serverSteps = mapApiToEditorSteps(stepsQuery.data.steps, language);
       setPersistedSteps(serverSteps);
     }
-  }, [stepsQuery.data, setPersistedSteps]);
+  }, [stepsQuery.data, setPersistedSteps, language]);
 
   // Handle ?step=new — create a fresh draft and activate it.
   // Only runs once when entering the page with ?step=new.
@@ -196,9 +194,9 @@ export default function EditGuidePage() {
     editGuideStore.setState({ draftSteps: [] });
 
     const state = editGuideStore.getState();
-    const newStep = createEmptyStep(id, state.displaySteps().length + 1);
+    const newStep = createEmptyStep(id, state.displaySteps().length + 1, language);
     addDraftStep(newStep);
-  }, [stepParam, id, addDraftStep]);
+  }, [stepParam, id, addDraftStep, language]);
 
   // URL → activeStepId sync. Always honor the URL step param for persisted IDs.
   useEffect(() => {
@@ -364,7 +362,7 @@ export default function EditGuidePage() {
               navigateToStep("new");
               return;
             }
-            const newStep = createEmptyStep(id, state.displaySteps().length + 1);
+            const newStep = createEmptyStep(id, state.displaySteps().length + 1, language);
             addDraftStep(newStep);
             navigateToStep("new");
           }}
