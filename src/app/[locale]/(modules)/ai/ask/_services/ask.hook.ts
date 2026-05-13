@@ -164,6 +164,16 @@ export function useAskAI() {
 
 // ─── Ask AI Streaming ──────────────────────────────────────
 
+export type ToolUseEvent = {
+  tool: string;
+  argumentsJson?: string;
+};
+
+export type ToolResultEvent = {
+  tool: string;
+  resultSummary?: string;
+};
+
 type AskStreamChunkEventBody = {
   text: string;
 };
@@ -186,14 +196,17 @@ type AskStreamErrorEventBody = {
   message: string;
 };
 
-type AskStreamState = {
+export type AskStreamState = {
   answer: string;
   citations: CitationDTO[] | null;
+  toolUses: ToolUseEvent[];
 };
 
 type AskStreamHandlers = {
   onChunk?: (text: string, state: AskStreamState) => void;
   onCitations?: (citations: CitationDTO[]) => void;
+  onToolUse?: (toolUse: ToolUseEvent) => void;
+  onToolResult?: (toolResult: ToolResultEvent) => void;
   onDone?: (payload: AskStreamDoneEventBody & AskStreamState) => void;
   onError?: (error: AskStreamErrorEventBody) => void;
 };
@@ -221,6 +234,7 @@ export function useAskAIStream() {
 
     let answer = "";
     let citations: CitationDTO[] | null = null;
+    const toolUses: ToolUseEvent[] = [];
     let completed = false;
     let receivedEvent = false;
 
@@ -276,16 +290,23 @@ export function useAskAIStream() {
               const parsed = JSON.parse(event.data) as AskStreamChunkEventBody;
               if (parsed?.text) {
                 answer += parsed.text;
-                handlers.onChunk?.(parsed.text, { answer, citations });
+                handlers.onChunk?.(parsed.text, { answer, citations, toolUses });
               }
             } else if (event.event === "citations") {
               const parsed = JSON.parse(event.data) as AskStreamCitationEventBody;
               citations = parsed.citations ?? [];
               handlers.onCitations?.(citations);
+            } else if (event.event === "tool_use") {
+              const parsed = JSON.parse(event.data) as ToolUseEvent;
+              toolUses.push(parsed);
+              handlers.onToolUse?.(parsed);
+            } else if (event.event === "tool_result") {
+              const parsed = JSON.parse(event.data) as ToolResultEvent;
+              handlers.onToolResult?.(parsed);
             } else if (event.event === "done") {
               const parsed = JSON.parse(event.data) as AskStreamDoneEventBody;
               completed = true;
-              handlers.onDone?.({ ...parsed, answer, citations });
+              handlers.onDone?.({ ...parsed, answer, citations, toolUses });
 
               const sessionId = parsed.sessionId || req.sessionId;
               if (sessionId) {
