@@ -5,7 +5,6 @@
  * Backend API for the Adisu platform
  * OpenAPI spec version: 1.0.0
  */
-import type { AdminStepDocumentDTO } from './adminStepDocumentDTO';
 import type { AdminStepTranslationDTO } from './adminStepTranslationDTO';
 
 export interface AdminGuideStepDTO {
@@ -17,8 +16,6 @@ export interface AdminGuideStepDTO {
   guideId: string;
   id: string;
   isOptional: boolean;
-  /** @nullable */
-  requiredDocuments?: AdminStepDocumentDTO[] | null;
   slug: string;
   sortOrder: number;
   stepType: string;

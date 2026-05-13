@@ -6,7 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface AdminStepDocumentDTO {
-  description?: string;
-  name: string;
-}
+export type UploadGuideImageBody = {
+  file: Blob;
+};

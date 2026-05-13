@@ -5,12 +5,19 @@ export type GuideEditorChecklistItem = {
   isCompleted: boolean;
 };
 
+export type GuideEditorRequiredDocument = {
+  clientId: string;
+  name: string;
+  description?: string;
+};
+
 export type GuideEditorRichContent = {
   summary: string;
   proTip: string;
   checklistTitle: string;
   checklist: GuideEditorChecklistItem[];
   imageUrl: string;
+  requiredDocuments: GuideEditorRequiredDocument[];
 };
 
 export type GuideEditorStep = {
