@@ -10,5 +10,6 @@ export interface AdminStepTranslationDTO {
   description?: string;
   detailedContent?: unknown;
   language: string;
+  requiredDocuments?: unknown;
   title: string;
 }

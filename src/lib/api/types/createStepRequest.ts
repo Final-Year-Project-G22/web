@@ -7,7 +7,6 @@
  */
 import type { CreateStepCondition } from './createStepCondition';
 import type { CreateStepDependency } from './createStepDependency';
-import type { CreateStepDocument } from './createStepDocument';
 import type { CreateStepTranslation } from './createStepTranslation';
 
 export interface CreateStepRequest {
@@ -37,11 +36,6 @@ export interface CreateStepRequest {
   guideId: string;
   /** Whether step can be skipped */
   isOptional: boolean;
-  /**
-   * Required documents for this step
-   * @nullable
-   */
-  requiredDocuments?: CreateStepDocument[] | null;
   /**
    * Step slug
    * @minLength 1
