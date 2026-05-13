@@ -117,6 +117,12 @@ export function Sidebar() {
     if (pathname.startsWith("/notifications")) setNotificationOpen(true);
   }, [pathname]);
 
+  const [aiKnowledgeOpen, setAIKnowledgeOpen] = useState(pathname.startsWith("/ai"));
+
+  useEffect(() => {
+    if (pathname.startsWith("/ai")) setAIKnowledgeOpen(true);
+  }, [pathname]);
+
   const [taxonomyOpen, setTaxonomyOpen] = useState(pathname.startsWith("/taxonomy"));
 
   useEffect(() => {
@@ -186,11 +192,52 @@ export function Sidebar() {
                   </div>
                 ) : null}
               </div>
-              <NavLink
-                href="/ai/knowledge-base"
-                icon={<BrainCircuit className="w-4 h-4" />}
-                label="AI Knowledge"
-              />
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => setAIKnowledgeOpen((prev) => !prev)}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-md px-2 py-2 text-muted-foreground transition-colors hover:bg-accent",
+                    pathname.startsWith("/ai") ? "bg-primary/5 font-medium text-primary" : ""
+                  )}
+                >
+                  <BrainCircuit className="w-4 h-4" />
+                  <span className="text-sm flex-1 text-left">AI Knowledge</span>
+                  <ChevronRight
+                    className={cn(
+                      "h-3 w-3 transition-transform",
+                      aiKnowledgeOpen ? "rotate-90" : ""
+                    )}
+                  />
+                </button>
+
+                {aiKnowledgeOpen ? (
+                  <div className="ml-6 space-y-1 border-l pl-3">
+                    <Link
+                      href="/ai/knowledge-base"
+                      className={cn(
+                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
+                        pathname === "/ai/knowledge-base"
+                          ? "bg-primary/5 font-medium text-primary"
+                          : "text-muted-foreground hover:bg-accent"
+                      )}
+                    >
+                      Knowledge Base
+                    </Link>
+                    <Link
+                      href="/ai/ask"
+                      className={cn(
+                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
+                        pathname === "/ai/ask"
+                          ? "bg-primary/5 font-medium text-primary"
+                          : "text-muted-foreground hover:bg-accent"
+                      )}
+                    >
+                      Ask AI
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
               {hasPermission("iam.admin.list") && (
                 <NavLink href="/admin" icon={<Shield className="w-4 h-4" />} label="Admin Hub" />
               )}
