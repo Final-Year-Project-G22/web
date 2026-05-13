@@ -686,119 +686,336 @@ headers.set("Accept-Language", getAcceptLanguage());
 
 ---
 
-## Phase 4: Agentic Tooling — Initial Tools
+## Phase 4: Agentic AI — Tools, Persona, and Tool Results
 
-### 4.1 Tool Registration
+The AI becomes agentic — at inference time it discovers and invokes system tools (guides, taxonomy) via gRPC, guided by a configurable persona/system prompt.
 
-Each module registers its tools in its own file. Example for guide module:
+### Sub-phase 4a: gRPC AIToolService (Go core-backend)
 
-`internal/modules/guide/ai_tools.go`:
-```go
-type SearchGuidesHandler struct {
-    guideService *GuideService
+**New proto** — `proto/core/ai_tool/v1/tool_service.proto`:
+
+```protobuf
+service AIToolService {
+  rpc ListTools(ListToolsRequest) returns (ListToolsResponse);
+  rpc ExecuteTool(ExecuteToolRequest) returns (ExecuteToolResponse);
 }
 
-func (h *SearchGuidesHandler) Name() string { return "search_guides" }
-func (h *SearchGuidesHandler) Description() string {
-    return "Search business formalization guides by sectors, tags, region, or stage."
+message ToolDefinition {
+  string name = 1;
+  string description = 2;
+  string parameter_schema_json = 3;
 }
-func (h *SearchGuidesHandler) ParameterSchema() string {
-    return `{
-        "type": "object",
-        "properties": {
-            "sectorIds": {"type": "array", "items": {"type": "string", "format": "uuid"}},
-            "tagIds": {"type": "array", "items": {"type": "string", "format": "uuid"}},
-            "region": {"type": "string"},
-            "stage": {"type": "string"}
-        }
-    }`
+
+message ExecuteToolRequest {
+  string tool = 1;
+  string arguments_json = 2;
+  string account_id = 3;
+  string user_id = 4;
 }
-func (h *SearchGuidesHandler) Execute(ctx, argsJSON, accountID, userID) (string, error) {
-    var args struct { SectorIDs, TagIDs []uuid.UUID; Region, Stage *string }
-    json.Unmarshal(argsJSON, &args)
-    guides := h.guideService.ListGuides(ctx, args)
-    result, _ := json.Marshal(guides)
-    return string(result), nil
+
+message ExecuteToolResponse {
+  bool success = 1;
+  string result_json = 2;
+  string error_message = 3;
 }
 ```
 
-### 4.2 Tool Results in Chat UI
+**New Go module** — `internal/modules/ai_tool/`:
 
-When the AI service returns `tool_uses` alongside the answer, the streaming response includes structured events:
+| File | Purpose |
+|------|---------|
+| `domain/port/tool_handler.go` | `ToolHandler` interface (Name, Description, ParameterSchema, Execute) |
+| `domain/service/tool_registry.go` | Registry mapping tool name → handler |
+| `infrastructure/server/ai_tool_service.go` | gRPC server implementing AIToolService |
+| `module.go` | fx wiring, registration with coregrpc server |
 
+**ToolHandler interface:**
+```go
+type ToolHandler interface {
+    Name() string
+    Description() string
+    ParameterSchema() string  // JSON Schema string
+    Execute(ctx context.Context, argsJSON string, accountID, userID uuid.UUID) (string, error)
+}
+```
+
+**Register first tools in their modules:**
+
+| Module | Tool | Handler wraps |
+|--------|------|---------------|
+| `guide/ai_tools.go` | `search_guides(sectorIds, tagIds, region, stage)` → matching guide titles + step summaries | existing GuideService |
+| `taxonomy/ai_tools.go` | `list_sectors()` → all sectors (id, nameEn, nameAm) | existing SectorService |
+| `taxonomy/ai_tools.go` | `list_tags(group?)` → tags, optionally filtered by group | existing TagService |
+| `guide/ai_tools.go` | `get_guide_detail(guideId)` → full guide with steps | existing GuideService |
+
+**Registration in module.go:**
+```go
+toolRegistry.Register(guide.NewSearchGuidesHandler(guideSvc))
+toolRegistry.Register(taxonomy.NewListSectorsHandler(sectorSvc))
+toolRegistry.Register(taxonomy.NewListTagsHandler(tagSvc))
+toolRegistry.Register(guide.NewGuideDetailHandler(guideSvc))
+```
+
+The `AIToolService` runs on core-backend's existing gRPC server (alongside `DocumentFetchService`).
+
+---
+
+### Sub-phase 4b: AI Service Tool Calling + Persona (Python)
+
+**1. Update `LLMPort` interface** (`core/ports/llm.py`):
+
+```python
+class ToolDefinition(BaseModel):
+    name: str
+    description: str
+    parameter_schema_json: str
+
+class ToolCall(BaseModel):
+    name: str
+    arguments: dict
+
+class LLMResult(BaseModel):
+    text: str
+    tool_calls: list[ToolCall] | None = None
+
+class LLMPort(ABC):
+    @abstractmethod
+    async def generate(
+        self,
+        prompt: str,
+        *,
+        system_prompt: str | None = None,
+        tools: list[ToolDefinition] | None = None,
+        max_tokens: int = 1024,
+        temperature: float = 0.2,
+    ) -> LLMResult: ...
+
+    @abstractmethod
+    def generate_stream(
+        self,
+        prompt: str,
+        *,
+        system_prompt: str | None = None,
+        tools: list[ToolDefinition] | None = None,
+        max_tokens: int = 1024,
+        temperature: float = 0.2,
+    ) -> AsyncIterator[LLMChunk]: ...
+```
+
+**2. Update all 3 LLM adapters:**
+
+| Adapter | System prompt support | Tools support |
+|---------|----------------------|---------------|
+| **Cohere** | Prepend `{"role": "system", "content": ...}` to messages | Cohere v2 Chat API `tools` param |
+| **Gemini** | Prepend system message in `contents` array | Gemini `tools` config in `generateContent` |
+| **Ollama** | Add `system` field in `/api/chat` request | Ollama `tools` field (OpenAI-compatible) |
+
+Each adapter:
+- Accepts optional `system_prompt` → injects as system message
+- Accepts optional `tools` → injects tool definitions in the API payload
+- Parses tool call responses from LLM → returns `LLMResult.tool_calls`
+- For streaming: emits `ToolCallChunk` in the stream alongside text chunks
+
+**3. Update `AskAIUseCase`** (`core/usecases/ask_ai.py`):
+
+```python
+async def execute(self, command: AskAICommand) -> AskAIResult:
+    # ... existing session resolution, embedding, retrieval ...
+
+    # NEW: Fetch available tools from core-backend via gRPC
+    tools = await self._ai_tool_client.list_tools()
+
+    # NEW: Build system prompt from persona config
+    system_prompt = self._build_system_prompt(tools)
+
+    # NEW: Fetch conversation history (last N messages)
+    history = await self._conversation_repository.list_messages(
+        command.session_id, limit=10
+    )
+
+    # NEW: Build prompt with history context
+    full_prompt = self._build_prompt_with_history(
+        command.prompt, context_hits, history
+    )
+
+    # Call LLM with tools and system prompt
+    result = await self._llm_port.generate(
+        full_prompt,
+        system_prompt=system_prompt,
+        tools=tools if tools else None,
+    )
+
+    # NEW: Handle tool calls — execute and feed back to LLM
+    if result.tool_calls:
+        for tc in result.tool_calls:
+            tool_result = await self._ai_tool_client.execute_tool(
+                tc.name, tc.arguments
+            )
+            # Feed tool result back to LLM for final composed answer
+            result = await self._llm_port.generate(
+                self._build_tool_result_prompt(tc, tool_result),
+                system_prompt=system_prompt,
+            )
+
+    # ... persist, cache, return ...
+```
+
+**4. Persona/system prompt** — new env-configurable settings:
+
+```python
+# app/config.py
+AI_PERSONA_SYSTEM_PROMPT: str = (
+    "You are Adisu Serategna's AI assistant for Ethiopian business "
+    "formalization. You help users understand business registration, "
+    "licensing, and compliance procedures."
+)
+AI_RESTRICTIONS: str = (
+    "You cannot access user personal data. You cannot make legal "
+    "commitments. Always recommend consulting a professional."
+)
+```
+
+System prompt construction in `_build_system_prompt`:
+```python
+def _build_system_prompt(self, tools: list[ToolDefinition]) -> str:
+    base = self._config.ai_persona
+    if self._config.ai_restrictions:
+        base += "\n\n" + self._config.ai_restrictions
+    if tools:
+        tool_descs = "\n".join(f"- {t.name}: {t.description}" for t in tools)
+        base += f"\n\nYou have access to these tools:\n{tool_descs}"
+    return base
+```
+
+**5. New gRPC client** — `infrastructure/rpc/ai_tool_client.py`:
+- Connects to core-backend's gRPC on `CORE_GRPC_ENDPOINT`
+- `list_tools()` → calls `ListTools` RPC → returns `list[ToolDefinition]`
+- `execute_tool(name, args)` → calls `ExecuteTool` RPC → returns `dict`
+
+**6. Tool call events in streaming** — emit SSE checkpoint events:
 ```
 event: tool_use
-data: {"tool": "search_guides", "args": {...}, "result": {...}}
+data: {"tool": "search_guides", "args": {...}, "result_summary": "3 guides found"}
 
 event: chunk
 data: {"text": "Based on the guides I found..."}
 ```
 
-The frontend chat panel displays a collapsible "Used search_guides" indicator:
+---
+
+### Sub-phase 4c: Tool Results in Frontend (Web)
+
+**1. Parse `tool_use` events** in `ask.hook.ts` — extend SSE handler to handle the `tool_use` event type alongside `chunk`, `citations`, `done`, `error`.
+
+**2. Extend `ChatMessage` type** — add `toolUses` array:
+```typescript
+type ToolUse = {
+  tool: string;
+  args: Record<string, unknown>;
+  resultSummary?: string;
+};
+
+type ChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  citations?: CitationDTO[];
+  toolUses?: ToolUse[];
+};
 ```
-┌─ [AI] Based on the guides I found...                          ─┐
-│                                                                  │
-│  🔧 Used search_guides — 3 results found                        │
-│  ┌─────────────────────────────────────────────────────────┐     │
-│  │ ▶ Business Registration Guide (Sector: Trade)           │     │
-│  │ ▶ Tax Registration Guide (Sector: Finance)              │     │
-│  │ ▶ License Renewal Guide (Sector: Trade)                 │     │
-│  └─────────────────────────────────────────────────────────┘     │
-└───────────────────────────────────────────────────────────────────┘
+
+**3. Update `chat-panel.tsx`** — render collapsible tool-use indicators below assistant messages:
+```
+┌─ [AI] Based on the guides I found...
+│
+│  🔧 Used search_guides — 3 results found
+│  ┌─────────────────────────────────────┐
+│  │ ▶ Business Registration Guide       │
+│  │ ▶ Tax Registration Guide            │
+│  │ ▶ License Renewal Guide             │
+│  └─────────────────────────────────────┘
 ```
 
 ---
 
-## Implementation Order & Dependencies
+### Implementation Order
 
 ```
-Phase 1 (Backend)
-├── 1.1 Enrich status response ────────────────────────┐
-├── 1.2 Fix delete flow                                │
-├── 1.3 Chunk excerpt in citations ────────────────────┤
-├── 1.4 gRPC AIToolService                            │
-└── 1.5 AI service: tool calling + prompt              │
-                                                       │
-Phase 2 (Frontend KB)                                  │
-├── 2.1 Two-page split                                 │
-├── 2.2 Upload dialog                          depends on 1.1
-└── 2.3 Rich document list                     depends on 1.1
-                                                       │
-Phase 3 (Frontend Ask)                                 │
-├── 3.1 Conversation sidebar                           │
-├── 3.2 Chat with session lifecycle                    │
-├── 3.3 Chunk inspector                       depends on 1.3
-└── 3.4 Accept-Language                                │
-                                                       │
-Phase 4 (Agentic)                                      │
-├── 4.1 Register first tools                  depends on 1.4, 1.5
-└── 4.2 Tool results in UI                   depends on 1.5
+4a (Go: proto + AIToolService + tool registrations)
+  │
+  ▼
+4b (Python: LLMPort + adapters + AskAIUseCase + tool client)
+  │
+  ▼
+4c (Web: tool result display in chat)
 ```
 
-**Recommended build order:** 1.1 → 1.2 → 2.1 + 2.2 + 2.3 (KB improvements first) → 1.3 → 3.1 + 3.2 + 3.3 + 3.4 (Ask page) → 1.4 → 1.5 → 4.1 + 4.2 (agentic).
+### Files to Create/Modify
+
+**Proto:**
+
+| File | Action |
+|------|--------|
+| `proto/core/ai_tool/v1/tool_service.proto` | NEW |
+
+**Go core-backend:**
+
+| File | Action |
+|------|--------|
+| `pb/core/ai_tool/v1/tool_service.pb.go` + `.gw.go` + `.validate.go` | Generated by buf |
+| `internal/modules/ai_tool/domain/port/tool_handler.go` | NEW — ToolHandler interface |
+| `internal/modules/ai_tool/domain/service/tool_registry.go` | NEW — thread-safe registry |
+| `internal/modules/ai_tool/infrastructure/server/ai_tool_service.go` | NEW — gRPC server |
+| `internal/modules/ai_tool/module.go` | NEW — fx module |
+| `internal/modules/guide/ai_tools.go` | NEW — SearchGuidesHandler, GuideDetailHandler |
+| `internal/modules/taxonomy/ai_tools.go` | NEW — ListSectorsHandler, ListTagsHandler |
+| `internal/modules/coregrpc/module.go` | Register AIToolService gRPC server |
+
+**Python AI service:**
+
+| File | Action |
+|------|--------|
+| `core/ports/llm.py` | Update interface: LLMResult, ToolDefinition, ToolCall; new generate/generate_stream signatures |
+| `infrastructure/llm/cohere.py` | Add system_prompt + tools support |
+| `infrastructure/llm/gemini.py` | Same |
+| `infrastructure/llm/ollama.py` | Same |
+| `core/usecases/ask_ai.py` | Add tool calling loop, system prompt, history feed |
+| `infrastructure/rpc/ai_tool_client.py` | NEW — gRPC client to core-backend |
+| `app/config.py` | Add AI_PERSONA_SYSTEM_PROMPT, AI_RESTRICTIONS |
+| `app/container.py` | Wire ai_tool_client, persona config |
+| `infrastructure/rpc/services/inference_service.py` | Emit tool_use SSE events |
+
+**Web frontend:**
+
+| File | Action |
+|------|--------|
+| `ask/_services/ask.hook.ts` | Parse `tool_use` events from SSE stream |
+| `ask/_components/chat-panel.tsx` | Render collapsible tool-use indicators |
+| `ask/_components/tool-use-indicator.tsx` | NEW — collapsible tool result component |
 
 ---
 
-## Phase Breakdown
+## Phase Breakdown (Updated)
 
 | Phase | Items | Layer | Depends On | Unlocks |
 |-------|-------|-------|-----------|---------|
-| **1a** | 1.1 Enrich status response + 1.2 Fix delete flow | Go core-backend | — | Phase 2 |
-| **2** | 2.1–2.4 KB page, upload dialog, rich doc list, Accept-Language | Web frontend | Phase 1a | — |
-| **1b** | 1.3 Chunk excerpt in citations | Proto + Go + Python | — | Phase 3 |
-| **3** | 3.1–3.3 Conversation sidebar, chat panel, chunk inspector | Web frontend | Phase 1b, Phase 2 | — |
-| **1c** | 1.4 gRPC AIToolService + 1.5 Tool calling/persona/history | Proto + Go + Python | — | Phase 4 |
-| **4** | 4.1 Register tools + 4.2 Tool results UI | Go + Web frontend | Phase 1c | — |
+| **1a** | Enrich status + fix delete flow | Go | — | Phase 2 |
+| **2** | KB page, upload dialog, rich doc list, Accept-Language | Web | Phase 1a | — |
+| **1b** | Chunk excerpt in citations | Proto + Go + Python | — | Phase 3 |
+| **3** | Ask page: conversation sidebar, chat panel, chunk inspector | Web | Phase 1b, Phase 2 | — |
+| **1c** | Auth & locale fixes, canonical JSON, SSE poll interval | Go + Python | — | — |
+| **4a** | gRPC AIToolService + tool registrations | Proto + Go | — | Phase 4b |
+| **4b** | Tool calling, persona, history feed in AI service | Python | Phase 4a | Phase 4c |
+| **4c** | Tool results display in chat UI | Web | Phase 4b | — |
 
 ### Execution Order
 
 ```
 Phase 1a ──► Phase 2
 Phase 1b ──► Phase 3
-Phase 1c ──► Phase 4
+       └── Phase 1c (parallel fixes)
+Phase 4a ──► Phase 4b ──► Phase 4c
 ```
-
-Phases 1b and 1c can proceed in parallel with Phase 2/3 frontend work since they touch different layers. Each phase is independently reviewable and committable.
 
 ---
 
