@@ -23,6 +23,11 @@ export interface UpdateGuideRequest {
    */
   icon?: string;
   /**
+   * Guide cover image URL
+   * @maxLength 500
+   */
+  imageUrl?: string;
+  /**
    * Target sector IDs
    * @nullable
    */

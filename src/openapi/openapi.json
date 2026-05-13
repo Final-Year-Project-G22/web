@@ -400,6 +400,9 @@
           "id": {
             "type": "string"
           },
+          "imageUrl": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
@@ -439,6 +442,9 @@
             "type": "string"
           },
           "id": {
+            "type": "string"
+          },
+          "imageUrl": {
             "type": "string"
           },
           "sectorIds": {
@@ -2144,6 +2150,11 @@
           "icon": {
             "description": "Icon identifier",
             "maxLength": 50,
+            "type": "string"
+          },
+          "imageUrl": {
+            "description": "Guide cover image URL",
+            "maxLength": 500,
             "type": "string"
           },
           "sectorIds": {
@@ -8871,6 +8882,11 @@
           "icon": {
             "description": "Icon identifier",
             "maxLength": 50,
+            "type": "string"
+          },
+          "imageUrl": {
+            "description": "Guide cover image URL",
+            "maxLength": 500,
             "type": "string"
           },
           "sectorIds": {

@@ -13,6 +13,7 @@ export interface AdminGuideDetailDTO {
   conditions: AdminConditionDTO[] | null;
   icon?: string;
   id: string;
+  imageUrl?: string;
   /** @nullable */
   sectorIds: string[] | null;
   slug: string;
