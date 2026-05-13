@@ -7,6 +7,7 @@
  */
 import type { UpdateStepCondition } from './updateStepCondition';
 import type { UpdateStepDependency } from './updateStepDependency';
+import type { UpdateStepDocument } from './updateStepDocument';
 import type { UpdateStepRequestTranslationMode } from './updateStepRequestTranslationMode';
 import type { UpdateStepTranslation } from './updateStepTranslation';
 
@@ -35,6 +36,11 @@ export interface UpdateStepRequest {
   feeEstimate?: number;
   /** Whether step can be skipped */
   isOptional?: boolean;
+  /**
+   * Required documents for this step
+   * @nullable
+   */
+  requiredDocuments?: UpdateStepDocument[] | null;
   /**
    * Step slug
    * @maxLength 100

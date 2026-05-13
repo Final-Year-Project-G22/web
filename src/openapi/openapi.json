@@ -516,6 +516,12 @@
           "isOptional": {
             "type": "boolean"
           },
+          "requiredDocuments": {
+            "items": {
+              "$ref": "#/components/schemas/AdminStepDocumentDTO"
+            },
+            "type": ["array", "null"]
+          },
           "slug": {
             "type": "string"
           },
@@ -653,6 +659,19 @@
           }
         },
         "required": ["accountId", "message"],
+        "type": "object"
+      },
+      "AdminStepDocumentDTO": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": ["name"],
         "type": "object"
       },
       "AdminStepTranslationDTO": {
@@ -2526,6 +2545,23 @@
         "required": ["requiredStepId", "dependencyType"],
         "type": "object"
       },
+      "CreateStepDocument": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "description": "Document description",
+            "type": "string"
+          },
+          "name": {
+            "description": "Document name",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": ["name"],
+        "type": "object"
+      },
       "CreateStepRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2582,6 +2618,13 @@
           "isOptional": {
             "description": "Whether step can be skipped",
             "type": "boolean"
+          },
+          "requiredDocuments": {
+            "description": "Required documents for this step",
+            "items": {
+              "$ref": "#/components/schemas/CreateStepDocument"
+            },
+            "type": ["array", "null"]
           },
           "slug": {
             "description": "Step slug",
@@ -9294,6 +9337,23 @@
         "required": ["requiredStepId", "dependencyType"],
         "type": "object"
       },
+      "UpdateStepDocument": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "description": "Document description",
+            "type": "string"
+          },
+          "name": {
+            "description": "Document name",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": ["name"],
+        "type": "object"
+      },
       "UpdateStepRequest": {
         "additionalProperties": false,
         "properties": {
@@ -9346,6 +9406,13 @@
           "isOptional": {
             "description": "Whether step can be skipped",
             "type": "boolean"
+          },
+          "requiredDocuments": {
+            "description": "Required documents for this step",
+            "items": {
+              "$ref": "#/components/schemas/UpdateStepDocument"
+            },
+            "type": ["array", "null"]
           },
           "slug": {
             "description": "Step slug",
