@@ -37,10 +37,12 @@ export function ChatPanel({ sessionId, onSessionChange }: ChatPanelProps) {
   const [chatInput, setChatInput] = useState("");
   const [inspectedCitation, setInspectedCitation] = useState<CitationDTO | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const loadedSessionRef = useRef<string | null>(null);
 
-  // Load history when session changes
+  // Load history when a NEW session is selected (not on every query refetch)
   useEffect(() => {
-    if (conversation?.messages) {
+    if (sessionId && sessionId !== loadedSessionRef.current && conversation?.messages) {
+      loadedSessionRef.current = sessionId;
       setMessages(
         conversation.messages.map((m) => ({
           id: m.id,
@@ -50,6 +52,7 @@ export function ChatPanel({ sessionId, onSessionChange }: ChatPanelProps) {
         }))
       );
     } else if (!sessionId) {
+      loadedSessionRef.current = null;
       setMessages([]);
     }
   }, [conversation, sessionId]);
