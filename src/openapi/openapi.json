@@ -516,12 +516,6 @@
           "isOptional": {
             "type": "boolean"
           },
-          "requiredDocuments": {
-            "items": {
-              "$ref": "#/components/schemas/AdminStepDocumentDTO"
-            },
-            "type": ["array", "null"]
-          },
           "slug": {
             "type": "string"
           },
@@ -661,19 +655,6 @@
         "required": ["accountId", "message"],
         "type": "object"
       },
-      "AdminStepDocumentDTO": {
-        "additionalProperties": false,
-        "properties": {
-          "description": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": ["name"],
-        "type": "object"
-      },
       "AdminStepTranslationDTO": {
         "additionalProperties": false,
         "properties": {
@@ -684,6 +665,7 @@
           "language": {
             "type": "string"
           },
+          "requiredDocuments": {},
           "title": {
             "type": "string"
           }
@@ -2545,23 +2527,6 @@
         "required": ["requiredStepId", "dependencyType"],
         "type": "object"
       },
-      "CreateStepDocument": {
-        "additionalProperties": false,
-        "properties": {
-          "description": {
-            "description": "Document description",
-            "type": "string"
-          },
-          "name": {
-            "description": "Document name",
-            "maxLength": 200,
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "required": ["name"],
-        "type": "object"
-      },
       "CreateStepRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2618,13 +2583,6 @@
           "isOptional": {
             "description": "Whether step can be skipped",
             "type": "boolean"
-          },
-          "requiredDocuments": {
-            "description": "Required documents for this step",
-            "items": {
-              "$ref": "#/components/schemas/CreateStepDocument"
-            },
-            "type": ["array", "null"]
           },
           "slug": {
             "description": "Step slug",
@@ -2685,6 +2643,9 @@
             "maxLength": 5,
             "minLength": 2,
             "type": "string"
+          },
+          "requiredDocuments": {
+            "description": "Required documents as JSON array"
           },
           "title": {
             "description": "Localized title",
@@ -4408,6 +4369,10 @@
             "description": "Current ingestion stage",
             "type": "string"
           },
+          "declaredLanguage": {
+            "description": "Declared language hint (en/am)",
+            "type": "string"
+          },
           "documentId": {
             "description": "Document identifier",
             "type": "string"
@@ -4425,10 +4390,28 @@
             "description": "Last error message if failed",
             "type": "string"
           },
+          "sectorIds": {
+            "description": "Associated sector IDs",
+            "items": {
+              "type": "string"
+            },
+            "type": ["array", "null"]
+          },
+          "sourceFilename": {
+            "description": "Original source filename",
+            "type": "string"
+          },
           "startedAt": {
             "description": "Ingestion start timestamp",
             "format": "date-time",
             "type": "string"
+          },
+          "tagIds": {
+            "description": "Associated tag IDs",
+            "items": {
+              "type": "string"
+            },
+            "type": ["array", "null"]
           },
           "updatedAt": {
             "description": "Last update timestamp",
@@ -5908,6 +5891,24 @@
           "$schema": {
             "description": "A URL to the JSON Schema for this object.",
             "examples": ["https://example.com/schemas/MarkStepIncompleteResponseBody.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "message": {
+            "description": "Success message",
+            "type": "string"
+          }
+        },
+        "required": ["message"],
+        "type": "object"
+      },
+      "MarkThreadReadResponseBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["https://example.com/schemas/MarkThreadReadResponseBody.json"],
             "format": "uri",
             "readOnly": true,
             "type": "string"
@@ -8255,9 +8256,17 @@
             "description": "Thread description",
             "type": "string"
           },
+          "hasSolution": {
+            "description": "Whether thread has an accepted solution",
+            "type": "boolean"
+          },
           "id": {
             "description": "Thread ID",
             "type": "string"
+          },
+          "isFollowed": {
+            "description": "Whether current user follows this thread",
+            "type": "boolean"
           },
           "isPinned": {
             "description": "Pinned flag",
@@ -8308,6 +8317,11 @@
             "description": "Thread title",
             "type": "string"
           },
+          "unreadCount": {
+            "description": "Number of unread posts/replies",
+            "format": "int64",
+            "type": "integer"
+          },
           "updatedAt": {
             "description": "Updated timestamp",
             "format": "date-time",
@@ -8328,6 +8342,9 @@
           "authorId",
           "authorDisplayName",
           "isPinned",
+          "isFollowed",
+          "unreadCount",
+          "hasSolution",
           "status",
           "viewCount",
           "shareCount",
@@ -9337,23 +9354,6 @@
         "required": ["requiredStepId", "dependencyType"],
         "type": "object"
       },
-      "UpdateStepDocument": {
-        "additionalProperties": false,
-        "properties": {
-          "description": {
-            "description": "Document description",
-            "type": "string"
-          },
-          "name": {
-            "description": "Document name",
-            "maxLength": 200,
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "required": ["name"],
-        "type": "object"
-      },
       "UpdateStepRequest": {
         "additionalProperties": false,
         "properties": {
@@ -9406,13 +9406,6 @@
           "isOptional": {
             "description": "Whether step can be skipped",
             "type": "boolean"
-          },
-          "requiredDocuments": {
-            "description": "Required documents for this step",
-            "items": {
-              "$ref": "#/components/schemas/UpdateStepDocument"
-            },
-            "type": ["array", "null"]
           },
           "slug": {
             "description": "Step slug",
@@ -9476,6 +9469,9 @@
             "maxLength": 5,
             "minLength": 2,
             "type": "string"
+          },
+          "requiredDocuments": {
+            "description": "Required documents as JSON array"
           },
           "title": {
             "description": "Localized title",
@@ -9903,6 +9899,24 @@
             "type": "string"
           },
           "imageUrl": {
+            "type": "string"
+          }
+        },
+        "required": ["imageUrl"],
+        "type": "object"
+      },
+      "UploadGuideImageResponseBody": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["https://example.com/schemas/UploadGuideImageResponseBody.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "imageUrl": {
+            "description": "Uploaded image URL",
             "type": "string"
           }
         },
@@ -12640,6 +12654,76 @@
           }
         ],
         "summary": "Add guide condition",
+        "tags": ["Admin - Guides"]
+      }
+    },
+    "/api/v1/admin/guides/{id}/image": {
+      "post": {
+        "description": "Uploads and sets the cover image for a guide.",
+        "operationId": "uploadGuideImage",
+        "parameters": [
+          {
+            "description": "Guide ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "description": "Guide ID",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "encoding": {
+                "file": {
+                  "contentType": "application/octet-stream"
+                }
+              },
+              "schema": {
+                "properties": {
+                  "file": {
+                    "contentEncoding": "binary",
+                    "contentMediaType": "application/octet-stream",
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "required": ["file"],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadGuideImageResponseBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Upload guide image",
         "tags": ["Admin - Guides"]
       }
     },
@@ -18368,7 +18452,7 @@
                     "type": "string"
                   }
                 },
-                "required": ["title", "slug", "description", "initialPostContent"],
+                "required": ["title", "slug", "initialPostContent"],
                 "type": "object"
               }
             }
@@ -19232,6 +19316,53 @@
           }
         ],
         "summary": "Report post",
+        "tags": ["Community"]
+      }
+    },
+    "/api/v1/community/threads/{id}/read": {
+      "post": {
+        "description": "Marks a thread as read for the current user.",
+        "operationId": "markThreadRead",
+        "parameters": [
+          {
+            "description": "Thread ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "description": "Thread ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkThreadReadResponseBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Mark thread as read",
         "tags": ["Community"]
       }
     },

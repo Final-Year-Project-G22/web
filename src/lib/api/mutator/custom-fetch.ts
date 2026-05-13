@@ -1,5 +1,6 @@
 import { getGetCurrentUserUrl, getRefreshUrl } from "@/lib/api/services/authentication";
 import type { AccountDTO, UserDTO } from "@/lib/api/types";
+import { useAdminLanguageStore } from "@/stores/admin-language.store";
 import { useAuthStore } from "@/store/auth.store";
 
 const REFRESH_BUFFER_MS = 60_000;
@@ -183,6 +184,11 @@ export const customFetch = async <T>(
   const headers = new Headers(safeOptions.headers);
   if (token && !headers.has("Authorization")) {
     headers.set("Authorization", `Bearer ${token}`);
+  }
+  // Set Accept-Language from the admin language store for localization.
+  if (!headers.has("Accept-Language")) {
+    const lang = useAdminLanguageStore.getState().language || "en";
+    headers.set("Accept-Language", lang);
   }
 
   const res = await fetch(url, { ...safeOptions, headers, credentials: "include" });
