@@ -45,6 +45,7 @@ const groupCreateSchema = z.object({
   requiresAuth: z.boolean(),
   sortOrder: z.number().int().min(0),
   defaultLanguage: z.string().min(1, "Language is required"),
+  thumbnailUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
 });
 
 type GroupCreateFormData = z.infer<typeof groupCreateSchema>;
@@ -65,6 +66,7 @@ export default function LibraryTemplateGroupCreatePage() {
       requiresAuth: false,
       sortOrder: 0,
       defaultLanguage: "",
+      thumbnailUrl: "",
     },
   });
 
@@ -84,6 +86,7 @@ export default function LibraryTemplateGroupCreatePage() {
         requiresAuth: data.requiresAuth,
         sortOrder: data.sortOrder,
         defaultLanguage: data.defaultLanguage,
+        thumbnailUrl: data.thumbnailUrl?.trim() || undefined,
       },
       {
         onSuccess: () => router.push("/library/template-groups"),
@@ -277,6 +280,18 @@ export default function LibraryTemplateGroupCreatePage() {
                   })
                 }
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="thumbnailUrl">Thumbnail URL (optional)</Label>
+              <Input
+                id="thumbnailUrl"
+                {...form.register("thumbnailUrl")}
+                placeholder="https://example.com/thumbnail.jpg"
+              />
+              {form.formState.errors.thumbnailUrl && (
+                <p className="text-sm text-red-500">{form.formState.errors.thumbnailUrl.message}</p>
+              )}
             </div>
 
             <div className="flex items-center gap-2 pt-2">

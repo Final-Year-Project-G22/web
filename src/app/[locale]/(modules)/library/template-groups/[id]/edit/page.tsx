@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
   useLibraryCategories,
@@ -22,13 +22,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { getErrorMessage } from "@/lib/utils";
 
@@ -47,6 +40,7 @@ const groupEditSchema = z.object({
   sortOrder: z.number().int().min(0),
   defaultLanguage: z.string().min(1, "Language is required"),
   isActive: z.boolean().optional(),
+  thumbnailUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
 });
 
 type GroupEditFormData = z.infer<typeof groupEditSchema>;
@@ -75,6 +69,7 @@ export default function LibraryTemplateGroupEditPage() {
       sortOrder: 0,
       defaultLanguage: "",
       isActive: true,
+      thumbnailUrl: "",
     },
   });
 
@@ -92,6 +87,7 @@ export default function LibraryTemplateGroupEditPage() {
         sortOrder: d.sortOrder,
         defaultLanguage: d.defaultLanguage,
         isActive: d.isActive,
+        thumbnailUrl: d.thumbnailUrl ?? "",
       });
     }
   }, [groupQuery.data, form]);
@@ -112,6 +108,7 @@ export default function LibraryTemplateGroupEditPage() {
           sortOrder: data.sortOrder,
           defaultLanguage: data.defaultLanguage,
           isActive: data.isActive,
+          thumbnailUrl: data.thumbnailUrl?.trim() || undefined,
         },
       },
       {
@@ -196,24 +193,18 @@ export default function LibraryTemplateGroupEditPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="format">Format</Label>
-                    <Controller
-                      name="format"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger id="format">
-                            <SelectValue placeholder="Select format" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {FORMAT_OPTIONS.map((f) => (
-                              <SelectItem key={f} value={f}>
-                                {f}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
+                    <select
+                      id="format"
+                      {...form.register("format")}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Select format</option>
+                      {FORMAT_OPTIONS.map((f) => (
+                        <option key={f} value={f}>
+                          {f}
+                        </option>
+                      ))}
+                    </select>
                     {form.formState.errors.format && (
                       <p className="text-sm text-red-500">{form.formState.errors.format.message}</p>
                     )}
@@ -221,24 +212,18 @@ export default function LibraryTemplateGroupEditPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="tierAccess">Tier Access</Label>
-                    <Controller
-                      name="tierAccess"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger id="tierAccess">
-                            <SelectValue placeholder="Select tier" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {TIER_OPTIONS.map((t) => (
-                              <SelectItem key={t} value={t}>
-                                {t.charAt(0).toUpperCase() + t.slice(1)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
+                    <select
+                      id="tierAccess"
+                      {...form.register("tierAccess")}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Select tier</option>
+                      {TIER_OPTIONS.map((t) => (
+                        <option key={t} value={t}>
+                          {t.charAt(0).toUpperCase() + t.slice(1)}
+                        </option>
+                      ))}
+                    </select>
                     {form.formState.errors.tierAccess && (
                       <p className="text-sm text-red-500">
                         {form.formState.errors.tierAccess.message}
@@ -250,24 +235,18 @@ export default function LibraryTemplateGroupEditPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="defaultLanguage">Default Language</Label>
-                    <Controller
-                      name="defaultLanguage"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger id="defaultLanguage">
-                            <SelectValue placeholder="Select language" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {LANG_OPTIONS.map((l) => (
-                              <SelectItem key={l} value={l}>
-                                {l}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
+                    <select
+                      id="defaultLanguage"
+                      {...form.register("defaultLanguage")}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Select language</option>
+                      {LANG_OPTIONS.map((l) => (
+                        <option key={l} value={l}>
+                          {l}
+                        </option>
+                      ))}
+                    </select>
                     {form.formState.errors.defaultLanguage && (
                       <p className="text-sm text-red-500">
                         {form.formState.errors.defaultLanguage.message}
@@ -322,6 +301,20 @@ export default function LibraryTemplateGroupEditPage() {
                       })
                     }
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="thumbnailUrl">Thumbnail URL (optional)</Label>
+                  <Input
+                    id="thumbnailUrl"
+                    {...form.register("thumbnailUrl")}
+                    placeholder="https://example.com/thumbnail.jpg"
+                  />
+                  {form.formState.errors.thumbnailUrl && (
+                    <p className="text-sm text-red-500">
+                      {form.formState.errors.thumbnailUrl.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2 pt-2">

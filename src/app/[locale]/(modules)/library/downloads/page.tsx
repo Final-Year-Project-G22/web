@@ -29,11 +29,12 @@ const PAGE_SIZE = 20;
 
 export default function LibraryDownloadLogsPage() {
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE);
   const [groupFilter, setGroupFilter] = useState("");
 
   const logsQuery = useDownloadLogs({
     page,
-    pageSize: PAGE_SIZE,
+    pageSize,
     groupId: groupFilter || undefined,
   });
   const groupsQuery = useTemplateGroups({ page: 1, pageSize: 20 });
@@ -72,7 +73,7 @@ export default function LibraryDownloadLogsPage() {
                 className="flex h-9 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
                 <option value="">All Groups</option>
-                {groupsQuery.data?.map((g) => (
+                {groupsQuery.data?.data?.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.name}
                   </option>
@@ -93,27 +94,23 @@ export default function LibraryDownloadLogsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Download ID</TableHead>
-                      <TableHead>Template ID</TableHead>
-                      <TableHead>Group ID</TableHead>
-                      <TableHead>Account ID</TableHead>
+                      <TableHead>Template</TableHead>
+                      <TableHead>Group</TableHead>
                       <TableHead>Downloaded At</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {(logsQuery.data?.data ?? []).length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-muted-foreground">
+                        <TableCell colSpan={4} className="text-muted-foreground">
                           No download logs found.
                         </TableCell>
                       </TableRow>
                     ) : (
                       (logsQuery.data?.data ?? []).map((log) => (
                         <TableRow key={log.id}>
-                          <TableCell className="font-mono text-xs">{log.id}</TableCell>
-                          <TableCell className="font-mono text-xs">{log.templateId}</TableCell>
-                          <TableCell className="font-mono text-xs">{log.groupId}</TableCell>
-                          <TableCell className="font-mono text-xs">{log.accountId}</TableCell>
+                          <TableCell className="text-sm">{log.templateTitle}</TableCell>
+                          <TableCell className="text-sm">{log.groupName}</TableCell>
                           <TableCell className="text-sm">
                             {new Date(log.downloadedAt).toLocaleString()}
                           </TableCell>
@@ -127,8 +124,13 @@ export default function LibraryDownloadLogsPage() {
               <PaginationControls
                 page={logsQuery.data?.page ?? page}
                 totalPages={logsQuery.data?.totalPages ?? 1}
-                pageSize={logsQuery.data?.pageSize ?? PAGE_SIZE}
+                pageSize={pageSize}
+                isLoading={logsQuery.isFetching}
                 onPageChange={setPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  setPage(1);
+                }}
               />
             </>
           )}
