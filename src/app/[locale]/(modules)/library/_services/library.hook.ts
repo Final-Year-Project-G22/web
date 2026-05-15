@@ -8,8 +8,10 @@ import {
   libraryAddCategoryTranslation,
   libraryAdminGetTemplateGroup,
   libraryCreateCategory,
+  libraryCreateTemplate,
   libraryCreateTemplateGroup,
   type libraryCreateTemplateResponse,
+  libraryCreateTemplateUploadIntent,
   libraryDeleteCategory,
   libraryDeleteCategoryTranslation,
   libraryDeleteTemplate,
@@ -33,12 +35,12 @@ import type {
   CreateTemplateGroupRequest,
   DownloadLogListResponse,
   ErrorModel,
-  LibraryCreateTemplateBody,
   LibraryGetDownloadLogsParams,
   LibraryListAllCategoriesParams,
   LibraryListAllTemplateGroupsParams,
   LibraryTemplateDetailResponse,
   LibraryUpdateTemplateBody,
+  ListAllTemplateGroupsResponseBody,
   TemplateGroupDetailResponse,
   TemplateGroupSummaryResponse,
   TemplateItem,
@@ -160,12 +162,12 @@ export function useDeleteCategoryTranslation() {
 }
 
 export function useTemplateGroups(params?: LibraryListAllTemplateGroupsParams) {
-  return useQuery<TemplateGroupSummaryResponse[], ErrorModel>({
+  return useQuery<ListAllTemplateGroupsResponseBody, ErrorModel>({
     queryKey: [...KEYS.templateGroups, params],
     queryFn: async () => {
       const res = await libraryListAllTemplateGroups(params);
       if (res.status !== 200) throw res.data;
-      return res.data ?? [];
+      return res.data;
     },
   });
 }
@@ -251,21 +253,43 @@ export function useCreateTemplate() {
   return useMutation<
     { id: string },
     ErrorModel,
-    { groupId: string; body: LibraryCreateTemplateBody }
+    { groupId: string; body: { file: File; title: string; language: string; description?: string } }
   >({
     mutationFn: async ({ groupId, body }) => {
-      const formData = new FormData();
-      formData.append("file", body.file);
-      formData.append("language", body.language as string);
-      formData.append("title", body.title as string);
-      if (body.description) {
-        formData.append("description", body.description as string);
+      // 1. Get upload intent
+      const intentRes = await libraryCreateTemplateUploadIntent(groupId, {
+        language: body.language,
+        title: body.title,
+        description: body.description || "",
+        fileName: body.file.name,
+        contentType: body.file.type || "application/octet-stream",
+        fileSize: body.file.size,
+      });
+      if (intentRes.status !== 200) throw intentRes.data;
+      const intent = intentRes.data;
+
+      // 2. Upload file directly to SeaweedFS
+      const uploadRes = await fetch(intent.uploadUrl, {
+        method: intent.method,
+        body: body.file,
+        headers: {
+          "Content-Type": body.file.type || "application/octet-stream",
+          ...((intent.headers as Record<string, string>) || {}),
+        },
+      });
+      if (!uploadRes.ok) {
+        throw new Error("Failed to upload file to storage provider");
       }
 
-      const res = await customFetch<libraryCreateTemplateResponse>(
-        getLibraryCreateTemplateUrl(groupId),
-        { method: "POST", body: formData }
-      );
+      // 3. Create template record
+      const res = await libraryCreateTemplate(groupId, {
+        fileKey: intent.fileKey,
+        language: body.language,
+        title: body.title,
+        description: body.description || "",
+        fileSize: body.file.size,
+        contentType: body.file.type || "application/octet-stream",
+      });
       if (res.status !== 200) throw res.data;
       return res.data;
     },

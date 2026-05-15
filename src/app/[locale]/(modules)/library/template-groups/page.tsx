@@ -34,12 +34,13 @@ const PAGE_SIZE = 10;
 
 export default function LibraryTemplateGroupsPage() {
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
 
   const groupsQuery = useTemplateGroups({
     page,
-    pageSize: PAGE_SIZE,
+    pageSize,
     categoryId: categoryFilter || undefined,
   });
   const categoriesQuery = useLibraryCategories({ includeInactive: false });
@@ -106,14 +107,14 @@ export default function LibraryTemplateGroupsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(groupsQuery.data ?? []).length === 0 ? (
+                    {!groupsQuery.data?.data?.length ? (
                       <TableRow>
                         <TableCell colSpan={8} className="text-muted-foreground">
                           No template groups found.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      (groupsQuery.data ?? []).map((g) => (
+                      groupsQuery.data.data.map((g) => (
                         <TableRow key={g.id}>
                           <TableCell className="font-medium">{g.name}</TableCell>
                           <TableCell className="text-sm">{g.slug}</TableCell>
@@ -183,12 +184,14 @@ export default function LibraryTemplateGroupsPage() {
 
               <PaginationControls
                 page={page}
-                totalPages={Math.max(
-                  1,
-                  Math.ceil((groupsQuery.data?.length ?? 0) / PAGE_SIZE || 1)
-                )}
-                pageSize={PAGE_SIZE}
+                totalPages={groupsQuery.data?.totalPages ?? 1}
+                pageSize={pageSize}
+                isLoading={groupsQuery.isFetching}
                 onPageChange={setPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  setPage(1);
+                }}
               />
             </>
           )}
