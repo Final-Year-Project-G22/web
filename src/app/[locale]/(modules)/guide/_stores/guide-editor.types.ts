@@ -34,6 +34,7 @@ export type GuideEditorStep = {
   dependencies?: unknown[] | null;
   effectiveDate?: string;
   expiryDate?: string;
+  complianceType?: string;
   translations?:
     | {
         language: string;
