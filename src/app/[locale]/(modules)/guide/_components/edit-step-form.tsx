@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo } from "react";
+import { useComplianceTypes } from "@/app/[locale]/(modules)/guide/_services/guide.hook";
 import {
   editGuideStore,
   useEditGuide,
@@ -90,6 +91,7 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
   const draftSteps = useEditGuide((s) => s.draftSteps);
   const activeStepId = useEditGuide((s) => s.activeStepId);
   const updateStep = useEditGuide((s) => s.updateStep);
+  const { data: complianceTypes } = useComplianceTypes();
 
   const steps = useMemo(() => [...persistedSteps, ...draftSteps], [persistedSteps, draftSteps]);
 
@@ -171,6 +173,30 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
               ))}
             </SelectContent>
           </Select>
+
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">Compliance Type</p>
+            <Select
+              value={activeStep.complianceType ?? ""}
+              onValueChange={(value) => {
+                updateStep(activeStep.clientId, {
+                  complianceType: value === "none" ? undefined : value,
+                });
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="None" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {complianceTypes?.data?.map((t) => (
+                  <SelectItem key={t.slug} value={t.slug}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="space-y-2">

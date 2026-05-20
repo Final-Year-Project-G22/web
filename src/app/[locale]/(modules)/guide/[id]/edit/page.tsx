@@ -46,6 +46,7 @@ function mapApiToEditorSteps(apiSteps: AdminGuideStepDTO[], language: string): G
       feeEstimate: s.feeEstimate,
       effectiveDate: s.effectiveDate,
       expiryDate: s.expiryDate,
+      complianceType: s.complianceType,
       conditions: null,
       dependencies: null,
       translations: (s.translations ?? []).map((t) => ({
@@ -87,6 +88,7 @@ function createEmptyStep(guideId: string, order: number, language: string): Guid
     dependencies: null,
     effectiveDate: undefined,
     expiryDate: undefined,
+    complianceType: undefined,
     translations: [{ language, title: `Step ${order}`, description: "" }],
     ui: {
       summary: "",
@@ -111,6 +113,7 @@ function buildCreatePayload(step: GuideEditorStep) {
     feeEstimate: step.feeEstimate,
     effectiveDate: step.effectiveDate,
     expiryDate: step.expiryDate,
+    complianceType: step.complianceType,
     translations: (step.translations ?? []).map((t) => ({
       language: t.language,
       title: t.title,
@@ -135,6 +138,7 @@ function buildUpdatePayload(step: GuideEditorStep) {
       detailedContent: t.detailedContent,
     })),
     translationMode: "merge" as const,
+    complianceType: step.complianceType,
   };
 }
 

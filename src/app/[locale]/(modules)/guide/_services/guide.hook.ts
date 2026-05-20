@@ -16,6 +16,7 @@ import {
   reorderSteps,
   updateStep,
 } from "@/lib/api/services/admin-steps";
+import { listComplianceTypes } from "@/lib/api/services/compliance";
 import type {
   AdminGuideCardDTO,
   AdminGuideDetailDTO,
@@ -26,6 +27,7 @@ import type {
   CreateStepResponseBody,
   ErrorModel,
   GetGuideAdminParams,
+  ListComplianceTypesResponseBody,
   ListGuideStepsAdminParams,
   ListGuidesAdminParams,
   UpdateGuideRequest,
@@ -224,6 +226,19 @@ export function useReorderSteps() {
       await queryClient.invalidateQueries({
         queryKey: [...KEYS.all, "detail", vars.guideId],
       });
+    },
+  });
+}
+
+const COMPLIANCE_TYPES_KEY = ["compliance", "types"];
+
+export function useComplianceTypes() {
+  return useQuery<ListComplianceTypesResponseBody, ErrorModel>({
+    queryKey: COMPLIANCE_TYPES_KEY,
+    queryFn: async () => {
+      const res = await listComplianceTypes();
+      if (res.status !== 200) throw res.data;
+      return res.data;
     },
   });
 }
