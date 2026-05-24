@@ -45,12 +45,16 @@ function TargetBadge({
   variant: "default" | "destructive" | "success";
 }) {
   const colors = {
-    default: "text-chart-1 bg-chart-1/10",
-    destructive: "text-destructive bg-destructive/10",
-    success: "text-success bg-success/10",
+    default: "text-chart-1 bg-chart-1/8 border-chart-1/15",
+    destructive: "text-destructive bg-destructive/8 border-destructive/15",
+    success: "text-success bg-success/8 border-success/15",
   };
   return (
-    <span className={`px-2.5 py-1 rounded-md text-xs font-medium ${colors[variant]}`}>{label}</span>
+    <span
+      className={`px-2.5 py-0.5 rounded-md text-[11px] font-bold tracking-wide border uppercase ${colors[variant]}`}
+    >
+      {label}
+    </span>
   );
 }
 
