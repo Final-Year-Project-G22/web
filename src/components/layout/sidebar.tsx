@@ -19,6 +19,7 @@ import {
   TriangleAlert,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -210,10 +211,8 @@ function SidebarContent() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="p-6 pb-2">
-        <div className="flex items-center gap-2">
-          <div className="bg-primary/10 p-1.5 rounded-lg">
-            <LayoutDashboard className="size-6 text-primary" />
-          </div>
+        <div className="flex items-center gap-3">
+          <Image src="/logo.svg" alt={APP_NAME} width={64} height={64} className="rounded-lg" />
           <span className="font-bold text-xl">{APP_NAME}</span>
         </div>
       </div>
