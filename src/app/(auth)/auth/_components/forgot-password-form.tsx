@@ -36,19 +36,21 @@ export function ForgotPasswordForm() {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-5"
+        className="w-full max-w-sm mx-auto space-y-6"
       >
-        <div className="bg-success/10 border border-success/20 text-success p-4 rounded-lg space-y-1">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="size-4" />
-            <p className="font-medium">Check your email</p>
+        <div className="rounded-xl bg-success/10 border border-success/20 p-6 text-center space-y-3">
+          <div className="mx-auto size-12 rounded-full bg-success/15 flex items-center justify-center">
+            <CheckCircle2 className="size-6 text-success" />
           </div>
-          <p className="text-sm text-success/80">
-            We&apos;ve sent password reset instructions to{" "}
-            <b className="text-success">{form.getValues("email")}</b>.
-          </p>
+          <div className="space-y-1">
+            <p className="font-semibold text-success">Check your email</p>
+            <p className="text-sm text-success/80">
+              We&apos;ve sent password reset instructions to{" "}
+              <span className="font-medium text-success">{form.getValues("email")}</span>
+            </p>
+          </div>
         </div>
-        <Button variant="outline" className="w-full" onClick={() => setMode("login")}>
+        <Button variant="outline" className="w-full h-10 gap-2" onClick={() => setMode("login")}>
           <ArrowLeft className="size-4" />
           Back to Login
         </Button>
@@ -57,24 +59,28 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-      <div className="space-y-1">
-        <h2 className="text-xl font-semibold text-foreground">Forgot Password</h2>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full max-w-sm mx-auto space-y-8"
+    >
+      <div className="space-y-2 text-center">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Forgot password</h1>
         <p className="text-sm text-muted-foreground">
-          Enter your email and we&apos;ll send you a link to reset your password.
+          Enter your email and we&apos;ll send you a reset link.
         </p>
       </div>
 
       <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <div className="relative">
-            <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+          <div className="relative group">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none transition-colors group-focus-within:text-foreground" />
             <Input
               id="email"
               type="email"
               placeholder="you@example.com"
-              className="pl-8"
+              className="h-10 pl-9 transition-shadow focus-visible:shadow-[0_0_0_1px_var(--color-ring)]"
               {...form.register("email")}
             />
           </div>
@@ -93,7 +99,7 @@ export function ForgotPasswordForm() {
           </AnimatePresence>
         </div>
 
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full h-10">
           Send Reset Link
         </Button>
       </form>
@@ -103,9 +109,9 @@ export function ForgotPasswordForm() {
         <button
           type="button"
           onClick={() => setMode("login")}
-          className="text-primary hover:underline transition-colors"
+          className="text-primary hover:underline transition-colors font-medium"
         >
-          Login
+          Sign in
         </button>
       </p>
     </motion.div>
