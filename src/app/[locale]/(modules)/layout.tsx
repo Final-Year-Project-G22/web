@@ -1,4 +1,5 @@
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { AnimatedMain } from "@/components/layout/animated-main";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 
@@ -9,7 +10,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Sidebar />
         <div className="flex-1 flex flex-col h-full overflow-hidden">
           <Header />
-          <main className="flex-1 overflow-y-auto p-8">{children}</main>
+          <AnimatedMain>{children}</AnimatedMain>
         </div>
       </div>
     </ProtectedRoute>
