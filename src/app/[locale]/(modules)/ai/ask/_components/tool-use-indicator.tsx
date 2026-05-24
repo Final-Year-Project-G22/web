@@ -18,7 +18,7 @@ export function ToolUseIndicator({ toolUses }: ToolUseIndicatorProps) {
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
         {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
         <Wrench className="w-3 h-3" />
@@ -29,11 +29,11 @@ export function ToolUseIndicator({ toolUses }: ToolUseIndicatorProps) {
           {toolUses.map((tu, i) => (
             <div
               key={`${tu.tool}-${i}`}
-              className="text-[11px] px-2 py-1 rounded-md border bg-muted/30 text-muted-foreground"
+              className="text-xs px-2 py-1 rounded-md border bg-muted/30 text-muted-foreground"
             >
               <span className="font-medium">{tu.tool}</span>
               {tu.argumentsJson && (
-                <pre className="mt-0.5 text-[10px] overflow-x-auto whitespace-pre-wrap">
+                <pre className="mt-0.5 text-xs overflow-x-auto whitespace-pre-wrap">
                   {tu.argumentsJson.length > 120
                     ? `${tu.argumentsJson.slice(0, 120)}...`
                     : tu.argumentsJson}
