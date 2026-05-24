@@ -19,4 +19,12 @@ pageSize?: number;
  * Language locale (en, am)
  */
 locale?: string;
+/**
+ * Comma-separated sector IDs
+ */
+sectorIds?: string;
+/**
+ * Comma-separated tag IDs
+ */
+tagIds?: string;
 };

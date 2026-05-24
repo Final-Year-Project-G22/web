@@ -6,15 +6,13 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface DownloadTemplateResponseBody {
+export interface CreateScheduledAlertRequest {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
-  /** MIME type */
-  contentType: string;
-  /** Expiry time */
-  expiresAt: string;
-  /** Suggested filename */
-  filename: string;
-  /** Temporary download URL */
-  presignedUrl: string;
+  body: string;
+  /** @nullable */
+  channels: string[] | null;
+  scheduledFor: string;
+  templateSlug?: string;
+  title: string;
 }
