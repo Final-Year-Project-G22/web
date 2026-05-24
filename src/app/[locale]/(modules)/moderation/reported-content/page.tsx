@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
   Table,
   TableBody,
@@ -73,7 +74,7 @@ export default function ReportedContentPage() {
     if (newStatus !== "all") sp.set("status", newStatus);
     if (newSearch.trim()) sp.set("search", newSearch.trim());
     if (newPage > 1) sp.set("page", String(newPage));
-    router.push(`/moderation/reported-content${sp.toString() ? `?${sp}` : ""}`);
+    router.replace(`/moderation/reported-content${sp.toString() ? `?${sp}` : ""}`);
   }
 
   return (
@@ -228,35 +229,15 @@ export default function ReportedContentPage() {
           )}
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page <= 1 || activeQuery.isLoading}
-                onClick={() => {
-                  const p = page - 1;
-                  setPage(p);
-                  navigate(tab, status, p, search);
-                }}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages || activeQuery.isLoading}
-                onClick={() => {
-                  const p = page + 1;
-                  setPage(p);
-                  navigate(tab, status, p, search);
-                }}
-              >
-                Next
-              </Button>
-            </div>
+            <PaginationBar
+              page={page}
+              totalPages={totalPages}
+              isLoading={activeQuery.isLoading}
+              onPageChange={(p) => {
+                setPage(p);
+                navigate(tab, status, p, search);
+              }}
+            />
           )}
         </CardContent>
       </Card>
