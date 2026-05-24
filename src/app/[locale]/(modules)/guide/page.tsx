@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -132,8 +133,14 @@ export default function GuideListPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      guides.map((guide) => (
-                        <TableRow key={guide.id}>
+                      guides.map((guide, i) => (
+                        <motion.tr
+                          key={guide.id}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.2, delay: i * 0.03 }}
+                          className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                        >
                           <TableCell className="font-medium">{guide.name}</TableCell>
                           <TableCell>{guide.slug}</TableCell>
                           <TableCell className="text-right">
@@ -154,7 +161,7 @@ export default function GuideListPage() {
                               </ConfirmDialog>
                             </div>
                           </TableCell>
-                        </TableRow>
+                        </motion.tr>
                       ))
                     )}
                   </TableBody>

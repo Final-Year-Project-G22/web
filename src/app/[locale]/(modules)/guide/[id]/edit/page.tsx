@@ -335,7 +335,7 @@ export default function EditGuidePage() {
 
   if (guideQuery.isLoading || stepsQuery.isLoading) {
     return (
-      <div className="-m-8 flex h-[calc(100vh-4rem)] items-center justify-center bg-[#f4f5f7]">
+      <div className="-m-8 flex h-[calc(100vh-4rem)] items-center justify-center bg-editor-surface">
         <p className="text-sm text-muted-foreground">Loading guide&hellip;</p>
       </div>
     );
@@ -343,7 +343,7 @@ export default function EditGuidePage() {
 
   if (guideQuery.isError || stepsQuery.isError) {
     return (
-      <div className="-m-8 flex h-[calc(100vh-4rem)] items-center justify-center bg-[#f4f5f7]">
+      <div className="-m-8 flex h-[calc(100vh-4rem)] items-center justify-center bg-editor-surface">
         <p className="text-sm text-destructive">
           Failed to load: {getErrorMessage(guideQuery.error ?? stepsQuery.error)}
         </p>
@@ -354,7 +354,7 @@ export default function EditGuidePage() {
   // ─── Render ───────────────────────────────────────────────
 
   return (
-    <div className="-m-8 flex h-[calc(100vh-4rem)] flex-col bg-[#f4f5f7]">
+    <div className="-m-8 flex h-[calc(100vh-4rem)] flex-col bg-editor-surface">
       <EditGuideHeader guideName={guideName} />
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[18rem_1fr] xl:grid-cols-[18rem_1fr_24rem]">
