@@ -8,24 +8,29 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { cn } from "@/lib/utils";
 
 const chartData = [
-  { name: "Content Generator", value: 45, color: "#a855f7" }, // purple-500
-  { name: "Chat Assistant", value: 30, color: "#d946ef" }, // fuchsia-500
-  { name: "Market Analysis", value: 15, color: "#eab308" }, // yellow-500
-  { name: "Other", value: 10, color: "#94a3b8" }, // slate-400
+  { name: "Content Generator", value: 45, key: "content" },
+  { name: "Chat Assistant", value: 30, key: "chat" },
+  { name: "Market Analysis", value: 15, key: "market" },
+  { name: "Other", value: 10, key: "other" },
 ];
 
 const chartConfig = {
-  content: { label: "Content Generator", color: "#a855f7" },
-  chat: { label: "Chat Assistant", color: "#d946ef" },
-  market: { label: "Market Analysis", color: "#eab308" },
-  other: { label: "Other", color: "#94a3b8" },
+  content: { label: "Content Generator", color: "var(--color-chart-1)" },
+  chat: { label: "Chat Assistant", color: "var(--color-chart-2)" },
+  market: { label: "Market Analysis", color: "var(--color-chart-3)" },
+  other: { label: "Other", color: "var(--color-chart-4)" },
 } satisfies ChartConfig;
 
-export function AIUsageChart() {
+export function AIUsageChart({ loading }: { loading?: boolean }) {
+  if (loading) {
+    return <div className="h-[324px] animate-pulse rounded-xl bg-muted" />;
+  }
+
   return (
-    <Card className="col-span-1 shadow-sm border-slate-200/60 rounded-xl">
+    <Card className="shadow-sm rounded-xl">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-bold">AI Usage by Module</CardTitle>
         <button type="button" className="text-sm font-medium text-primary">
@@ -48,7 +53,10 @@ export function AIUsageChart() {
                 stroke="none"
               >
                 {chartData.map((entry) => (
-                  <Cell key={entry.name} fill={entry.color} />
+                  <Cell
+                    key={entry.name}
+                    fill={chartConfig[entry.key as keyof typeof chartConfig].color}
+                  />
                 ))}
               </Pie>
             </PieChart>
@@ -63,7 +71,15 @@ export function AIUsageChart() {
           {chartData.map((item) => (
             <div key={item.name} className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                <div
+                  className={cn(
+                    "size-2.5 rounded-full",
+                    item.key === "content" && "bg-chart-1",
+                    item.key === "chat" && "bg-chart-2",
+                    item.key === "market" && "bg-chart-3",
+                    item.key === "other" && "bg-chart-4"
+                  )}
+                />
                 <span className="text-muted-foreground">{item.name}</span>
               </div>
               <span className="font-semibold">{item.value}%</span>
