@@ -102,10 +102,6 @@ function NavLink({
 
 function SubNavLink({ href, label }: { href: string; label: string }) {
   const pathname = usePathname();
-  const isActive =
-    href === "/library/template-groups"
-      ? pathname === href || pathname.startsWith(`${href}/`)
-      : pathname === href || pathname.startsWith(`${href}/`);
 
   const active =
     href === "/library/template-groups"
