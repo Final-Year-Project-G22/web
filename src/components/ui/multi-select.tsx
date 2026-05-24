@@ -54,8 +54,8 @@ export function TagSelect({
           return (
             <Badge key={id} variant="secondary" className="gap-1 pr-1">
               {opt.label}
-              <button type="button" onClick={() => toggle(id)} className="p-0.5">
-                <X className="h-3 w-3" />
+              <button type="button" onClick={() => toggle(id)} className="p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm">
+                <X className="size-3" />
               </button>
             </Badge>
           );

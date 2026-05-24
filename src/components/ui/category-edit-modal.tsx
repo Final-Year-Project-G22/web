@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { Pencil, X } from "lucide-react";
+import { Loader2, Pencil, X } from "lucide-react";
 import type { CategoryDTO } from "@/lib/api/types";
 import { getErrorMessage } from "@/lib/utils";
 import { useAdminUpdateCategory, useAdminParentCategories } from "@/app/[locale]/(modules)/community/_services/community.hook";
@@ -10,6 +11,13 @@ import { useAdminUpdateCategory, useAdminParentCategories } from "@/app/[locale]
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
 interface CategoryEditModalProps {
@@ -65,8 +73,7 @@ export function CategoryEditModal({ category, onClose }: CategoryEditModalProps)
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
-          className="fixed z-50 w-full max-w-md gap-4 border bg-background p-6 shadow-lg duration-200 rounded-xl"
-          style={{ left: "50%", top: "50%", transform: "translate(-50%, -50%)" }}
+          className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-6 shadow-lg duration-200 rounded-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
         >
           <div className="flex items-center justify-between mb-4">
             <DialogPrimitive.Title className="text-lg font-semibold">
@@ -74,7 +81,7 @@ export function CategoryEditModal({ category, onClose }: CategoryEditModalProps)
             </DialogPrimitive.Title>
             <DialogPrimitive.Close asChild>
               <Button variant="ghost" size="icon-xs" className="shrink-0">
-                <X className="w-4 h-4" />
+                <X className="size-4" />
               </Button>
             </DialogPrimitive.Close>
           </div>
@@ -112,19 +119,19 @@ export function CategoryEditModal({ category, onClose }: CategoryEditModalProps)
 
             <div className="space-y-2">
               <Label htmlFor="edit-parent">Parent Category</Label>
-              <select
-                id="edit-parent"
-                value={parentCategoryId}
-                onChange={(e) => setParentCategoryId(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">— None —</option>
-                {allParentOptions.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <Select value={parentCategoryId} onValueChange={setParentCategoryId}>
+                <SelectTrigger id="edit-parent">
+                  <SelectValue placeholder="— None —" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">— None —</SelectItem>
+                  {allParentOptions.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex items-center justify-between rounded-lg border p-3">
@@ -137,16 +144,27 @@ export function CategoryEditModal({ category, onClose }: CategoryEditModalProps)
               <Switch checked={isActive} onCheckedChange={setIsActive} />
             </div>
 
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
+            <AnimatePresence>
+              {error && (
+                <motion.p
+                  key="error"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="text-sm text-destructive"
+                >
+                  {error}
+                </motion.p>
+              )}
+            </AnimatePresence>
 
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
               <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Saving&hellip;" : "Save Changes"}
+                {updateMutation.isPending && <Loader2 className="size-4 animate-spin" />}
+                {updateMutation.isPending ? "Saving…" : "Save Changes"}
               </Button>
             </div>
           </form>
@@ -173,7 +191,7 @@ export function EditCategoryButton({ category, onEdit, variant = "outline", size
         onEdit(category);
       }}
     >
-      <Pencil className="w-3.5 h-3.5" />
+      <Pencil className="size-3.5" />
       {size === "default" || size === "sm" ? "Edit" : null}
     </Button>
   );
