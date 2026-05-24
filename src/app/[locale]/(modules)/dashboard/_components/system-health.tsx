@@ -23,8 +23,10 @@ function StatusBadge({ label, variant }: { label: string; variant: "success" | "
   return (
     <span
       className={cn(
-        "text-xs font-semibold px-2 py-0.5 rounded-full",
-        variant === "success" ? "text-success bg-success/10" : "text-warning bg-warning/10"
+        "text-[10px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md border",
+        variant === "success"
+          ? "text-success bg-success/8 border-success/15"
+          : "text-warning bg-warning/8 border-warning/15"
       )}
     >
       {label}
@@ -42,7 +44,7 @@ export function SystemHealth() {
         </div>
         <button
           type="button"
-          className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors border px-2.5 py-1.5 rounded-md"
+          className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all duration-200 border border-border/80 px-2.5 py-1.5 rounded-lg hover:bg-accent/40"
         >
           <RefreshCw className="size-3" />
           Refresh
@@ -50,25 +52,29 @@ export function SystemHealth() {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="p-4 bg-success/5 rounded-xl border border-success/10">
+          <div className="p-4 bg-success/8 rounded-xl border border-success/15">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-muted-foreground">API Response Time</span>
+              <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                API Response Time
+              </span>
               <div className="size-2 rounded-full bg-success" />
             </div>
             <div className="flex items-baseline gap-2 mb-3">
-              <h4 className="text-2xl font-bold">42ms</h4>
+              <h4 className="text-2xl font-extrabold text-foreground">42ms</h4>
               <span className="text-xs font-medium text-success">-5ms avg</span>
             </div>
             <Sparkline data={sparklineData} color="bg-success/60" />
           </div>
 
-          <div className="p-4 bg-warning/5 rounded-xl border border-warning/10">
+          <div className="p-4 bg-warning/8 rounded-xl border border-warning/15">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-muted-foreground">Database Load</span>
+              <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                Database Load
+              </span>
               <div className="size-2 rounded-full bg-warning" />
             </div>
             <div className="flex items-baseline gap-2 mb-3">
-              <h4 className="text-2xl font-bold">68%</h4>
+              <h4 className="text-2xl font-extrabold text-foreground">68%</h4>
               <span className="text-xs font-medium text-warning">Peak Load</span>
             </div>
             <div className="h-2 bg-warning/20 rounded-full mt-auto">

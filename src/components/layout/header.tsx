@@ -29,7 +29,7 @@ export function Header() {
   const logoutMutation = useLogout(() => router.push("/auth"));
 
   return (
-    <header className="h-20 border-b bg-background flex items-center justify-between px-4 sm:px-8 sticky top-0 z-10">
+    <header className="h-20 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between px-4 sm:px-8 sticky top-0 z-20">
       <div className="flex items-center gap-3">
         <Sheet>
           <SheetTrigger>
