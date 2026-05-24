@@ -1,22 +1,24 @@
+import { Shield } from "lucide-react";
+import { APP_NAME, APP_VERSION } from "@/lib/constants";
 import { AuthCard } from "./_components/auth-card";
 
 export default function AuthPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-      <div className="grid w-full max-w-6xl grid-cols-1 overflow-hidden rounded-2xl shadow-xl lg:grid-cols-2">
+    <div className="min-h-screen flex items-center justify-center bg-muted p-6">
+      <div className="grid w-full max-w-6xl grid-cols-1 overflow-hidden rounded-2xl shadow-2xl lg:grid-cols-2">
         {/* LEFT PANEL */}
-        <div className="bg-gradient-to-br from-[#0B1A3A] to-[#1E2A55] text-white p-10 flex flex-col justify-between">
+        <div className="bg-gradient-to-br from-auth-gradient-from to-auth-gradient-to text-white p-10 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-3 mb-10">
-              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center font-bold">
-                ⬛
+              <div className="size-10 bg-primary/20 rounded-lg flex items-center justify-center">
+                <Shield className="size-5" />
               </div>
-              <h2 className="text-xl font-semibold mb-10">Adisu Serategna</h2>
+              <h2 className="text-xl font-semibold">{APP_NAME}</h2>
             </div>
 
             <h1 className="text-3xl font-bold mb-4">Secure Access for Administrators</h1>
 
-            <p className="text-gray-300 mb-10">
+            <p className="text-white/70 mb-10">
               Join the platform dedicated to empowering MSMEs with AI-driven insights and secure
               management tools.
             </p>
@@ -37,11 +39,13 @@ export default function AuthPage() {
             </div>
           </div>
 
-          <p className="text-xs text-gray-400">Powered by Adisu Serategna Tech • v2.4.0</p>
+          <p className="text-xs text-white/40">
+            Powered by {APP_NAME} Tech • {APP_VERSION}
+          </p>
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="bg-white p-8 flex items-center justify-center">
+        <div className="bg-card p-8 flex items-center justify-center">
           <AuthCard />
         </div>
       </div>
@@ -53,7 +57,7 @@ function Feature({ title, desc }: { title: string; desc: string }) {
   return (
     <div>
       <p className="font-medium">{title}</p>
-      <p className="text-gray-400">{desc}</p>
+      <p className="text-white/60">{desc}</p>
     </div>
   );
 }
