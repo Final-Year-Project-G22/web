@@ -13,8 +13,12 @@ export interface DownloadLogResponse {
   downloadedAt: string;
   /** Group ID */
   groupId: string;
+  /** Group name */
+  groupName: string;
   /** Download log ID */
   id: string;
   /** Template ID */
   templateId: string;
+  /** Template title */
+  templateTitle: string;
 }

@@ -7,6 +7,9 @@
  */
 import type {
   ArchiveNotificationResponseBody,
+  CancelScheduledAlertResponseBody,
+  CreateScheduledAlertRequest,
+  CreateScheduledAlertResponseBody,
   DeactivateDeviceResponseBody,
   DeleteNotificationResponseBody,
   DeletePreferenceResponseBody,
@@ -19,6 +22,8 @@ import type {
   ListInboxResponseBody,
   ListMutesParams,
   ListMutesResponseBody,
+  ListScheduledAlertsResponseBody,
+  ListScheduledTemplatesResponseBody,
   MarkAllAsReadResponseBody,
   MarkAsReadResponseBody,
   MuteAccountRequest,
@@ -26,6 +31,8 @@ import type {
   PreferenceResponse,
   RegisterDeviceRequest,
   RegisterDeviceResponseBody,
+  RescheduleScheduledAlertRequest,
+  RescheduleScheduledAlertResponseBody,
   SetPreferenceRequest,
   SetPreferenceResponseBody,
   UnmuteAccountResponseBody,
@@ -869,6 +876,224 @@ export const deletePreference = async (type: string,
     method: 'DELETE'
     
     
+  }
+);}
+  
+
+/**
+ * Lists all scheduled alerts for the authenticated user.
+ * @summary List scheduled alerts
+ */
+export type listScheduledAlertsResponse200 = {
+  data: ListScheduledAlertsResponseBody
+  status: 200
+}
+
+export type listScheduledAlertsResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type listScheduledAlertsResponseSuccess = (listScheduledAlertsResponse200) & {
+  headers: Headers;
+};
+export type listScheduledAlertsResponseError = (listScheduledAlertsResponseDefault) & {
+  headers: Headers;
+};
+
+export type listScheduledAlertsResponse = (listScheduledAlertsResponseSuccess | listScheduledAlertsResponseError)
+
+export const getListScheduledAlertsUrl = () => {
+
+
+  
+
+  return `/api/v1/notifications/scheduled`
+}
+
+export const listScheduledAlerts = async ( options?: RequestInit): Promise<listScheduledAlertsResponse> => {
+  
+  return customFetch<listScheduledAlertsResponse>(getListScheduledAlertsUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+  
+
+/**
+ * Creates a new scheduled alert for the authenticated user.
+ * @summary Create scheduled alert
+ */
+export type createScheduledAlertResponse200 = {
+  data: CreateScheduledAlertResponseBody
+  status: 200
+}
+
+export type createScheduledAlertResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type createScheduledAlertResponseSuccess = (createScheduledAlertResponse200) & {
+  headers: Headers;
+};
+export type createScheduledAlertResponseError = (createScheduledAlertResponseDefault) & {
+  headers: Headers;
+};
+
+export type createScheduledAlertResponse = (createScheduledAlertResponseSuccess | createScheduledAlertResponseError)
+
+export const getCreateScheduledAlertUrl = () => {
+
+
+  
+
+  return `/api/v1/notifications/scheduled`
+}
+
+export const createScheduledAlert = async (createScheduledAlertRequest: NonReadonly<CreateScheduledAlertRequest>, options?: RequestInit): Promise<createScheduledAlertResponse> => {
+  
+  return customFetch<createScheduledAlertResponse>(getCreateScheduledAlertUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createScheduledAlertRequest,)
+  }
+);}
+  
+
+/**
+ * Lists all available templates for creating scheduled alerts.
+ * @summary List scheduled alert templates
+ */
+export type listScheduledAlertTemplatesResponse200 = {
+  data: ListScheduledTemplatesResponseBody
+  status: 200
+}
+
+export type listScheduledAlertTemplatesResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type listScheduledAlertTemplatesResponseSuccess = (listScheduledAlertTemplatesResponse200) & {
+  headers: Headers;
+};
+export type listScheduledAlertTemplatesResponseError = (listScheduledAlertTemplatesResponseDefault) & {
+  headers: Headers;
+};
+
+export type listScheduledAlertTemplatesResponse = (listScheduledAlertTemplatesResponseSuccess | listScheduledAlertTemplatesResponseError)
+
+export const getListScheduledAlertTemplatesUrl = () => {
+
+
+  
+
+  return `/api/v1/notifications/scheduled/templates`
+}
+
+export const listScheduledAlertTemplates = async ( options?: RequestInit): Promise<listScheduledAlertTemplatesResponse> => {
+  
+  return customFetch<listScheduledAlertTemplatesResponse>(getListScheduledAlertTemplatesUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+  
+
+/**
+ * Cancels a pending scheduled alert.
+ * @summary Cancel scheduled alert
+ */
+export type cancelScheduledAlertResponse200 = {
+  data: CancelScheduledAlertResponseBody
+  status: 200
+}
+
+export type cancelScheduledAlertResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type cancelScheduledAlertResponseSuccess = (cancelScheduledAlertResponse200) & {
+  headers: Headers;
+};
+export type cancelScheduledAlertResponseError = (cancelScheduledAlertResponseDefault) & {
+  headers: Headers;
+};
+
+export type cancelScheduledAlertResponse = (cancelScheduledAlertResponseSuccess | cancelScheduledAlertResponseError)
+
+export const getCancelScheduledAlertUrl = (id: string,) => {
+
+
+  
+
+  return `/api/v1/notifications/scheduled/${id}/cancel`
+}
+
+export const cancelScheduledAlert = async (id: string, options?: RequestInit): Promise<cancelScheduledAlertResponse> => {
+  
+  return customFetch<cancelScheduledAlertResponse>(getCancelScheduledAlertUrl(id),
+  {      
+    ...options,
+    method: 'PATCH'
+    
+    
+  }
+);}
+  
+
+/**
+ * Reschedules a pending scheduled alert to a new date.
+ * @summary Reschedule scheduled alert
+ */
+export type rescheduleScheduledAlertResponse200 = {
+  data: RescheduleScheduledAlertResponseBody
+  status: 200
+}
+
+export type rescheduleScheduledAlertResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type rescheduleScheduledAlertResponseSuccess = (rescheduleScheduledAlertResponse200) & {
+  headers: Headers;
+};
+export type rescheduleScheduledAlertResponseError = (rescheduleScheduledAlertResponseDefault) & {
+  headers: Headers;
+};
+
+export type rescheduleScheduledAlertResponse = (rescheduleScheduledAlertResponseSuccess | rescheduleScheduledAlertResponseError)
+
+export const getRescheduleScheduledAlertUrl = (id: string,) => {
+
+
+  
+
+  return `/api/v1/notifications/scheduled/${id}/reschedule`
+}
+
+export const rescheduleScheduledAlert = async (id: string,
+    rescheduleScheduledAlertRequest: NonReadonly<RescheduleScheduledAlertRequest>, options?: RequestInit): Promise<rescheduleScheduledAlertResponse> => {
+  
+  return customFetch<rescheduleScheduledAlertResponse>(getRescheduleScheduledAlertUrl(id),
+  {      
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      rescheduleScheduledAlertRequest,)
   }
 );}
   

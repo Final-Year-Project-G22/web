@@ -14,6 +14,8 @@ export interface CreateCampaignTemplateRequest {
   defaultContent: CreateCampaignTemplateRequestDefaultContent;
   /** Template description */
   description?: string;
+  /** Enable automatic push mirroring from in-app content */
+  enablePushMirror: boolean;
   /**
    * Template name
    * @minLength 1

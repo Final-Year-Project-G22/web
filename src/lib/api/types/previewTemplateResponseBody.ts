@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface DownloadTemplateResponseBody {
+export interface PreviewTemplateResponseBody {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
   /** MIME type */
@@ -15,6 +15,6 @@ export interface DownloadTemplateResponseBody {
   expiresAt: string;
   /** Suggested filename */
   filename: string;
-  /** Temporary download URL */
+  /** Temporary preview URL */
   presignedUrl: string;
 }

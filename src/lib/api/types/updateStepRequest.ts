@@ -13,6 +13,8 @@ import type { UpdateStepTranslation } from './updateStepTranslation';
 export interface UpdateStepRequest {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
+  /** Optional compliance type */
+  complianceType?: string;
   /**
    * Visibility conditions
    * @nullable

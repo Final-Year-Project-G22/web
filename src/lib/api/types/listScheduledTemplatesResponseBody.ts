@@ -5,16 +5,11 @@
  * Backend API for the Adisu platform
  * OpenAPI spec version: 1.0.0
  */
+import type { ScheduledTemplateResponse } from './scheduledTemplateResponse';
 
-export interface DownloadTemplateResponseBody {
+export interface ListScheduledTemplatesResponseBody {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
-  /** MIME type */
-  contentType: string;
-  /** Expiry time */
-  expiresAt: string;
-  /** Suggested filename */
-  filename: string;
-  /** Temporary download URL */
-  presignedUrl: string;
+  /** @nullable */
+  data: ScheduledTemplateResponse[] | null;
 }

@@ -17,6 +17,8 @@ export interface CampaignTemplateDetailResponse {
   defaultContent: CampaignTemplateDetailResponseDefaultContent;
   /** Template description */
   description?: string;
+  /** Whether push mirroring is enabled */
+  enablePushMirror: boolean;
   /** Template ID */
   id: string;
   /** Template name */

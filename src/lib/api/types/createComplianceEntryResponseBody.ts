@@ -6,15 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface DownloadTemplateResponseBody {
+export interface CreateComplianceEntryResponseBody {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
-  /** MIME type */
-  contentType: string;
-  /** Expiry time */
-  expiresAt: string;
-  /** Suggested filename */
-  filename: string;
-  /** Temporary download URL */
-  presignedUrl: string;
+  id: string;
+  message: string;
 }

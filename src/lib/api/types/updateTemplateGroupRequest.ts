@@ -27,6 +27,8 @@ export interface UpdateTemplateGroupRequest {
   slug?: string;
   /** Display order */
   sortOrder?: number;
+  /** Thumbnail URL */
+  thumbnailUrl?: string;
   /** Tier access level */
   tierAccess?: string;
 }
