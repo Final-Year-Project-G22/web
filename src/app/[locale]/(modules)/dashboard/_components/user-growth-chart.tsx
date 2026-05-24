@@ -8,6 +8,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { cn } from "@/lib/utils";
 
 const chartData = [
   { month: "Jan", free: 12000, premium: 25000 },
@@ -23,42 +24,51 @@ const chartData = [
 const chartConfig = {
   free: {
     label: "Free Tier",
-    color: "#a855f7", // purple-500
+    color: "var(--color-chart-1)",
   },
   premium: {
     label: "Premium Tier",
-    color: "#7e22ce", // purple-700
+    color: "var(--color-chart-2)",
   },
 } satisfies ChartConfig;
 
-export function UserGrowthChart() {
+const periodBtn = (label: string, active?: boolean) =>
+  cn(
+    "px-3 py-1 text-xs font-medium rounded transition-colors",
+    active
+      ? "bg-background text-foreground shadow-sm"
+      : "text-muted-foreground hover:text-foreground"
+  );
+
+export function UserGrowthChart({ loading }: { loading?: boolean }) {
+  if (loading) {
+    return <div className="h-[324px] animate-pulse rounded-xl bg-muted" />;
+  }
+
   return (
-    <Card className="col-span-1 md:col-span-2 shadow-sm border-slate-200/60 rounded-xl">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
+    <Card className="col-span-1 md:col-span-2 shadow-sm rounded-xl">
+      <CardHeader className="flex flex-row items-start justify-between pb-2">
         <div>
           <CardTitle className="text-base font-bold">User Growth by Tier</CardTitle>
-          <div className="flex items-center gap-4 mt-2">
+          <div className="flex items-center gap-4 mt-3">
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-[#a855f7]" />
+              <div className="size-2 rounded-full bg-chart-1" />
               <span className="text-xs font-medium text-muted-foreground">Free Tier</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-[#7e22ce]" />
+              <div className="size-2 rounded-full bg-chart-2" />
               <span className="text-xs font-medium text-muted-foreground">Premium Tier</span>
             </div>
           </div>
         </div>
         <div className="flex bg-accent/50 p-1 rounded-lg">
-          <button
-            type="button"
-            className="px-3 py-1 text-xs font-medium bg-background rounded shadow-sm"
-          >
+          <button type="button" className={periodBtn("Monthly", true)}>
             Monthly
           </button>
-          <button type="button" className="px-3 py-1 text-xs font-medium text-muted-foreground">
+          <button type="button" className={periodBtn("Quarterly")}>
             Quarterly
           </button>
-          <button type="button" className="px-3 py-1 text-xs font-medium text-muted-foreground">
+          <button type="button" className={periodBtn("Yearly")}>
             Yearly
           </button>
         </div>
