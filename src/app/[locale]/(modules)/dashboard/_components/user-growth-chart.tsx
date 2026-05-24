@@ -32,7 +32,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-const periodBtn = (label: string, active?: boolean) =>
+const periodBtn = (active?: boolean) =>
   cn(
     "px-3 py-1 text-xs font-medium rounded transition-colors",
     active
@@ -62,13 +62,13 @@ export function UserGrowthChart({ loading }: { loading?: boolean }) {
           </div>
         </div>
         <div className="flex bg-accent/50 p-1 rounded-lg">
-          <button type="button" className={periodBtn("Monthly", true)}>
+          <button type="button" className={periodBtn(true)}>
             Monthly
           </button>
-          <button type="button" className={periodBtn("Quarterly")}>
+          <button type="button" className={periodBtn()}>
             Quarterly
           </button>
-          <button type="button" className={periodBtn("Yearly")}>
+          <button type="button" className={periodBtn()}>
             Yearly
           </button>
         </div>
