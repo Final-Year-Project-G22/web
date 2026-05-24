@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
   BookOpen,
@@ -13,6 +14,7 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Sun,
   Tags,
   TriangleAlert,
   Users,
@@ -22,6 +24,14 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { APP_NAME } from "@/lib/constants";
 import { hasPermission } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { LanguageToggle } from "./language-toggle";
@@ -39,29 +49,24 @@ function DarkModeSwitch() {
       type="button"
       role="switch"
       aria-checked={isDark}
+      aria-label="Toggle dark mode"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={cn(
-        "relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "relative inline-flex h-6 w-10 items-center rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         isDark ? "bg-primary" : "bg-input"
       )}
     >
       <span
         className={cn(
-          "inline-block h-4 w-4 rounded-full bg-background shadow transition-transform",
-          isDark ? "translate-x-4" : "translate-x-0"
+          "inline-flex size-4 items-center justify-center rounded-full bg-background shadow-xs transition-transform duration-200",
+          isDark ? "translate-x-5" : "translate-x-0.5"
         )}
-      />
+      >
+        {isDark ? <Moon className="size-3" /> : <Sun className="size-3 text-muted-foreground" />}
+      </span>
     </button>
   );
 }
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 function NavLink({
   href,
@@ -83,8 +88,10 @@ function NavLink({
     <Link
       href={href}
       className={cn(
-        "flex items-center gap-3 px-2 py-2 rounded-md transition-colors",
-        isActive ? "bg-primary/5 text-primary font-medium" : "text-muted-foreground hover:bg-accent"
+        "relative flex items-center gap-3 px-2 py-2 rounded-md transition-colors",
+        isActive
+          ? "bg-primary/5 text-primary font-medium before:absolute before:left-0 before:top-1 before:bottom-1 before:w-0.5 before:bg-primary before:rounded-r-full"
+          : "text-muted-foreground hover:bg-accent"
       )}
     >
       {icon}
@@ -93,7 +100,82 @@ function NavLink({
   );
 }
 
-export function Sidebar() {
+function SubNavLink({ href, label }: { href: string; label: string }) {
+  const pathname = usePathname();
+  const isActive =
+    href === "/library/template-groups"
+      ? pathname === href || pathname.startsWith(`${href}/`)
+      : pathname === href || pathname.startsWith(`${href}/`);
+
+  const active =
+    href === "/library/template-groups"
+      ? pathname === href || pathname.startsWith(`${href}/`)
+      : pathname === href;
+
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
+        active ? "bg-primary/5 font-medium text-primary" : "text-muted-foreground hover:bg-accent"
+      )}
+    >
+      {label}
+    </Link>
+  );
+}
+
+function CollapsibleSection({
+  icon,
+  label,
+  open,
+  onToggle,
+  isActive,
+  children,
+}: {
+  icon: ReactNode;
+  label: string;
+  open: boolean;
+  onToggle: () => void;
+  isActive: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className="space-y-1">
+      <button
+        type="button"
+        onClick={onToggle}
+        className={cn(
+          "flex w-full items-center gap-3 rounded-md px-2 py-2 text-muted-foreground transition-colors hover:bg-accent",
+          isActive ? "bg-primary/5 font-medium text-primary" : ""
+        )}
+        aria-expanded={open}
+      >
+        {icon}
+        <span className="text-sm flex-1 text-left">{label}</span>
+        <ChevronRight
+          className={cn("size-3 transition-transform duration-200", open ? "rotate-90" : "")}
+        />
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div className="ml-6 space-y-1 border-l pl-3">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function SidebarContent() {
   const pathname = usePathname();
   const [guideOpen, setGuideOpen] = useState(pathname.startsWith("/guide"));
 
@@ -113,10 +195,6 @@ export function Sidebar() {
     if (pathname.startsWith("/notifications")) setNotificationOpen(true);
   }, [pathname]);
 
-  useEffect(() => {
-    if (pathname.startsWith("/notifications")) setNotificationOpen(true);
-  }, [pathname]);
-
   const [aiKnowledgeOpen, setAIKnowledgeOpen] = useState(pathname.startsWith("/ai"));
 
   useEffect(() => {
@@ -130,13 +208,13 @@ export function Sidebar() {
   }, [pathname]);
 
   return (
-    <aside className="w-64 border-r bg-background h-screen flex flex-col hidden md:flex sticky top-0">
+    <div className="flex flex-col h-full">
       <div className="p-6">
         <div className="flex items-center gap-2 mb-8">
           <div className="bg-primary/10 p-1.5 rounded-lg">
-            <LayoutDashboard className="w-6 h-6 text-primary" />
+            <LayoutDashboard className="size-6 text-primary" />
           </div>
-          <span className="font-bold text-xl">Adisu Serategna</span>
+          <span className="font-bold text-xl">{APP_NAME}</span>
         </div>
 
         <div className="space-y-6 flex-1 overflow-y-auto">
@@ -147,7 +225,7 @@ export function Sidebar() {
             <nav className="space-y-1">
               <NavLink
                 href="/dashboard"
-                icon={<LayoutDashboard className="w-4 h-4" />}
+                icon={<LayoutDashboard className="size-4" />}
                 label="Dashboard"
               />
               <Link
@@ -155,253 +233,65 @@ export function Sidebar() {
                 className="flex items-center justify-between px-2 py-2 text-muted-foreground hover:bg-accent rounded-md transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <Users className="w-4 h-4" />
+                  <Users className="size-4" />
                   <span className="text-sm">MSME Users</span>
                 </div>
               </Link>
-              <div className="space-y-1">
-                <button
-                  type="button"
-                  onClick={() => setGuideOpen((prev) => !prev)}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-md px-2 py-2 text-muted-foreground transition-colors hover:bg-accent",
-                    pathname.startsWith("/guide") ? "bg-primary/5 font-medium text-primary" : ""
-                  )}
-                  aria-expanded={guideOpen}
-                >
-                  <BookOpen className="w-4 h-4" />
-                  <span className="text-sm flex-1 text-left">Guide Module</span>
-                  <ChevronRight
-                    className={cn("h-3 w-3 transition-transform", guideOpen ? "rotate-90" : "")}
-                  />
-                </button>
-
-                {guideOpen ? (
-                  <div className="ml-6 space-y-1 border-l pl-3">
-                    <Link
-                      href="/guide"
-                      className={cn(
-                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                        pathname === "/guide"
-                          ? "bg-primary/5 font-medium text-primary"
-                          : "text-muted-foreground hover:bg-accent"
-                      )}
-                    >
-                      Guides
-                    </Link>
-                  </div>
-                ) : null}
-              </div>
-              <div className="space-y-1">
-                <button
-                  type="button"
-                  onClick={() => setAIKnowledgeOpen((prev) => !prev)}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-md px-2 py-2 text-muted-foreground transition-colors hover:bg-accent",
-                    pathname.startsWith("/ai") ? "bg-primary/5 font-medium text-primary" : ""
-                  )}
-                >
-                  <BrainCircuit className="w-4 h-4" />
-                  <span className="text-sm flex-1 text-left">AI Knowledge</span>
-                  <ChevronRight
-                    className={cn(
-                      "h-3 w-3 transition-transform",
-                      aiKnowledgeOpen ? "rotate-90" : ""
-                    )}
-                  />
-                </button>
-
-                {aiKnowledgeOpen ? (
-                  <div className="ml-6 space-y-1 border-l pl-3">
-                    <Link
-                      href="/ai/knowledge-base"
-                      className={cn(
-                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                        pathname === "/ai/knowledge-base"
-                          ? "bg-primary/5 font-medium text-primary"
-                          : "text-muted-foreground hover:bg-accent"
-                      )}
-                    >
-                      Knowledge Base
-                    </Link>
-                    <Link
-                      href="/ai/ask"
-                      className={cn(
-                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                        pathname === "/ai/ask"
-                          ? "bg-primary/5 font-medium text-primary"
-                          : "text-muted-foreground hover:bg-accent"
-                      )}
-                    >
-                      Ask AI
-                    </Link>
-                  </div>
-                ) : null}
-              </div>
-              {hasPermission("iam.admin.list") && (
-                <NavLink href="/admin" icon={<Shield className="w-4 h-4" />} label="Admin Hub" />
-              )}
-              <div className="space-y-1">
-                <button
-                  type="button"
-                  onClick={() => setTaxonomyOpen((prev) => !prev)}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-md px-2 py-2 text-muted-foreground transition-colors hover:bg-accent",
-                    pathname.startsWith("/taxonomy") ? "bg-primary/5 font-medium text-primary" : ""
-                  )}
-                >
-                  <Tags className="w-4 h-4" />
-                  <span className="text-sm flex-1 text-left">Taxonomy</span>
-                  <ChevronRight
-                    className={cn("h-3 w-3 transition-transform", taxonomyOpen ? "rotate-90" : "")}
-                  />
-                </button>
-
-                {taxonomyOpen ? (
-                  <div className="ml-6 space-y-1 border-l pl-3">
-                    <Link
-                      href="/taxonomy/sectors"
-                      className={cn(
-                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                        pathname.startsWith("/taxonomy/sectors")
-                          ? "bg-primary/5 font-medium text-primary"
-                          : "text-muted-foreground hover:bg-accent"
-                      )}
-                    >
-                      Sectors
-                    </Link>
-                    <Link
-                      href="/taxonomy/tags"
-                      className={cn(
-                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                        pathname.startsWith("/taxonomy/tags")
-                          ? "bg-primary/5 font-medium text-primary"
-                          : "text-muted-foreground hover:bg-accent"
-                      )}
-                    >
-                      Tags
-                    </Link>
-                  </div>
-                ) : null}
-              </div>
-              <div className="space-y-1">
-                <button
-                  type="button"
-                  onClick={() => setLibraryOpen((prev) => !prev)}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-md px-2 py-2 text-muted-foreground transition-colors hover:bg-accent",
-                    pathname.startsWith("/library") ? "bg-primary/5 font-medium text-primary" : ""
-                  )}
-                  aria-expanded={libraryOpen}
-                >
-                  <Folders className="w-4 h-4" />
-                  <span className="text-sm flex-1 text-left">Library</span>
-                  <ChevronRight
-                    className={cn("h-3 w-3 transition-transform", libraryOpen ? "rotate-90" : "")}
-                  />
-                </button>
-
-                {libraryOpen ? (
-                  <div className="ml-6 space-y-1 border-l pl-3">
-                    <Link
-                      href="/library/categories"
-                      className={cn(
-                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                        pathname === "/library/categories"
-                          ? "bg-primary/5 font-medium text-primary"
-                          : "text-muted-foreground hover:bg-accent"
-                      )}
-                    >
-                      Categories
-                    </Link>
-                    <Link
-                      href="/library/template-groups"
-                      className={cn(
-                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                        pathname === "/library/template-groups" ||
-                          pathname.startsWith("/library/template-groups/")
-                          ? "bg-primary/5 font-medium text-primary"
-                          : "text-muted-foreground hover:bg-accent"
-                      )}
-                    >
-                      Template Groups
-                    </Link>
-                    <Link
-                      href="/library/downloads"
-                      className={cn(
-                        "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                        pathname === "/library/downloads"
-                          ? "bg-primary/5 font-medium text-primary"
-                          : "text-muted-foreground hover:bg-accent"
-                      )}
-                    >
-                      Download Logs
-                    </Link>
-                  </div>
-                ) : null}
-              </div>
-            </nav>
-            <div className="space-y-1">
-              <button
-                type="button"
-                onClick={() => setNotificationOpen((prev) => !prev)}
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-md px-2 py-2 text-muted-foreground transition-colors hover:bg-accent",
-                  pathname.startsWith("/notifications")
-                    ? "bg-primary/5 font-medium text-primary"
-                    : ""
-                )}
+              <CollapsibleSection
+                icon={<BookOpen className="size-4" />}
+                label="Guide Module"
+                open={guideOpen}
+                onToggle={() => setGuideOpen((prev) => !prev)}
+                isActive={pathname.startsWith("/guide")}
               >
-                <Bell className="w-4 h-4" />
-                <span className="text-sm flex-1 text-left">Notifications</span>
-                <ChevronRight
-                  className={cn(
-                    "h-3 w-3 transition-transform",
-                    notificationOpen ? "rotate-90" : ""
-                  )}
-                />
-              </button>
-
-              {notificationOpen && (
-                <div className="ml-6 space-y-1 border-l pl-3">
-                  <Link
-                    href="/notifications/campaign-templates"
-                    className={cn(
-                      "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                      pathname.startsWith("/notifications/campaign-templates")
-                        ? "bg-primary/5 font-medium text-primary"
-                        : "text-muted-foreground hover:bg-accent"
-                    )}
-                  >
-                    Campaign Templates
-                  </Link>
-
-                  <Link
-                    href="/notifications/campaigns"
-                    className={cn(
-                      "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                      pathname.startsWith("/notifications/campaigns")
-                        ? "bg-primary/5 font-medium text-primary"
-                        : "text-muted-foreground hover:bg-accent"
-                    )}
-                  >
-                    Campaigns
-                  </Link>
-
-                  <Link
-                    href="/notifications/queue"
-                    className={cn(
-                      "flex items-center rounded-md px-2 py-2 text-sm transition-colors",
-                      pathname.startsWith("/notifications/queue")
-                        ? "bg-primary/5 font-medium text-primary"
-                        : "text-muted-foreground hover:bg-accent"
-                    )}
-                  >
-                    Queue
-                  </Link>
-                </div>
+                <SubNavLink href="/guide" label="Guides" />
+              </CollapsibleSection>
+              <CollapsibleSection
+                icon={<BrainCircuit className="size-4" />}
+                label="AI Knowledge"
+                open={aiKnowledgeOpen}
+                onToggle={() => setAIKnowledgeOpen((prev) => !prev)}
+                isActive={pathname.startsWith("/ai")}
+              >
+                <SubNavLink href="/ai/knowledge-base" label="Knowledge Base" />
+                <SubNavLink href="/ai/ask" label="Ask AI" />
+              </CollapsibleSection>
+              {hasPermission("iam.admin.list") && (
+                <NavLink href="/admin" icon={<Shield className="size-4" />} label="Admin Hub" />
               )}
-            </div>
+              <CollapsibleSection
+                icon={<Tags className="size-4" />}
+                label="Taxonomy"
+                open={taxonomyOpen}
+                onToggle={() => setTaxonomyOpen((prev) => !prev)}
+                isActive={pathname.startsWith("/taxonomy")}
+              >
+                <SubNavLink href="/taxonomy/sectors" label="Sectors" />
+                <SubNavLink href="/taxonomy/tags" label="Tags" />
+              </CollapsibleSection>
+              <CollapsibleSection
+                icon={<Folders className="size-4" />}
+                label="Library"
+                open={libraryOpen}
+                onToggle={() => setLibraryOpen((prev) => !prev)}
+                isActive={pathname.startsWith("/library")}
+              >
+                <SubNavLink href="/library/categories" label="Categories" />
+                <SubNavLink href="/library/template-groups" label="Template Groups" />
+                <SubNavLink href="/library/downloads" label="Download Logs" />
+              </CollapsibleSection>
+            </nav>
+            <CollapsibleSection
+              icon={<Bell className="size-4" />}
+              label="Notifications"
+              open={notificationOpen}
+              onToggle={() => setNotificationOpen((prev) => !prev)}
+              isActive={pathname.startsWith("/notifications")}
+            >
+              <SubNavLink href="/notifications/campaign-templates" label="Campaign Templates" />
+              <SubNavLink href="/notifications/campaigns" label="Campaigns" />
+              <SubNavLink href="/notifications/queue" label="Queue" />
+            </CollapsibleSection>
           </div>
 
           <div>
@@ -411,7 +301,7 @@ export function Sidebar() {
             <nav className="space-y-1">
               <NavLink
                 href="/community/categories"
-                icon={<Folder className="w-4 h-4" />}
+                icon={<Folder className="size-4" />}
                 label="Categories"
               />
               <DropdownMenu>
@@ -425,16 +315,16 @@ export function Sidebar() {
                         : ""
                     )}
                   >
-                    <TriangleAlert className="w-4 h-4" />
+                    <TriangleAlert className="size-4" />
                     <span className="text-sm flex-1 text-left">Moderation</span>
-                    <ChevronRight className="w-3 h-3" />
+                    <ChevronRight className="size-3" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent sideOffset={4} className="w-48">
                   <DropdownMenuItem asChild>
                     <NavLink
                       href="/moderation/blocked-users"
-                      icon={<ShieldAlert className="w-4 h-4" />}
+                      icon={<ShieldAlert className="size-4" />}
                       label="Blocked Users"
                     />
                   </DropdownMenuItem>
@@ -442,7 +332,7 @@ export function Sidebar() {
                   <DropdownMenuItem asChild>
                     <NavLink
                       href="/moderation/reported-content"
-                      icon={<TriangleAlert className="w-4 h-4" />}
+                      icon={<TriangleAlert className="size-4" />}
                       label="Reported Content"
                     />
                   </DropdownMenuItem>
@@ -450,7 +340,7 @@ export function Sidebar() {
                   <DropdownMenuItem asChild>
                     <NavLink
                       href="/moderation/reported-users"
-                      icon={<TriangleAlert className="w-4 h-4" />}
+                      icon={<TriangleAlert className="size-4" />}
                       label="Reported Users"
                     />
                   </DropdownMenuItem>
@@ -468,14 +358,14 @@ export function Sidebar() {
                 href="#"
                 className="flex items-center gap-3 px-2 py-2 text-muted-foreground hover:bg-accent rounded-md transition-colors"
               >
-                <Settings className="w-4 h-4" />
+                <Settings className="size-4" />
                 <span className="text-sm">Configurations</span>
               </Link>
               <Link
                 href="#"
                 className="flex items-center gap-3 px-2 py-2 text-muted-foreground hover:bg-accent rounded-md transition-colors"
               >
-                <ShieldCheck className="w-4 h-4" />
+                <ShieldCheck className="size-4" />
                 <span className="text-sm">Security Logs</span>
               </Link>
             </nav>
@@ -489,12 +379,22 @@ export function Sidebar() {
         </div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Moon className="w-4 h-4" />
+            <Moon className="size-4" />
             <span>Dark Mode</span>
           </div>
           <DarkModeSwitch />
         </div>
       </div>
+    </div>
+  );
+}
+
+export function Sidebar() {
+  return (
+    <aside className="w-64 border-r bg-background h-screen flex-col hidden md:flex sticky top-0">
+      <SidebarContent />
     </aside>
   );
 }
+
+export { SidebarContent };
