@@ -1,13 +1,13 @@
 "use client";
 
-import { Bell, Key, LogOut, UserPlus } from "lucide-react";
+import { Bell, Key, LogOut, Menu, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useLogout } from "@/app/(auth)/auth/_services/auth.hook";
+import { SidebarContent } from "@/components/layout/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuthStore } from "@/store/auth.store";
 
 export function Header() {
@@ -28,11 +29,23 @@ export function Header() {
   const logoutMutation = useLogout(() => router.push("/auth"));
 
   return (
-    <header className="h-20 border-b bg-background flex items-center justify-between px-8 sticky top-0 z-10">
-      <h1 className="text-xl font-bold">Admin Dashboard</h1>
+    <header className="h-20 border-b bg-background flex items-center justify-between px-4 sm:px-8 sticky top-0 z-10">
+      <div className="flex items-center gap-3">
+        <Sheet>
+          <SheetTrigger>
+            <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
+              <Menu className="size-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent>
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+        <h1 className="text-xl font-bold">Admin Dashboard</h1>
+      </div>
 
       <div className="flex items-center gap-4">
-        <Button asChild size="sm" variant="outline">
+        <Button asChild size="sm" variant="outline" className="hidden sm:inline-flex">
           <Link href="/admin/register">
             <UserPlus className="size-4" />
             Register New Admin
@@ -43,16 +56,18 @@ export function Header() {
           type="button"
           className="p-2 hover:bg-accent rounded-full transition-colors relative text-muted-foreground"
         >
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-background"></span>
+          <Bell className="size-5" />
+          <span className="absolute top-1.5 right-1.5 size-2 bg-destructive rounded-full border border-background" />
         </button>
 
         <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger asChild>
             <button type="button" className="outline-none cursor-pointer">
-              <Avatar className="w-8 h-8 border ring-2 ring-background">
+              <Avatar className="size-8 border ring-2 ring-background">
                 <AvatarImage src="/placeholder-avatar.jpg" alt="Profile" />
-                <AvatarFallback className="bg-amber-100 text-amber-700">{initials}</AvatarFallback>
+                <AvatarFallback className="bg-accent text-accent-foreground">
+                  {initials}
+                </AvatarFallback>
               </Avatar>
             </button>
           </DropdownMenuTrigger>
