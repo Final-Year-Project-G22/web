@@ -14,8 +14,10 @@ import type {
   LibraryListCategoriesParams,
   LibraryListMyDownloadsParams,
   LibraryListTemplateGroupsParams,
+  LibraryPreviewTemplateParams,
   ListMyDownloadsResponseBody,
   ListTemplateGroupsResponseBody,
+  PreviewTemplateResponseBody,
   UserTemplateGroupDetailResponse
 } from '../types';
 
@@ -275,6 +277,58 @@ export const libraryDownloadTemplate = async (groupId: string,
     params?: LibraryDownloadTemplateParams, options?: RequestInit): Promise<libraryDownloadTemplateResponse> => {
   
   return customFetch<libraryDownloadTemplateResponse>(getLibraryDownloadTemplateUrl(groupId,params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+  
+
+/**
+ * Generates a short-lived presigned URL for previewing a template.
+ * @summary Preview template
+ */
+export type libraryPreviewTemplateResponse200 = {
+  data: PreviewTemplateResponseBody
+  status: 200
+}
+
+export type libraryPreviewTemplateResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type libraryPreviewTemplateResponseSuccess = (libraryPreviewTemplateResponse200) & {
+  headers: Headers;
+};
+export type libraryPreviewTemplateResponseError = (libraryPreviewTemplateResponseDefault) & {
+  headers: Headers;
+};
+
+export type libraryPreviewTemplateResponse = (libraryPreviewTemplateResponseSuccess | libraryPreviewTemplateResponseError)
+
+export const getLibraryPreviewTemplateUrl = (groupId: string,
+    params?: LibraryPreviewTemplateParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/library/templates/${groupId}/preview?${stringifiedParams}` : `/api/v1/library/templates/${groupId}/preview`
+}
+
+export const libraryPreviewTemplate = async (groupId: string,
+    params?: LibraryPreviewTemplateParams, options?: RequestInit): Promise<libraryPreviewTemplateResponse> => {
+  
+  return customFetch<libraryPreviewTemplateResponse>(getLibraryPreviewTemplateUrl(groupId,params),
   {      
     ...options,
     method: 'GET'

@@ -29,7 +29,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+  show: { opacity: 1, y: 0 },
 };
 
 export function LoginForm() {
@@ -67,6 +67,7 @@ export function LoginForm() {
       variants={containerVariants}
       initial="hidden"
       animate="show"
+      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       className="w-full max-w-sm mx-auto space-y-8"
     >
       <motion.div variants={itemVariants} className="space-y-2 text-center">

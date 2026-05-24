@@ -22,8 +22,10 @@ import type {
   DownloadLogListResponse,
   ErrorModel,
   InteractiveFormDetailResponse,
-  LibraryCreateTemplateBody,
   LibraryCreateTemplateOutputBody,
+  LibraryCreateTemplateRequest,
+  LibraryCreateUploadIntentOutputBody,
+  LibraryCreateUploadIntentRequest,
   LibraryDeleteCategoryOutputBody,
   LibraryDeleteTemplateOutputBody,
   LibraryGetDownloadLogsParams,
@@ -31,8 +33,8 @@ import type {
   LibraryListAllTemplateGroupsParams,
   LibraryTemplateDetailResponse,
   LibraryUpdateTemplateBody,
+  ListAllTemplateGroupsResponseBody,
   TemplateGroupDetailResponse,
-  TemplateGroupSummaryResponse,
   TemplateItem,
   UpdateCategoryTranslationOutputBody,
   UpdateCategoryTranslationRequest,
@@ -584,7 +586,7 @@ export const libraryUpdateInteractiveForm = async (id: string,
  * @summary List template groups
  */
 export type libraryListAllTemplateGroupsResponse200 = {
-  data: TemplateGroupSummaryResponse[] | null
+  data: ListAllTemplateGroupsResponseBody
   status: 200
 }
 
@@ -848,7 +850,7 @@ export const libraryListTemplatesByGroup = async (groupId: string, options?: Req
   
 
 /**
- * Uploads a file and creates a template language variant.
+ * Creates a template language variant from a previously uploaded file.
  * @summary Create template
  */
 export type libraryCreateTemplateResponse200 = {
@@ -879,20 +881,60 @@ export const getLibraryCreateTemplateUrl = (groupId: string,) => {
 }
 
 export const libraryCreateTemplate = async (groupId: string,
-    libraryCreateTemplateBody: LibraryCreateTemplateBody, options?: RequestInit): Promise<libraryCreateTemplateResponse> => {
-    const formData = new FormData();
-formData.append(`description`, libraryCreateTemplateBody.description instanceof Blob ? libraryCreateTemplateBody.description : new Blob([libraryCreateTemplateBody.description], { type: 'text/plain' }));
-formData.append(`file`, libraryCreateTemplateBody.file);
-formData.append(`language`, libraryCreateTemplateBody.language instanceof Blob ? libraryCreateTemplateBody.language : new Blob([libraryCreateTemplateBody.language], { type: 'text/plain' }));
-formData.append(`title`, libraryCreateTemplateBody.title instanceof Blob ? libraryCreateTemplateBody.title : new Blob([libraryCreateTemplateBody.title], { type: 'text/plain' }));
-
+    libraryCreateTemplateRequest: NonReadonly<LibraryCreateTemplateRequest>, options?: RequestInit): Promise<libraryCreateTemplateResponse> => {
+  
   return customFetch<libraryCreateTemplateResponse>(getLibraryCreateTemplateUrl(groupId),
   {      
     ...options,
-    method: 'POST'
-    ,
-    body: 
-      formData,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      libraryCreateTemplateRequest,)
+  }
+);}
+  
+
+/**
+ * Generates a direct upload URL for a template file.
+ * @summary Create template upload intent
+ */
+export type libraryCreateTemplateUploadIntentResponse200 = {
+  data: LibraryCreateUploadIntentOutputBody
+  status: 200
+}
+
+export type libraryCreateTemplateUploadIntentResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type libraryCreateTemplateUploadIntentResponseSuccess = (libraryCreateTemplateUploadIntentResponse200) & {
+  headers: Headers;
+};
+export type libraryCreateTemplateUploadIntentResponseError = (libraryCreateTemplateUploadIntentResponseDefault) & {
+  headers: Headers;
+};
+
+export type libraryCreateTemplateUploadIntentResponse = (libraryCreateTemplateUploadIntentResponseSuccess | libraryCreateTemplateUploadIntentResponseError)
+
+export const getLibraryCreateTemplateUploadIntentUrl = (groupId: string,) => {
+
+
+  
+
+  return `/api/v1/admin/library/template-groups/${groupId}/templates/upload-intent`
+}
+
+export const libraryCreateTemplateUploadIntent = async (groupId: string,
+    libraryCreateUploadIntentRequest: NonReadonly<LibraryCreateUploadIntentRequest>, options?: RequestInit): Promise<libraryCreateTemplateUploadIntentResponse> => {
+  
+  return customFetch<libraryCreateTemplateUploadIntentResponse>(getLibraryCreateTemplateUploadIntentUrl(groupId),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      libraryCreateUploadIntentRequest,)
   }
 );}
   

@@ -14,6 +14,8 @@ export interface UpdateCampaignTemplateRequest {
   defaultContent?: UpdateCampaignTemplateRequestDefaultContent;
   /** Template description */
   description?: string;
+  /** Enable automatic push mirroring from in-app content */
+  enablePushMirror?: boolean;
   /**
    * Template name
    * @maxLength 200

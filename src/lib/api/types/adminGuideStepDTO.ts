@@ -8,6 +8,7 @@
 import type { AdminStepTranslationDTO } from './adminStepTranslationDTO';
 
 export interface AdminGuideStepDTO {
+  complianceType?: string;
   difficultyLevel?: number;
   effectiveDate: string;
   estimatedTime?: number;

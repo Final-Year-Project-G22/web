@@ -12,6 +12,8 @@ import type { CreateStepTranslation } from './createStepTranslation';
 export interface CreateStepRequest {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
+  /** Optional compliance type */
+  complianceType?: string;
   /**
    * Visibility conditions
    * @nullable
