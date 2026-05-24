@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, Key, LogOut, Menu, UserPlus } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -41,7 +42,10 @@ export function Header() {
             <SidebarContent />
           </SheetContent>
         </Sheet>
-        <h1 className="text-xl font-bold">Admin Dashboard</h1>
+        <div className="flex items-center gap-2">
+          <Image src="/logo.svg" alt="Logo" width={36} height={36} className="rounded-md" />
+          <h1 className="text-xl font-bold">Admin Dashboard</h1>
+        </div>
       </div>
 
       <div className="flex items-center gap-4">

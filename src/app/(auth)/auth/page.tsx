@@ -1,4 +1,5 @@
 import { CheckCircle2, KeyRound, Shield } from "lucide-react";
+import Image from "next/image";
 import { APP_NAME, APP_VERSION } from "@/lib/constants";
 import { AuthCard } from "./_components/auth-card";
 
@@ -45,8 +46,14 @@ export default function AuthPage() {
 
           <div className="relative">
             <div className="flex items-center gap-3 mb-12">
-              <div className="size-10 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center ring-1 ring-white/20">
-                <Shield className="size-5" />
+              <div className="rounded-xl bg-white/95 p-1.5 ring-1 ring-white/20 shadow-sm">
+                <Image
+                  src="/logo.svg"
+                  alt={APP_NAME}
+                  width={56}
+                  height={56}
+                  className="rounded-lg"
+                />
               </div>
               <h2 className="text-xl font-semibold tracking-tight">{APP_NAME}</h2>
             </div>
