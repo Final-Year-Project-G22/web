@@ -14,7 +14,6 @@ export const AuthService = {
 
     const data: LoginResponseBody = res.data;
 
-    // Set session and cookie FIRST so getCurrentUser can authenticate
     useAuthStore.getState().setSession(data.accessToken, data.user, data.account, data.expiresAt);
     const maxAgeSec = Math.max(
       0,
@@ -22,7 +21,6 @@ export const AuthService = {
     );
     document.cookie = `access_token=${data.accessToken}; path=/; max-age=${maxAgeSec}; SameSite=Lax`;
 
-    // Now fetch full profile (token is in store + cookie)
     const meRes = await getCurrentUser();
     if (meRes.status === 200) {
       useAuthStore
@@ -50,7 +48,6 @@ export const AuthService = {
     return res.data;
   },
 
-  /** Fetch current user and update roles/permissions in store */
   hydrate: async () => {
     const res = await getCurrentUser();
     if (res.status === 200) {
