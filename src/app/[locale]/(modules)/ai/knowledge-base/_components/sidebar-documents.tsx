@@ -23,37 +23,37 @@ const STAGE_META: Record<
   queued: {
     label: "Queued",
     variant: "secondary",
-    className: "bg-slate-100 text-slate-700 hover:bg-slate-100/80 border-transparent shadow-none",
+    className: "bg-muted text-muted-foreground hover:bg-muted/80 border-transparent shadow-none",
   },
   validating: {
     label: "Validating",
     variant: "secondary",
-    className: "bg-blue-50 text-blue-700 hover:bg-blue-50/80 border-transparent shadow-none",
+    className: "bg-info/10 text-info hover:bg-info/10 border-transparent shadow-none",
   },
   fetching: {
     label: "Fetching",
     variant: "secondary",
-    className: "bg-sky-50 text-sky-700 hover:bg-sky-50/80 border-transparent shadow-none",
+    className: "bg-info/10 text-info hover:bg-info/10 border-transparent shadow-none",
   },
   chunking: {
     label: "Chunking",
     variant: "secondary",
-    className: "bg-orange-50 text-orange-700 hover:bg-orange-50/80 border-transparent shadow-none",
+    className: "bg-warning/10 text-warning hover:bg-warning/10 border-transparent shadow-none",
   },
   embedding: {
     label: "Embedding",
     variant: "secondary",
-    className: "bg-amber-50 text-amber-700 hover:bg-amber-50/80 border-transparent shadow-none",
+    className: "bg-warning/10 text-warning hover:bg-warning/10 border-transparent shadow-none",
   },
   indexing: {
     label: "Indexing",
     variant: "secondary",
-    className: "bg-yellow-50 text-yellow-700 hover:bg-yellow-50/80 border-transparent shadow-none",
+    className: "bg-warning/10 text-warning hover:bg-warning/10 border-transparent shadow-none",
   },
   completed: {
     label: "Live",
     variant: "default",
-    className: "bg-green-100 text-green-800 hover:bg-green-100/80 border-transparent shadow-none",
+    className: "bg-success/10 text-success hover:bg-success/10 border-transparent shadow-none",
   },
   failed: { label: "Failed", variant: "destructive", className: "" },
 };
@@ -209,7 +209,7 @@ export function SidebarDocuments() {
                         {sectorNames.map((name) => (
                           <span
                             key={name}
-                            className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-blue-50 text-blue-700"
+                            className="inline-block px-1.5 py-0.5 rounded text-xs bg-muted text-muted-foreground"
                           >
                             {name}
                           </span>

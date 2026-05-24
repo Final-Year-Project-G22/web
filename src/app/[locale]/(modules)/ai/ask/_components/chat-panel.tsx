@@ -216,13 +216,13 @@ export function ChatPanel({ sessionId, onSessionChange }: ChatPanelProps) {
                         key={cit.chunkId}
                         type="button"
                         onClick={() => setInspectedCitation(cit)}
-                        className="text-[10px] px-2 py-1 rounded-full border bg-card text-muted-foreground hover:bg-muted transition-colors"
+                        className="text-xs px-2 py-1 rounded-full border bg-card text-muted-foreground hover:bg-muted transition-colors"
                       >
                         {cit.title || `Source`}
                       </button>
                     ))}
                     {msg.citations.length > 3 && (
-                      <span className="text-[10px] px-2 py-1 text-muted-foreground">
+                      <span className="text-xs px-2 py-1 text-muted-foreground">
                         +{msg.citations.length - 3} more
                       </span>
                     )}
@@ -255,7 +255,7 @@ export function ChatPanel({ sessionId, onSessionChange }: ChatPanelProps) {
               <Send className="h-4 w-4" />
             </Button>
           </div>
-          <p className="text-center text-[10px] text-muted-foreground mt-3">
+          <p className="text-center text-xs text-muted-foreground mt-3">
             AI can make mistakes. Verify with source documents.
           </p>
         </div>

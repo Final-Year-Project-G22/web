@@ -331,7 +331,9 @@ export function useAskAIStream() {
               return;
             }
           } catch (err) {
-            console.warn("[SSE] Failed to parse ask stream event", err);
+            if (process.env.NODE_ENV !== "production") {
+              console.warn("[SSE] Failed to parse ask stream event", err);
+            }
           }
         }
       }

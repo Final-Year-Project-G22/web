@@ -191,7 +191,9 @@ export function useAIStatusList(page = 1, pageSize = 50) {
         let connected = false;
         const url = getIngestionSseStreamUrl();
         try {
-          console.log("[SSE] Connecting to", url.toString());
+          if (process.env.NODE_ENV !== "production") {
+            console.log("[SSE] Connecting to", url.toString());
+          }
           const response = await fetchSseWithAuth(url.toString(), {
             headers: {
               Accept: "text/event-stream",
@@ -202,7 +204,9 @@ export function useAIStatusList(page = 1, pageSize = 50) {
           });
 
           if (!response.ok || !response.body) {
-            console.warn("[SSE] Connection failed", response.status);
+            if (process.env.NODE_ENV !== "production") {
+              console.warn("[SSE] Connection failed", response.status);
+            }
             failCount++;
             try {
               await waitForReconnect(sseReconnectDelayMs(failCount), controller.signal);
@@ -214,7 +218,9 @@ export function useAIStatusList(page = 1, pageSize = 50) {
 
           connected = true;
           failCount = 0;
-          console.log("[SSE] Connected");
+          if (process.env.NODE_ENV !== "production") {
+            console.log("[SSE] Connected");
+          }
 
           const reader = response.body.getReader();
           const decoder = new TextDecoder();
@@ -223,17 +229,21 @@ export function useAIStatusList(page = 1, pageSize = 50) {
           while (true) {
             const { done, value } = await reader.read();
             if (done) {
-              console.warn("[SSE] Stream closed by server");
+              if (process.env.NODE_ENV !== "production") {
+                console.warn("[SSE] Stream closed by server");
+              }
               break;
             }
 
             const chunk = decoder.decode(value, { stream: true });
-            console.log(
-              "[SSE] Raw chunk received",
-              chunk.length,
-              "bytes:",
-              chunk.substring(0, 200)
-            );
+            if (process.env.NODE_ENV !== "production") {
+              console.log(
+                "[SSE] Raw chunk received",
+                chunk.length,
+                "bytes:",
+                chunk.substring(0, 200)
+              );
+            }
             buffer += chunk.replace(/\r\n/g, "\n");
             const events = buffer.split("\n\n");
             buffer = events.pop() ?? "";
@@ -254,7 +264,9 @@ export function useAIStatusList(page = 1, pageSize = 50) {
                       projection?: IngestionStatusProjectionResponse;
                     }
                   | IngestionStatusProjectionResponse;
-                console.log("[SSE] Received event", event.event, parsed);
+                if (process.env.NODE_ENV !== "production") {
+                  console.log("[SSE] Received event", event.event, parsed);
+                }
 
                 const singleProjection = "documentId" in parsed ? parsed : parsed.projection;
 
@@ -305,7 +317,9 @@ export function useAIStatusList(page = 1, pageSize = 50) {
                   );
                 }
               } catch (err) {
-                console.warn("[SSE] Failed to parse event data", err);
+                if (process.env.NODE_ENV !== "production") {
+                  console.warn("[SSE] Failed to parse event data", err);
+                }
               }
             }
           }
@@ -314,7 +328,9 @@ export function useAIStatusList(page = 1, pageSize = 50) {
             break;
           }
           if (!connected) {
-            console.warn("[SSE] Connection error, falling back to polling", err);
+            if (process.env.NODE_ENV !== "production") {
+              console.warn("[SSE] Connection error, falling back to polling", err);
+            }
           }
           failCount++;
           try {

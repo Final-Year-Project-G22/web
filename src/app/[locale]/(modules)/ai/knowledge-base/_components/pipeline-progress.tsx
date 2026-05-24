@@ -25,13 +25,13 @@ const STAGE_LABELS: Record<string, string> = {
 };
 
 const STAGE_COLORS: Record<string, string> = {
-  queued: "bg-slate-400",
-  validating: "bg-blue-400",
-  fetching: "bg-sky-400",
-  chunking: "bg-orange-400",
-  embedding: "bg-amber-400",
-  indexing: "bg-yellow-400",
-  completed: "bg-green-500",
+  queued: "bg-muted-foreground/40",
+  validating: "bg-chart-1",
+  fetching: "bg-chart-3",
+  chunking: "bg-chart-4",
+  embedding: "bg-chart-2",
+  indexing: "bg-chart-5",
+  completed: "bg-success",
 };
 
 export function PipelineProgress() {
@@ -75,7 +75,7 @@ export function PipelineProgress() {
                     <div
                       className={`w-2 h-2 rounded-full ${isActive ? `${STAGE_COLORS[stage]} animate-pulse` : STAGE_COLORS[stage]}`}
                     />
-                    <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap">
+                    <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
                       {STAGE_LABELS[stage]}
                     </span>
                   </div>
@@ -84,7 +84,7 @@ export function PipelineProgress() {
                     className={`h-1.5 w-full ${isActive ? `[&>div]:${STAGE_COLORS[stage]}` : ""}`}
                   />
                   <span
-                    className={`text-[10px] font-semibold ${isActive ? "text-foreground" : "text-muted-foreground"}`}
+                    className={`text-xs font-semibold ${isActive ? "text-foreground" : "text-muted-foreground"}`}
                   >
                     {n}
                   </span>
