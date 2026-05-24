@@ -55,7 +55,7 @@ export function ChunkInspector({ citation, onClose }: ChunkInspectorProps) {
         )}
       </div>
 
-      <div className="text-[10px] text-muted-foreground pt-2 border-t">
+      <div className="text-xs text-muted-foreground pt-2 border-t">
         Chunk ID: {citation.chunkId?.slice(0, 8)}...
       </div>
     </div>
