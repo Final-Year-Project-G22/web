@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PaginationBar } from "@/components/ui/pagination-bar";
 import {
   Table,
   TableBody,
@@ -66,7 +67,7 @@ export default function ReportedUsersPage() {
     if (newStatus !== "all") sp.set("status", newStatus);
     if (newSearch.trim()) sp.set("search", newSearch.trim());
     if (newPage > 1) sp.set("page", String(newPage));
-    router.push(`/moderation/reported-users${sp.toString() ? `?${sp}` : ""}`);
+    router.replace(`/moderation/reported-users${sp.toString() ? `?${sp}` : ""}`);
   }
 
   return (
@@ -188,35 +189,15 @@ export default function ReportedUsersPage() {
           )}
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page <= 1 || reportsQuery.isLoading}
-                onClick={() => {
-                  const p = page - 1;
-                  setPage(p);
-                  navigate(status, p, search);
-                }}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages || reportsQuery.isLoading}
-                onClick={() => {
-                  const p = page + 1;
-                  setPage(p);
-                  navigate(status, p, search);
-                }}
-              >
-                Next
-              </Button>
-            </div>
+            <PaginationBar
+              page={page}
+              totalPages={totalPages}
+              isLoading={reportsQuery.isLoading}
+              onPageChange={(p) => {
+                setPage(p);
+                navigate(status, p, search);
+              }}
+            />
           )}
         </CardContent>
       </Card>
