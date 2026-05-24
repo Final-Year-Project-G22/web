@@ -2,6 +2,13 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type PaginationControlsProps = {
   page: number;
@@ -33,7 +40,7 @@ export function PaginationControls({
           disabled={page <= 1 || isLoading}
           onClick={() => onPageChange(page - 1)}
         >
-          <ChevronLeft className="mr-1 h-4 w-4" />
+          <ChevronLeft className="mr-1 size-4" />
           Previous
         </Button>
         <span className="text-sm text-muted-foreground">
@@ -46,24 +53,28 @@ export function PaginationControls({
           onClick={() => onPageChange(page + 1)}
         >
           Next
-          <ChevronRight className="ml-1 h-4 w-4" />
+          <ChevronRight className="ml-1 size-4" />
         </Button>
       </div>
 
       {onPageSizeChange && pageSize && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>Page size:</span>
-          <select
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="border rounded px-2 py-1 text-sm bg-background"
+          <Select
+            value={String(pageSize)}
+            onValueChange={(v) => onPageSizeChange(Number(v))}
           >
-            {pageSizeOptions.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="h-8 w-16">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {pageSizeOptions.map((size) => (
+                <SelectItem key={size} value={String(size)}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
     </div>
