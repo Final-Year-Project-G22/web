@@ -27,7 +27,7 @@ export function ChunkInspector({ citation, onClose }: ChunkInspectorProps) {
         <div>
           <span className="text-xs text-muted-foreground">Document</span>
           <p className="text-sm font-medium truncate">
-            {citation.title || (isAmharic ? "ምንጭ" : `Chunk ${citation.chunkId?.slice(0, 8)}`)}
+            {citation.title || `Document ${citation.documentId?.slice(0, 8)}...`}
           </p>
         </div>
 
@@ -45,14 +45,14 @@ export function ChunkInspector({ citation, onClose }: ChunkInspectorProps) {
           </div>
         )}
 
-        {citation.excerpt && !isAmharic && (
+        {citation.excerpt && !isAmharic ? (
           <div>
             <span className="text-xs text-muted-foreground">Excerpt</span>
             <p className="text-sm text-muted-foreground line-clamp-6 leading-relaxed">
               {citation.excerpt}
             </p>
           </div>
-        )}
+        ) : null}
       </div>
 
       <div className="text-xs text-muted-foreground pt-2 border-t">
