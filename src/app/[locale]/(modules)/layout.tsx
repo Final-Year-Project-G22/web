@@ -1,3 +1,4 @@
+import { PermissionGuard } from "@/components/auth/permission-guard";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { AnimatedMain } from "@/components/layout/animated-main";
 import { Header } from "@/components/layout/header";
@@ -14,7 +15,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Sidebar />
         <div className="relative flex-1 flex flex-col h-full overflow-hidden">
           <Header />
-          <AnimatedMain>{children}</AnimatedMain>
+          <AnimatedMain>
+            <PermissionGuard>{children}</PermissionGuard>
+          </AnimatedMain>
         </div>
       </div>
     </ProtectedRoute>
