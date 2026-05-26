@@ -10,8 +10,6 @@ import type {
   DownloadTemplateResponseBody,
   ErrorModel,
   LibraryDownloadTemplateParams,
-  LibraryGetTemplateGroupParams,
-  LibraryListCategoriesParams,
   LibraryListMyDownloadsParams,
   LibraryListTemplateGroupsParams,
   LibraryPreviewTemplateParams,
@@ -55,24 +53,17 @@ export type libraryListCategoriesResponseError = (libraryListCategoriesResponseD
 
 export type libraryListCategoriesResponse = (libraryListCategoriesResponseSuccess | libraryListCategoriesResponseError)
 
-export const getLibraryListCategoriesUrl = (params?: LibraryListCategoriesParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getLibraryListCategoriesUrl = () => {
 
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
 
-  const stringifiedParams = normalizedParams.toString();
+  
 
-  return stringifiedParams.length > 0 ? `/api/v1/library/categories?${stringifiedParams}` : `/api/v1/library/categories`
+  return `/api/v1/library/categories`
 }
 
-export const libraryListCategories = async (params?: LibraryListCategoriesParams, options?: RequestInit): Promise<libraryListCategoriesResponse> => {
+export const libraryListCategories = async ( options?: RequestInit): Promise<libraryListCategoriesResponse> => {
   
-  return customFetch<libraryListCategoriesResponse>(getLibraryListCategoriesUrl(params),
+  return customFetch<libraryListCategoriesResponse>(getLibraryListCategoriesUrl(),
   {      
     ...options,
     method: 'GET'
@@ -205,26 +196,17 @@ export type libraryGetTemplateGroupResponseError = (libraryGetTemplateGroupRespo
 
 export type libraryGetTemplateGroupResponse = (libraryGetTemplateGroupResponseSuccess | libraryGetTemplateGroupResponseError)
 
-export const getLibraryGetTemplateGroupUrl = (groupId: string,
-    params?: LibraryGetTemplateGroupParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getLibraryGetTemplateGroupUrl = (groupId: string,) => {
 
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
 
-  const stringifiedParams = normalizedParams.toString();
+  
 
-  return stringifiedParams.length > 0 ? `/api/v1/library/templates/${groupId}?${stringifiedParams}` : `/api/v1/library/templates/${groupId}`
+  return `/api/v1/library/templates/${groupId}`
 }
 
-export const libraryGetTemplateGroup = async (groupId: string,
-    params?: LibraryGetTemplateGroupParams, options?: RequestInit): Promise<libraryGetTemplateGroupResponse> => {
+export const libraryGetTemplateGroup = async (groupId: string, options?: RequestInit): Promise<libraryGetTemplateGroupResponse> => {
   
-  return customFetch<libraryGetTemplateGroupResponse>(getLibraryGetTemplateGroupUrl(groupId,params),
+  return customFetch<libraryGetTemplateGroupResponse>(getLibraryGetTemplateGroupUrl(groupId),
   {      
     ...options,
     method: 'GET'

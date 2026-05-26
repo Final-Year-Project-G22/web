@@ -13,7 +13,6 @@ import type {
   GetCalendarResponseBody,
   ListComplianceEntriesParams,
   ListComplianceEntriesResponseBody,
-  ListComplianceTypesParams,
   ListComplianceTypesResponseBody,
   UpdateComplianceEntryRequest,
   UpdateComplianceEntryResponseBody
@@ -305,24 +304,17 @@ export type listComplianceTypesResponseError = (listComplianceTypesResponseDefau
 
 export type listComplianceTypesResponse = (listComplianceTypesResponseSuccess | listComplianceTypesResponseError)
 
-export const getListComplianceTypesUrl = (params?: ListComplianceTypesParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getListComplianceTypesUrl = () => {
 
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
 
-  const stringifiedParams = normalizedParams.toString();
+  
 
-  return stringifiedParams.length > 0 ? `/api/v1/compliance/types?${stringifiedParams}` : `/api/v1/compliance/types`
+  return `/api/v1/compliance/types`
 }
 
-export const listComplianceTypes = async (params?: ListComplianceTypesParams, options?: RequestInit): Promise<listComplianceTypesResponse> => {
+export const listComplianceTypes = async ( options?: RequestInit): Promise<listComplianceTypesResponse> => {
   
-  return customFetch<listComplianceTypesResponse>(getListComplianceTypesUrl(params),
+  return customFetch<listComplianceTypesResponse>(getListComplianceTypesUrl(),
   {      
     ...options,
     method: 'GET'

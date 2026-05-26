@@ -137,3 +137,47 @@ export const askStream = async (askRequest: NonReadonly<AskRequest>, options?: R
 );}
   
 
+/**
+ * Ask AI a question and receive full ReAct loop internals including reasoning, tool calls, and results. Requires admin permission.
+ * @summary Ask a question with debug streaming (admin only)
+ */
+export type askStreamDebugResponse200 = {
+  data: void
+  status: 200
+}
+
+export type askStreamDebugResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type askStreamDebugResponseSuccess = (askStreamDebugResponse200) & {
+  headers: Headers;
+};
+export type askStreamDebugResponseError = (askStreamDebugResponseDefault) & {
+  headers: Headers;
+};
+
+export type askStreamDebugResponse = (askStreamDebugResponseSuccess | askStreamDebugResponseError)
+
+export const getAskStreamDebugUrl = () => {
+
+
+  
+
+  return `/api/v1/ai/ask/stream/debug`
+}
+
+export const askStreamDebug = async (askRequest: NonReadonly<AskRequest>, options?: RequestInit): Promise<askStreamDebugResponse> => {
+  
+  return customFetch<askStreamDebugResponse>(getAskStreamDebugUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      askRequest,)
+  }
+);}
+  
+

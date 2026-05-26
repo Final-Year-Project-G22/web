@@ -11,11 +11,8 @@ import type {
   CompleteStepResponseBody,
   CompletionStatsDTO,
   ErrorModel,
-  GetCurrentStepParams,
   GetCurrentStepResponseBody,
-  GetInProgressGuidesParams,
   GetInProgressGuidesResponseBody,
-  GetPersonalizedGuideParams,
   GetPersonalizedGuideResponseBody,
   GetRecentlyViewedParams,
   GetRecentlyViewedResponseBody,
@@ -239,24 +236,17 @@ export type getInProgressGuidesResponseError = (getInProgressGuidesResponseDefau
 
 export type getInProgressGuidesResponse = (getInProgressGuidesResponseSuccess | getInProgressGuidesResponseError)
 
-export const getGetInProgressGuidesUrl = (params?: GetInProgressGuidesParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getGetInProgressGuidesUrl = () => {
 
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
 
-  const stringifiedParams = normalizedParams.toString();
+  
 
-  return stringifiedParams.length > 0 ? `/api/v1/guides/in-progress?${stringifiedParams}` : `/api/v1/guides/in-progress`
+  return `/api/v1/guides/in-progress`
 }
 
-export const getInProgressGuides = async (params?: GetInProgressGuidesParams, options?: RequestInit): Promise<getInProgressGuidesResponse> => {
+export const getInProgressGuides = async ( options?: RequestInit): Promise<getInProgressGuidesResponse> => {
   
-  return customFetch<getInProgressGuidesResponse>(getGetInProgressGuidesUrl(params),
+  return customFetch<getInProgressGuidesResponse>(getGetInProgressGuidesUrl(),
   {      
     ...options,
     method: 'GET'
@@ -739,26 +729,17 @@ export type getPersonalizedGuideResponseError = (getPersonalizedGuideResponseDef
 
 export type getPersonalizedGuideResponse = (getPersonalizedGuideResponseSuccess | getPersonalizedGuideResponseError)
 
-export const getGetPersonalizedGuideUrl = (guideSlug: string,
-    params?: GetPersonalizedGuideParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getGetPersonalizedGuideUrl = (guideSlug: string,) => {
 
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
 
-  const stringifiedParams = normalizedParams.toString();
+  
 
-  return stringifiedParams.length > 0 ? `/api/v1/guides/${guideSlug}?${stringifiedParams}` : `/api/v1/guides/${guideSlug}`
+  return `/api/v1/guides/${guideSlug}`
 }
 
-export const getPersonalizedGuide = async (guideSlug: string,
-    params?: GetPersonalizedGuideParams, options?: RequestInit): Promise<getPersonalizedGuideResponse> => {
+export const getPersonalizedGuide = async (guideSlug: string, options?: RequestInit): Promise<getPersonalizedGuideResponse> => {
   
-  return customFetch<getPersonalizedGuideResponse>(getGetPersonalizedGuideUrl(guideSlug,params),
+  return customFetch<getPersonalizedGuideResponse>(getGetPersonalizedGuideUrl(guideSlug),
   {      
     ...options,
     method: 'GET'
@@ -791,26 +772,17 @@ export type getCurrentStepResponseError = (getCurrentStepResponseDefault) & {
 
 export type getCurrentStepResponse = (getCurrentStepResponseSuccess | getCurrentStepResponseError)
 
-export const getGetCurrentStepUrl = (guideSlug: string,
-    params?: GetCurrentStepParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getGetCurrentStepUrl = (guideSlug: string,) => {
 
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
 
-  const stringifiedParams = normalizedParams.toString();
+  
 
-  return stringifiedParams.length > 0 ? `/api/v1/guides/${guideSlug}/current-step?${stringifiedParams}` : `/api/v1/guides/${guideSlug}/current-step`
+  return `/api/v1/guides/${guideSlug}/current-step`
 }
 
-export const getCurrentStep = async (guideSlug: string,
-    params?: GetCurrentStepParams, options?: RequestInit): Promise<getCurrentStepResponse> => {
+export const getCurrentStep = async (guideSlug: string, options?: RequestInit): Promise<getCurrentStepResponse> => {
   
-  return customFetch<getCurrentStepResponse>(getGetCurrentStepUrl(guideSlug,params),
+  return customFetch<getCurrentStepResponse>(getGetCurrentStepUrl(guideSlug),
   {      
     ...options,
     method: 'GET'

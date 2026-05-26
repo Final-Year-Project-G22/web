@@ -98,15 +98,21 @@ function parseSSEChunk(chunk: string): { event?: string; data?: string } | null 
 }
 
 const QUERY_KEYS = {
-  conversations: ["ai", "conversations"],
+  conversations: (page: number, pageSize: number) => [
+    "ai",
+    "conversations",
+    "list",
+    { page, pageSize },
+  ],
   conversation: (id: string) => ["ai", "conversations", id],
+  conversationsList: ["ai", "conversations", "list"],
 };
 
 // ─── Conversations ────────────────────────────────────────
 
 export function useAIConversationsList(page = 1, pageSize = 20) {
   return useQuery<ConversationDTO[], ErrorModel>({
-    queryKey: [...QUERY_KEYS.conversations, { page, pageSize }],
+    queryKey: QUERY_KEYS.conversations(page, pageSize),
     queryFn: async () => {
       const res = await listConversations();
       if (res.status !== 200) throw res.data;
@@ -136,7 +142,7 @@ export function useArchiveConversation() {
       if (res.status !== 200) throw res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.conversations });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.conversationsList });
     },
   });
 }
@@ -157,12 +163,10 @@ export function useAskAI() {
           queryKey: QUERY_KEYS.conversation(req.sessionId),
         });
       }
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.conversations });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.conversationsList });
     },
   });
 }
-
-// ─── Ask AI Streaming ──────────────────────────────────────
 
 export type ToolUseEvent = {
   tool: string;
@@ -175,6 +179,10 @@ export type ToolResultEvent = {
 };
 
 type AskStreamChunkEventBody = {
+  text: string;
+};
+
+type AskStreamThinkingEventBody = {
   text: string;
 };
 
@@ -196,10 +204,16 @@ type AskStreamErrorEventBody = {
   message: string;
 };
 
+export type ThinkingChunk = {
+  text: string;
+  timestamp: number;
+};
+
 export type AskStreamState = {
   answer: string;
   citations: CitationDTO[] | null;
   toolUses: ToolUseEvent[];
+  thinkingChunks: ThinkingChunk[];
 };
 
 type AskStreamHandlers = {
@@ -207,6 +221,7 @@ type AskStreamHandlers = {
   onCitations?: (citations: CitationDTO[]) => void;
   onToolUse?: (toolUse: ToolUseEvent) => void;
   onToolResult?: (toolResult: ToolResultEvent) => void;
+  onThinking?: (thinking: AskStreamThinkingEventBody, state: AskStreamState) => void;
   onDone?: (payload: AskStreamDoneEventBody & AskStreamState) => void;
   onError?: (error: AskStreamErrorEventBody) => void;
 };
@@ -224,7 +239,11 @@ export function useAskAIStream() {
     setIsStreaming(false);
   };
 
-  const start = async (req: AskRequest, handlers: AskStreamHandlers = {}) => {
+  const start = async (
+    req: AskRequest,
+    handlers: AskStreamHandlers = {},
+    useDebugEndpoint = false
+  ) => {
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
@@ -235,6 +254,7 @@ export function useAskAIStream() {
     let answer = "";
     let citations: CitationDTO[] | null = null;
     const toolUses: ToolUseEvent[] = [];
+    const thinkingChunks: ThinkingChunk[] = [];
     let completed = false;
     let receivedEvent = false;
 
@@ -247,7 +267,11 @@ export function useAskAIStream() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetchSseWithAuth(getAskStreamSseUrl().toString(), {
+      const url = useDebugEndpoint
+        ? getAskStreamSseUrl().toString().replace("/stream", "/stream/debug")
+        : getAskStreamSseUrl().toString();
+
+      const response = await fetchSseWithAuth(url, {
         method: "POST",
         headers,
         credentials: "include",
@@ -290,7 +314,7 @@ export function useAskAIStream() {
               const parsed = JSON.parse(event.data) as AskStreamChunkEventBody;
               if (parsed?.text) {
                 answer += parsed.text;
-                handlers.onChunk?.(parsed.text, { answer, citations, toolUses });
+                handlers.onChunk?.(parsed.text, { answer, citations, toolUses, thinkingChunks });
               }
             } else if (event.event === "citations") {
               const parsed = JSON.parse(event.data) as AskStreamCitationEventBody;
@@ -303,19 +327,19 @@ export function useAskAIStream() {
             } else if (event.event === "tool_result") {
               const parsed = JSON.parse(event.data) as ToolResultEvent;
               handlers.onToolResult?.(parsed);
+            } else if (event.event === "thinking") {
+              const parsed = JSON.parse(event.data) as AskStreamThinkingEventBody;
+              if (parsed?.text) {
+                thinkingChunks.push({ text: parsed.text, timestamp: Date.now() });
+                handlers.onThinking?.(parsed, { answer, citations, toolUses, thinkingChunks });
+              }
             } else if (event.event === "done") {
               const parsed = JSON.parse(event.data) as AskStreamDoneEventBody;
               completed = true;
-              handlers.onDone?.({ ...parsed, answer, citations, toolUses });
+              handlers.onDone?.({ ...parsed, answer, citations, toolUses, thinkingChunks });
 
-              const sessionId = parsed.sessionId || req.sessionId;
-              if (sessionId) {
-                queryClient.invalidateQueries({
-                  queryKey: QUERY_KEYS.conversation(sessionId),
-                });
-              }
               queryClient.invalidateQueries({
-                queryKey: QUERY_KEYS.conversations,
+                queryKey: QUERY_KEYS.conversationsList,
               });
 
               setIsStreaming(false);

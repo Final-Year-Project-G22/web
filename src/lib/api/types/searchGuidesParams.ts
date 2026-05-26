@@ -20,8 +20,4 @@ page?: number;
  * Items per page
  */
 pageSize?: number;
-/**
- * Language locale (en, am)
- */
-locale?: string;
 };

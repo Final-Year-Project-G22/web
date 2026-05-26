@@ -9,6 +9,8 @@
 export interface AskRequest {
   /** A URL to the JSON Schema for this object. */
   readonly $schema?: string;
+  /** Enable debug mode including thinking chunks */
+  debugMode?: boolean;
   /** Language code (e.g. en, am) */
   language?: string;
   /**
@@ -19,6 +21,8 @@ export interface AskRequest {
   query: string;
   /** Optional conversation ID to continue */
   sessionId?: string;
+  /** Ask strategy: simple or agentic */
+  strategy?: string;
   /** Custom conversation title */
   title?: string;
   /** Number of context chunks to retrieve */

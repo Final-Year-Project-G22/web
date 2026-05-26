@@ -41,10 +41,13 @@ src/app/
           _components/           # upload-dialog, sidebar-documents, header-tools, dlq-panel, pipeline-progress
           _services/             # ai.hook (upload, delete, ingestion status SSE, ingestion toggle)
           page.tsx               # KB landing page (admin default)
-        ask/                     # Chat with AI
-          _components/           # conversation-sidebar, chat-panel, chunk-inspector
-          _services/             # ask.hook (streaming chat, conversation list, archive)
+        ask/                     # Chat with AI (strategy toggle: simple | agentic, debug mode)
+          _components/           # conversation-sidebar, chat-panel, chunk-inspector, tool-use-indicator
+          _services/             # ask.hook (streaming chat with chunk/citations/tool_use/tool_result/thinking events, conversation list, archive)
           page.tsx               # Ask AI page
+          debug/                 # Admin debug page (strategy=agentic, debugMode=true)
+            _components/         # debug-panel (thinking chunks, tool call timeline, event stream sidebar)
+            page.tsx             # Debug page (admin-only, permission-gated)
       admin/
         register/
         sectors/                 # Taxonomy CRUD (application-wide)
@@ -77,7 +80,7 @@ Each module under `(modules)/` follows the same structure:
 | **Moderation**    | Content moderation: blocked users, post/thread/user reports, content takedown.
 | **Settings**      | User settings (change password, profile).
 | **AI Knowledge Base**| Admin document management for RAG: upload, pipeline ingestion status, dead letter queue. Documents tagged with sectors/tags/language.
-| **AI Ask**        | Conversational AI interface with session management, conversation history, and RAG against the knowledge base.
+| **AI Ask**        | Conversational AI interface with session management, conversation history, and RAG against the knowledge base. Supports strategy toggle (simple RAG vs agentic ReAct loop with tool calling) and debug mode (emits LLM reasoning/thinking chunks).
 | **Document**      | Uploaded file (PDF/DOCX) processed through an ingestion pipeline (chunking → embedding → indexing) into the vector store. Has metadata: title, language, sector associations, tag associations.
 | **Conversation**  | AI chat session with a title, language, and ordered message history. Can be archived (soft-deleted). Linked to a user account.
 | **AI Tool**       | A registered capability exposed by a Go module (e.g., guide, taxonomy) that the AI can invoke via gRPC at inference time. Each tool has a name, description, and JSON Schema for parameters.
