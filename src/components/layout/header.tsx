@@ -1,8 +1,7 @@
 "use client";
 
-import { Bell, Key, LogOut, Menu, UserPlus } from "lucide-react";
+import { Bell, Key, LogOut, Menu } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useLogout } from "@/app/(auth)/auth/_services/auth.hook";
@@ -49,13 +48,6 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-4">
-        <Button asChild size="sm" variant="outline" className="hidden sm:inline-flex">
-          <Link href="/admin/register">
-            <UserPlus className="size-4" />
-            Register New Admin
-          </Link>
-        </Button>
-
         <button
           type="button"
           className="p-2 hover:bg-accent rounded-full transition-colors relative text-muted-foreground"
