@@ -1,1 +1,39 @@
-{}
+{
+  "sidebar": {
+    "sections": {
+      "main": "MAIN",
+      "community": "COMMUNITY",
+      "system": "SYSTEM"
+    },
+    "links": {
+      "dashboard": "Dashboard",
+      "msme_users": "MSME Users",
+      "guide": "Guide Module",
+      "guides": "Guides",
+      "ai_knowledge": "AI Knowledge",
+      "knowledge_base": "Knowledge Base",
+      "ask_ai": "Ask AI",
+      "admin_hub": "Admin Hub",
+      "taxonomy": "Taxonomy",
+      "sectors": "Sectors",
+      "tags": "Tags",
+      "library": "Library",
+      "categories": "Categories",
+      "template_groups": "Template Groups",
+      "download_logs": "Download Logs",
+      "notifications": "Notifications",
+      "campaign_templates": "Campaign Templates",
+      "campaigns": "Campaigns",
+      "queue": "Queue",
+      "community_categories": "Categories",
+      "moderation": "Moderation",
+      "blocked_users": "Blocked Users",
+      "reported_content": "Reported Content",
+      "reported_users": "Reported Users"
+    },
+    "footer": {
+      "darkMode": "Dark Mode",
+      "language": "Language"
+    }
+  }
+}
