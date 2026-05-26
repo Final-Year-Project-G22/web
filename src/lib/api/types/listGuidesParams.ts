@@ -16,10 +16,6 @@ page?: number;
  */
 pageSize?: number;
 /**
- * Language locale (en, am)
- */
-locale?: string;
-/**
  * Comma-separated sector IDs
  */
 sectorIds?: string;

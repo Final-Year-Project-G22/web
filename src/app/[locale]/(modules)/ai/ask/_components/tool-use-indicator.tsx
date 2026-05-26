@@ -8,6 +8,10 @@ type ToolUseIndicatorProps = {
   toolUses: ToolUseEvent[];
 };
 
+const STATUS_COLORS: Record<string, string> = {
+  default: "border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-900",
+};
+
 export function ToolUseIndicator({ toolUses }: ToolUseIndicatorProps) {
   const [expanded, setExpanded] = useState(false);
 
@@ -29,13 +33,16 @@ export function ToolUseIndicator({ toolUses }: ToolUseIndicatorProps) {
           {toolUses.map((tu, i) => (
             <div
               key={`${tu.tool}-${i}`}
-              className="text-xs px-2 py-1 rounded-md border bg-muted/30 text-muted-foreground"
+              className={`text-xs px-2 py-1.5 rounded-md border ${STATUS_COLORS.default}`}
             >
-              <span className="font-medium">{tu.tool}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                <span className="font-medium text-blue-700 dark:text-blue-300">{tu.tool}</span>
+              </div>
               {tu.argumentsJson && (
-                <pre className="mt-0.5 text-xs overflow-x-auto whitespace-pre-wrap">
-                  {tu.argumentsJson.length > 120
-                    ? `${tu.argumentsJson.slice(0, 120)}...`
+                <pre className="mt-1 text-xs text-muted-foreground overflow-x-auto whitespace-pre-wrap border-t border-blue-100 dark:border-blue-900 pt-1">
+                  {tu.argumentsJson.length > 150
+                    ? `${tu.argumentsJson.slice(0, 150)}...`
                     : tu.argumentsJson}
                 </pre>
               )}

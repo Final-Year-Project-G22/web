@@ -28,6 +28,7 @@ import type {
   MarkAsReadResponseBody,
   MuteAccountRequest,
   MuteAccountResponseBody,
+  NotificationPreferencesResponse,
   PreferenceResponse,
   RegisterDeviceRequest,
   RegisterDeviceResponseBody,
@@ -37,7 +38,8 @@ import type {
   SetPreferenceResponseBody,
   UnmuteAccountResponseBody,
   UnreadCountResponseBody,
-  UpdateDeviceRequest
+  UpdateDeviceRequest,
+  UpdateNotificationPreferencesRequest
 } from '../types';
 
 import { customFetch } from '../mutator/custom-fetch';
@@ -249,6 +251,93 @@ export const updateDevice = async (id: string,
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
       updateDeviceRequest,)
+  }
+);}
+  
+
+/**
+ * Returns the global email and push notification preferences for the authenticated user.
+ * @summary Get notification preferences
+ */
+export type getNotificationPreferencesResponse200 = {
+  data: NotificationPreferencesResponse
+  status: 200
+}
+
+export type getNotificationPreferencesResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type getNotificationPreferencesResponseSuccess = (getNotificationPreferencesResponse200) & {
+  headers: Headers;
+};
+export type getNotificationPreferencesResponseError = (getNotificationPreferencesResponseDefault) & {
+  headers: Headers;
+};
+
+export type getNotificationPreferencesResponse = (getNotificationPreferencesResponseSuccess | getNotificationPreferencesResponseError)
+
+export const getGetNotificationPreferencesUrl = () => {
+
+
+  
+
+  return `/api/v1/notifications/global-preferences`
+}
+
+export const getNotificationPreferences = async ( options?: RequestInit): Promise<getNotificationPreferencesResponse> => {
+  
+  return customFetch<getNotificationPreferencesResponse>(getGetNotificationPreferencesUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+  
+
+/**
+ * Updates the global email and push notification preferences for the authenticated user.
+ * @summary Update notification preferences
+ */
+export type updateNotificationPreferencesResponse200 = {
+  data: NotificationPreferencesResponse
+  status: 200
+}
+
+export type updateNotificationPreferencesResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type updateNotificationPreferencesResponseSuccess = (updateNotificationPreferencesResponse200) & {
+  headers: Headers;
+};
+export type updateNotificationPreferencesResponseError = (updateNotificationPreferencesResponseDefault) & {
+  headers: Headers;
+};
+
+export type updateNotificationPreferencesResponse = (updateNotificationPreferencesResponseSuccess | updateNotificationPreferencesResponseError)
+
+export const getUpdateNotificationPreferencesUrl = () => {
+
+
+  
+
+  return `/api/v1/notifications/global-preferences`
+}
+
+export const updateNotificationPreferences = async (updateNotificationPreferencesRequest: NonReadonly<UpdateNotificationPreferencesRequest>, options?: RequestInit): Promise<updateNotificationPreferencesResponse> => {
+  
+  return customFetch<updateNotificationPreferencesResponse>(getUpdateNotificationPreferencesUrl(),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateNotificationPreferencesRequest,)
   }
 );}
   

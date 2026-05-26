@@ -109,6 +109,59 @@ describe("useAskAIStream", () => {
     expect(donePayload.citations?.[0]?.documentId).toBe("d2");
   });
 
+  it("streams thinking chunks in debug mode", async () => {
+    useAuthStore.setState({ token: "test-token" });
+
+    const full =
+      sseEvent("thinking", { text: "Analyzing the question..." }) +
+      sseEvent("thinking", { text: "Searching knowledge base..." }) +
+      sseEvent("chunk", { text: "Based on available information," }) +
+      sseEvent("done", {
+        model: "test-model",
+        latencyMs: 42,
+        usage: { promptTokens: 5, completionTokens: 10, totalTokens: 15 },
+        sessionId: "s2",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+      });
+
+    mockFetchStream([full]);
+
+    const onThinking = vi.fn();
+    const onChunk = vi.fn();
+    const onDone = vi.fn();
+
+    const { result } = renderHook(() => useAskAIStream(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      await result.current.start(
+        { query: "hello", strategy: "agentic", debugMode: true },
+        { onThinking, onChunk, onDone }
+      );
+    });
+
+    expect(onThinking).toHaveBeenCalledTimes(2);
+    expect(onThinking).toHaveBeenNthCalledWith(
+      1,
+      { text: "Analyzing the question..." },
+      expect.any(Object)
+    );
+    expect(onThinking).toHaveBeenNthCalledWith(
+      2,
+      { text: "Searching knowledge base..." },
+      expect.any(Object)
+    );
+    expect(onChunk).toHaveBeenCalled();
+    expect(onDone).toHaveBeenCalled();
+
+    const donePayload = onDone.mock.calls[0][0];
+    expect(donePayload.thinkingChunks).toHaveLength(2);
+    expect(donePayload.thinkingChunks[0].text).toBe("Analyzing the question...");
+    expect(donePayload.thinkingChunks[1].text).toBe("Searching knowledge base...");
+  });
+
   it("handles error events", async () => {
     useAuthStore.setState({ token: "test-token" });
 

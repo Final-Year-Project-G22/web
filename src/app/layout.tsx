@@ -17,8 +17,11 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Admin Panel",
+  title: "Adisu Serategna Admin Panel",
   description: "Secure Admin Management Portal",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
