@@ -95,13 +95,6 @@ Each module under `(modules)/` follows the same structure:
 - React Query hooks (`auth.hook.ts`) delegate to it
 - Callers: `login-form.tsx`, `register-form.tsx`, `header.tsx`
 
-### AuthService (deep module)
-- `src/app/(auth)/auth/_services/auth.service.ts`
-- Orchestrates login/logout side-effects: API call → Zustand store → document.cookie
-- Exposes `login()`, `logout()`, `registerAdmin()`
-- React Query hooks (`auth.hook.ts`) delegate to it
-- Callers: `login-form.tsx`, `register-form.tsx`, `header.tsx`
-
 ### ReportDetailPage (unified component)
 - `src/app/[locale]/(modules)/moderation/_components/report-detail-page.tsx`
 - Parametrized by `type: "post" | "thread" | "user"`
@@ -127,3 +120,38 @@ Each module under `(modules)/` follows the same structure:
 - Global Zustand store with localStorage persistence
 - Drives `locale` param in all admin API queries
 - Ensures per-language content entry (EN or AM, not both simultaneously)
+
+### Permission System (Frontend Integration)
+- Backend implements RBAC with 32 permissions across 6 modules (`guide.*`, `community.*`, `library.*`, `notification.*`, `iam.*`, `ai.*`)
+- `src/lib/permissions.ts` — `hasPermission(code)`, `hasAnyPermission(...)`, `hasAllPermissions(...)` synchronously read from Zustand auth store. `super_admin` role bypasses all checks.
+- Auth store (`src/store/auth.store.ts`) holds `roles` and `permissions` arrays fetched via `getCurrentUser()` after login.
+- Permission state is hydrated on app mount via `AuthHydrator` and kept fresh via token refresh.
+
+### SidebarConfig (config-driven navigation)
+- `src/components/layout/sidebar-config.ts`
+- Typed configuration array defining all sidebar sections, items, and their permission requirements.
+- Replaces the previous hardcoded sidebar JSX. Each item has: `kind` (link | collapsible | dropdown), `labelKey` (i18n), `iconName`, `href`, and optional `permissionCode`.
+- Sidebar components filter items at render time using `hasPermission()`.
+
+### RoutePermissionMap
+- `src/lib/route-permissions.ts`
+- Standalone `Record<string, string | undefined>` mapping route prefixes to required permissions.
+- Used by `PermissionGuard` to protect page-level access beyond sidebar visibility.
+- Kept separate from `SidebarConfig` (UI structure vs. route protection are different concerns).
+
+### PermissionGuard
+- `src/components/auth/permission-guard.tsx`
+- Client component wrapping page content in `(modules)/layout.tsx`.
+- Reads `usePathname()`, looks up the required permission in `RoutePermissionMap`, calls `hasPermission()`.
+- Redirects to `/dashboard` if the user lacks the permission for the current route.
+
+### Sidebar i18n
+- Sidebar labels use `useTranslations("sidebar")` from `next-intl`.
+- `src/messages/en.json` and `src/messages/am.json` contain all sidebar section headers, link labels, and footer labels.
+- The `LanguageToggle` in the sidebar footer controls the admin content language (drives `Accept-Language` header), while `next-intl` handles UI text locale.
+
+### Config-Driven Navigation
+- All sidebar items are defined as data in `sidebar-config.ts`, not as JSX.
+- Adding a new module = one entry in the config array. No component changes.
+- Icons are resolved via a lookup map in `sidebar.tsx` (preserves lucide-react tree-shaking).
+- Disabled items use `href: "#"` and can remain in the config for future development.
