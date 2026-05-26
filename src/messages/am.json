@@ -1,1 +1,39 @@
-{}
+{
+  "sidebar": {
+    "sections": {
+      "main": "ዋና",
+      "community": "ማህበረሰብ",
+      "system": "ስርዓት"
+    },
+    "links": {
+      "dashboard": "ዳሽቦርድ",
+      "msme_users": "MSME ተጠቃሚዎች",
+      "guide": "መመሪያ ሞጁል",
+      "guides": "መመሪያዎች",
+      "ai_knowledge": "AI እውቀት",
+      "knowledge_base": "የእውቀት መሰረት",
+      "ask_ai": "AI ጠይቅ",
+      "admin_hub": "አስተዳዳሪ ማዕከል",
+      "taxonomy": "ታክሶኖሚ",
+      "sectors": "ዘርፎች",
+      "tags": "መለያዎች",
+      "library": "ቤተ-መጻህፍት",
+      "categories": "ምድቦች",
+      "template_groups": "የቅርጸት ቡድኖች",
+      "download_logs": "የወረዱ ምዝግብ",
+      "notifications": "ማሳወቂያዎች",
+      "campaign_templates": "የዘመቻ ቅርጸቶች",
+      "campaigns": "ዘመቻዎች",
+      "queue": "ወረፋ",
+      "community_categories": "ምድቦች",
+      "moderation": "ማስተካከያ",
+      "blocked_users": "የታገዱ ተጠቃሚዎች",
+      "reported_content": "ሪፖርት የተደረገ ይዘት",
+      "reported_users": "ሪፖርት የተደረጉ ተጠቃሚዎች"
+    },
+    "footer": {
+      "darkMode": "ጨለማ ሁነታ",
+      "language": "ቋንቋ"
+    }
+  }
+}
