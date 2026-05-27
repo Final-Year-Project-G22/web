@@ -12,6 +12,10 @@
             "description": "Account's unique identifier",
             "type": "string"
           },
+          "language": {
+            "description": "Account language preference (en, am)",
+            "type": "string"
+          },
           "status": {
             "description": "Account status (pending_verification, active, locked, suspended, disabled)",
             "type": "string"
@@ -22,6 +26,72 @@
           }
         },
         "required": ["id", "email", "status"],
+        "type": "object"
+      },
+      "AccountPreferenceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["https://example.com/schemas/AccountPreferenceResponse.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "language": {
+            "description": "User's language preference (en, am)",
+            "type": "string"
+          },
+          "timezone": {
+            "description": "User's timezone (e.g. UTC, Africa/Addis_Ababa)",
+            "type": "string"
+          }
+        },
+        "required": ["language", "timezone"],
+        "type": "object"
+      },
+      "ActivityLogEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "description": "Action description",
+            "type": "string"
+          },
+          "adminName": {
+            "description": "Admin display name",
+            "type": "string"
+          },
+          "target": {
+            "description": "Target entity",
+            "type": "string"
+          },
+          "timestamp": {
+            "description": "When the action occurred",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["adminName", "action", "target", "timestamp"],
+        "type": "object"
+      },
+      "ActivityLogsResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["https://example.com/schemas/ActivityLogsResponse.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ActivityLogEntry"
+            },
+            "type": ["array", "null"]
+          }
+        },
+        "required": ["data"],
         "type": "object"
       },
       "AddBookmarkResponseBody": {
@@ -3681,6 +3751,81 @@
           }
         },
         "required": ["id", "deviceType", "deviceToken", "isActive"],
+        "type": "object"
+      },
+      "DocumentStageCount": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "description": "Documents in this stage",
+            "format": "int64",
+            "type": "integer"
+          },
+          "percentage": {
+            "description": "Percentage of total",
+            "format": "int64",
+            "type": "integer"
+          },
+          "stage": {
+            "description": "Pipeline stage name",
+            "type": "string"
+          }
+        },
+        "required": ["stage", "count", "percentage"],
+        "type": "object"
+      },
+      "DocumentStagesResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["https://example.com/schemas/DocumentStagesResponse.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentStageCount"
+            },
+            "type": ["array", "null"]
+          }
+        },
+        "required": ["data"],
+        "type": "object"
+      },
+      "DocumentStatsResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["https://example.com/schemas/DocumentStatsResponse.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "completed": {
+            "description": "Completed documents",
+            "format": "int64",
+            "type": "integer"
+          },
+          "failed": {
+            "description": "Failed documents",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
+            "description": "Total documents",
+            "format": "int64",
+            "type": "integer"
+          },
+          "trend": {
+            "description": "Documents created this month",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": ["total", "completed", "failed", "trend"],
         "type": "object"
       },
       "DownloadLogListResponse": {
@@ -7647,6 +7792,40 @@
         "required": ["reportId"],
         "type": "object"
       },
+      "ReportStatsResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["https://example.com/schemas/ReportStatsResponse.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "pending": {
+            "description": "Pending reports",
+            "format": "int64",
+            "type": "integer"
+          },
+          "resolved": {
+            "description": "Resolved reports",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
+            "description": "Total reports",
+            "format": "int64",
+            "type": "integer"
+          },
+          "trendPercent": {
+            "description": "Percentage change vs previous period",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": ["pending", "resolved", "total", "trendPercent"],
+        "type": "object"
+      },
       "ReportThreadRequest": {
         "additionalProperties": false,
         "properties": {
@@ -8072,6 +8251,30 @@
         "required": ["id", "slug", "sortOrder", "isActive", "nameEn", "nameAm"],
         "type": "object"
       },
+      "SessionStatsResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["https://example.com/schemas/SessionStatsResponse.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "dailyAvg": {
+            "description": "Daily average active sessions",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
+            "description": "Current active sessions",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": ["total", "dailyAvg"],
+        "type": "object"
+      },
       "SetGuideTranslationsRequest": {
         "additionalProperties": false,
         "properties": {
@@ -8342,6 +8545,45 @@
           "currentPeriodEnd",
           "renewalCount"
         ],
+        "type": "object"
+      },
+      "SystemOverviewItem": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "description": "Item label",
+            "type": "string"
+          },
+          "type": {
+            "description": "Indicator type: success, warning, danger",
+            "type": "string"
+          },
+          "value": {
+            "description": "Item value",
+            "type": "string"
+          }
+        },
+        "required": ["label", "value", "type"],
+        "type": "object"
+      },
+      "SystemOverviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["https://example.com/schemas/SystemOverviewResponse.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SystemOverviewItem"
+            },
+            "type": ["array", "null"]
+          }
+        },
+        "required": ["items"],
         "type": "object"
       },
       "TagRef": {
@@ -8984,6 +9226,10 @@
             "description": "Whether current user follows this thread",
             "type": "boolean"
           },
+          "isMuted": {
+            "description": "Whether current user has muted this thread",
+            "type": "boolean"
+          },
           "isPinned": {
             "description": "Pinned flag",
             "type": "boolean"
@@ -9059,6 +9305,7 @@
           "authorDisplayName",
           "isPinned",
           "isFollowed",
+          "isMuted",
           "unreadCount",
           "hasSolution",
           "status",
@@ -9177,6 +9424,24 @@
           }
         },
         "required": ["message"],
+        "type": "object"
+      },
+      "UpdateAccountPreferenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["https://example.com/schemas/UpdateAccountPreferenceRequest.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "language": {
+            "description": "Language code (en, am)",
+            "maxLength": 10,
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "UpdateAdminStatusOutputBody": {
@@ -10700,6 +10965,23 @@
         "required": ["imageUrl"],
         "type": "object"
       },
+      "UploadBusinessImageResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["https://example.com/schemas/UploadBusinessImageResponse.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          }
+        },
+        "required": ["imageUrl"],
+        "type": "object"
+      },
       "UploadGuideImageResponseBody": {
         "additionalProperties": false,
         "properties": {
@@ -10793,6 +11075,71 @@
           }
         },
         "required": ["id", "firstName", "lastName"],
+        "type": "object"
+      },
+      "UserGrowthPoint": {
+        "additionalProperties": false,
+        "properties": {
+          "free": {
+            "description": "Users without active subscription",
+            "format": "int64",
+            "type": "integer"
+          },
+          "period": {
+            "description": "Period label (e.g. Jan, Feb)",
+            "type": "string"
+          },
+          "premium": {
+            "description": "Users with active subscription",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": ["period", "free", "premium"],
+        "type": "object"
+      },
+      "UserGrowthResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["https://example.com/schemas/UserGrowthResponse.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/UserGrowthPoint"
+            },
+            "type": ["array", "null"]
+          }
+        },
+        "required": ["data"],
+        "type": "object"
+      },
+      "UserStatsResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": ["https://example.com/schemas/UserStatsResponse.json"],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "total": {
+            "description": "Total number of accounts",
+            "format": "int64",
+            "type": "integer"
+          },
+          "trendPercent": {
+            "description": "Percentage change vs previous period",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": ["total", "trendPercent"],
         "type": "object"
       },
       "UserTemplateGroupDetailResponse": {
@@ -12342,6 +12689,305 @@
         ],
         "summary": "Unblock user in thread (admin)",
         "tags": ["Admin - Community"]
+      }
+    },
+    "/api/v1/admin/dashboard/activity-logs": {
+      "get": {
+        "operationId": "getActivityLogs",
+        "parameters": [
+          {
+            "description": "Max entries to return",
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 10,
+              "description": "Max entries to return",
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityLogsResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get recent admin activity logs",
+        "tags": ["Admin - Dashboard"]
+      }
+    },
+    "/api/v1/admin/dashboard/document-stages": {
+      "get": {
+        "operationId": "getDocumentStages",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentStagesResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get document pipeline stage breakdown",
+        "tags": ["Admin - Dashboard"]
+      }
+    },
+    "/api/v1/admin/dashboard/document-stats": {
+      "get": {
+        "operationId": "getDocumentStats",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentStatsResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get document ingestion statistics",
+        "tags": ["Admin - Dashboard"]
+      }
+    },
+    "/api/v1/admin/dashboard/report-stats": {
+      "get": {
+        "operationId": "getReportStats",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportStatsResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get content report statistics",
+        "tags": ["Admin - Dashboard"]
+      }
+    },
+    "/api/v1/admin/dashboard/session-stats": {
+      "get": {
+        "operationId": "getSessionStats",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionStatsResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get session statistics",
+        "tags": ["Admin - Dashboard"]
+      }
+    },
+    "/api/v1/admin/dashboard/system-overview": {
+      "get": {
+        "operationId": "getSystemOverview",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemOverviewResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get system overview indicators",
+        "tags": ["Admin - Dashboard"]
+      }
+    },
+    "/api/v1/admin/dashboard/user-growth": {
+      "get": {
+        "operationId": "getUserGrowth",
+        "parameters": [
+          {
+            "description": "Grouping period: monthly, quarterly, yearly",
+            "explode": false,
+            "in": "query",
+            "name": "period",
+            "schema": {
+              "description": "Grouping period: monthly, quarterly, yearly",
+              "enum": ["monthly", "quarterly", "yearly"],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserGrowthResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get user growth by tier",
+        "tags": ["Admin - Dashboard"]
+      }
+    },
+    "/api/v1/admin/dashboard/user-stats": {
+      "get": {
+        "operationId": "getUserStats",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserStatsResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get user statistics",
+        "tags": ["Admin - Dashboard"]
       }
     },
     "/api/v1/admin/guides": {
@@ -18362,6 +19008,84 @@
         "tags": ["OAuth"]
       }
     },
+    "/api/v1/auth/preferences": {
+      "get": {
+        "description": "Returns the language and timezone preferences for the authenticated user.",
+        "operationId": "getAccountPreferences",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountPreferenceResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get account preferences",
+        "tags": ["Authentication"]
+      },
+      "put": {
+        "description": "Updates the language and timezone preferences for the authenticated user.",
+        "operationId": "updateAccountPreferences",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAccountPreferenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountPreferenceResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update account preferences",
+        "tags": ["Authentication"]
+      }
+    },
     "/api/v1/auth/refresh": {
       "post": {
         "description": "Uses the refresh token cookie to issue new access and refresh tokens. Implements token rotation for security.",
@@ -19874,6 +20598,98 @@
           }
         ],
         "summary": "Follow thread",
+        "tags": ["Community"]
+      }
+    },
+    "/api/v1/community/threads/{id}/mute": {
+      "delete": {
+        "description": "Unmutes notifications for a discussion thread.",
+        "operationId": "unmuteCommunityThread",
+        "parameters": [
+          {
+            "description": "Thread ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "description": "Thread ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FollowResponseBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Unmute thread",
+        "tags": ["Community"]
+      },
+      "post": {
+        "description": "Mutes notifications for a discussion thread.",
+        "operationId": "muteCommunityThread",
+        "parameters": [
+          {
+            "description": "Thread ID",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "description": "Thread ID",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FollowResponseBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Mute thread",
         "tags": ["Community"]
       }
     },
@@ -23783,6 +24599,122 @@
           }
         ],
         "summary": "Update business profile",
+        "tags": ["Business Profile"]
+      }
+    },
+    "/api/v1/users/business-profile/banner": {
+      "post": {
+        "description": "Uploads and sets the authenticated user's business profile banner image.",
+        "operationId": "uploadBusinessProfileBanner",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "encoding": {
+                "file": {
+                  "contentType": "application/octet-stream"
+                }
+              },
+              "schema": {
+                "properties": {
+                  "file": {
+                    "contentEncoding": "binary",
+                    "contentMediaType": "application/octet-stream",
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "required": ["file"],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadBusinessImageResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Upload business profile banner",
+        "tags": ["Business Profile"]
+      }
+    },
+    "/api/v1/users/business-profile/logo": {
+      "post": {
+        "description": "Uploads and sets the authenticated user's business profile logo image.",
+        "operationId": "uploadBusinessProfileLogo",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "encoding": {
+                "file": {
+                  "contentType": "application/octet-stream"
+                }
+              },
+              "schema": {
+                "properties": {
+                  "file": {
+                    "contentEncoding": "binary",
+                    "contentMediaType": "application/octet-stream",
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "required": ["file"],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadBusinessImageResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Upload business profile logo",
         "tags": ["Business Profile"]
       }
     },

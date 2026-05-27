@@ -25,6 +25,8 @@ export interface ThreadDTO {
   id: string;
   /** Whether current user follows this thread */
   isFollowed: boolean;
+  /** Whether current user has muted this thread */
+  isMuted: boolean;
   /** Pinned flag */
   isPinned: boolean;
   /** Last activity timestamp */
