@@ -66,7 +66,7 @@ export const sidebarConfig: SidebarSection[] = [
       },
       {
         kind: "link",
-        href: "/admin",
+        href: "/admin/admins",
         labelKey: "links.admin_hub",
         iconName: "Shield",
         permissionCode: "iam.admin.list",

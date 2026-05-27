@@ -9,7 +9,10 @@ import type {
   BusinessProfileResponse,
   CreateBusinessProfileRequest,
   ErrorModel,
-  UpdateBusinessProfileRequest
+  UpdateBusinessProfileRequest,
+  UploadBusinessImageResponse,
+  UploadBusinessProfileBannerBody,
+  UploadBusinessProfileLogoBody
 } from '../types';
 
 import { customFetch } from '../mutator/custom-fetch';
@@ -177,6 +180,98 @@ export const updateBusinessProfile = async (updateBusinessProfileRequest: NonRea
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
       updateBusinessProfileRequest,)
+  }
+);}
+  
+
+/**
+ * Uploads and sets the authenticated user's business profile banner image.
+ * @summary Upload business profile banner
+ */
+export type uploadBusinessProfileBannerResponse200 = {
+  data: UploadBusinessImageResponse
+  status: 200
+}
+
+export type uploadBusinessProfileBannerResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type uploadBusinessProfileBannerResponseSuccess = (uploadBusinessProfileBannerResponse200) & {
+  headers: Headers;
+};
+export type uploadBusinessProfileBannerResponseError = (uploadBusinessProfileBannerResponseDefault) & {
+  headers: Headers;
+};
+
+export type uploadBusinessProfileBannerResponse = (uploadBusinessProfileBannerResponseSuccess | uploadBusinessProfileBannerResponseError)
+
+export const getUploadBusinessProfileBannerUrl = () => {
+
+
+  
+
+  return `/api/v1/users/business-profile/banner`
+}
+
+export const uploadBusinessProfileBanner = async (uploadBusinessProfileBannerBody: UploadBusinessProfileBannerBody, options?: RequestInit): Promise<uploadBusinessProfileBannerResponse> => {
+    const formData = new FormData();
+formData.append(`file`, uploadBusinessProfileBannerBody.file);
+
+  return customFetch<uploadBusinessProfileBannerResponse>(getUploadBusinessProfileBannerUrl(),
+  {      
+    ...options,
+    method: 'POST'
+    ,
+    body: 
+      formData,
+  }
+);}
+  
+
+/**
+ * Uploads and sets the authenticated user's business profile logo image.
+ * @summary Upload business profile logo
+ */
+export type uploadBusinessProfileLogoResponse200 = {
+  data: UploadBusinessImageResponse
+  status: 200
+}
+
+export type uploadBusinessProfileLogoResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type uploadBusinessProfileLogoResponseSuccess = (uploadBusinessProfileLogoResponse200) & {
+  headers: Headers;
+};
+export type uploadBusinessProfileLogoResponseError = (uploadBusinessProfileLogoResponseDefault) & {
+  headers: Headers;
+};
+
+export type uploadBusinessProfileLogoResponse = (uploadBusinessProfileLogoResponseSuccess | uploadBusinessProfileLogoResponseError)
+
+export const getUploadBusinessProfileLogoUrl = () => {
+
+
+  
+
+  return `/api/v1/users/business-profile/logo`
+}
+
+export const uploadBusinessProfileLogo = async (uploadBusinessProfileLogoBody: UploadBusinessProfileLogoBody, options?: RequestInit): Promise<uploadBusinessProfileLogoResponse> => {
+    const formData = new FormData();
+formData.append(`file`, uploadBusinessProfileLogoBody.file);
+
+  return customFetch<uploadBusinessProfileLogoResponse>(getUploadBusinessProfileLogoUrl(),
+  {      
+    ...options,
+    method: 'POST'
+    ,
+    body: 
+      formData,
   }
 );}
   

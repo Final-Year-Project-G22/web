@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  AccountPreferenceResponse,
   AdminRegisterRequest,
   AdminRegisterResponseBody,
   AdminUpdateRolesOutputBody,
@@ -22,6 +23,7 @@ import type {
   ResendEmailOTPResponseBody,
   UpdateAccountPasswordRequest,
   UpdateAccountPasswordResponseBody,
+  UpdateAccountPreferenceRequest,
   VerifyEmailOTPRequest,
   VerifyEmailOTPResponseBody
 } from '../types';
@@ -366,6 +368,93 @@ export const getCurrentUser = async ( options?: RequestInit): Promise<getCurrent
     method: 'GET'
     
     
+  }
+);}
+  
+
+/**
+ * Returns the language and timezone preferences for the authenticated user.
+ * @summary Get account preferences
+ */
+export type getAccountPreferencesResponse200 = {
+  data: AccountPreferenceResponse
+  status: 200
+}
+
+export type getAccountPreferencesResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type getAccountPreferencesResponseSuccess = (getAccountPreferencesResponse200) & {
+  headers: Headers;
+};
+export type getAccountPreferencesResponseError = (getAccountPreferencesResponseDefault) & {
+  headers: Headers;
+};
+
+export type getAccountPreferencesResponse = (getAccountPreferencesResponseSuccess | getAccountPreferencesResponseError)
+
+export const getGetAccountPreferencesUrl = () => {
+
+
+  
+
+  return `/api/v1/auth/preferences`
+}
+
+export const getAccountPreferences = async ( options?: RequestInit): Promise<getAccountPreferencesResponse> => {
+  
+  return customFetch<getAccountPreferencesResponse>(getGetAccountPreferencesUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+  
+
+/**
+ * Updates the language and timezone preferences for the authenticated user.
+ * @summary Update account preferences
+ */
+export type updateAccountPreferencesResponse200 = {
+  data: AccountPreferenceResponse
+  status: 200
+}
+
+export type updateAccountPreferencesResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type updateAccountPreferencesResponseSuccess = (updateAccountPreferencesResponse200) & {
+  headers: Headers;
+};
+export type updateAccountPreferencesResponseError = (updateAccountPreferencesResponseDefault) & {
+  headers: Headers;
+};
+
+export type updateAccountPreferencesResponse = (updateAccountPreferencesResponseSuccess | updateAccountPreferencesResponseError)
+
+export const getUpdateAccountPreferencesUrl = () => {
+
+
+  
+
+  return `/api/v1/auth/preferences`
+}
+
+export const updateAccountPreferences = async (updateAccountPreferenceRequest: NonReadonly<UpdateAccountPreferenceRequest>, options?: RequestInit): Promise<updateAccountPreferencesResponse> => {
+  
+  return customFetch<updateAccountPreferencesResponse>(getUpdateAccountPreferencesUrl(),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateAccountPreferenceRequest,)
   }
 );}
   

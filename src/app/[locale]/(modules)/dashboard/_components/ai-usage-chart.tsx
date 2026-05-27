@@ -9,22 +9,26 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
+import { useDocumentStages } from "../_services/dashboard.hook";
 
-const chartData = [
-  { name: "Content Generator", value: 45, key: "content" },
-  { name: "Chat Assistant", value: 30, key: "chat" },
-  { name: "Market Analysis", value: 15, key: "market" },
-  { name: "Other", value: 10, key: "other" },
+const colors = [
+  "var(--color-chart-1)",
+  "var(--color-chart-2)",
+  "var(--color-chart-3)",
+  "var(--color-chart-4)",
+  "var(--color-chart-5)",
 ];
 
-const chartConfig = {
-  content: { label: "Content Generator", color: "var(--color-chart-1)" },
-  chat: { label: "Chat Assistant", color: "var(--color-chart-2)" },
-  market: { label: "Market Analysis", color: "var(--color-chart-3)" },
-  other: { label: "Other", color: "var(--color-chart-4)" },
-} satisfies ChartConfig;
-
 export function AIUsageChart({ loading }: { loading?: boolean }) {
+  const { data: stagesData } = useDocumentStages();
+  const stages = stagesData?.data ?? [];
+
+  const chartConfig = Object.fromEntries(
+    stages.map((s, i) => [s.stage, { label: s.stage, color: colors[i % colors.length] }])
+  ) satisfies ChartConfig;
+
+  const total = stages.reduce((sum, s) => sum + s.count, 0);
+
   if (loading) {
     return <div className="h-[324px] animate-pulse rounded-xl bg-muted" />;
   }
@@ -32,10 +36,7 @@ export function AIUsageChart({ loading }: { loading?: boolean }) {
   return (
     <Card className="shadow-sm rounded-xl">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base font-bold">AI Usage by Module</CardTitle>
-        <button type="button" className="text-sm font-medium text-primary">
-          See All
-        </button>
+        <CardTitle className="text-base font-bold">Documents by Pipeline Stage</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="relative h-[200px] w-full mt-4 flex items-center justify-center">
@@ -43,48 +44,43 @@ export function AIUsageChart({ loading }: { loading?: boolean }) {
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent hideLabel />} />
               <Pie
-                data={chartData}
+                data={stages}
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
                 outerRadius={80}
                 paddingAngle={2}
-                dataKey="value"
+                dataKey="count"
                 stroke="none"
               >
-                {chartData.map((entry) => (
-                  <Cell
-                    key={entry.name}
-                    fill={chartConfig[entry.key as keyof typeof chartConfig].color}
-                  />
+                {stages.map((entry, i) => (
+                  <Cell key={entry.stage} fill={colors[i % colors.length]} />
                 ))}
               </Pie>
             </PieChart>
           </ChartContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-xs text-muted-foreground font-medium">Total Tokens</span>
-            <span className="text-xl font-bold">8.4M</span>
+            <span className="text-xs text-muted-foreground font-medium">Total Documents</span>
+            <span className="text-xl font-bold">{total.toLocaleString()}</span>
           </div>
         </div>
 
         <div className="mt-6 space-y-3">
-          {chartData.map((item) => (
-            <div key={item.name} className="flex items-center justify-between text-sm">
+          {stages.map((item, i) => (
+            <div key={item.stage} className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <div
-                  className={cn(
-                    "size-2.5 rounded-full",
-                    item.key === "content" && "bg-chart-1",
-                    item.key === "chat" && "bg-chart-2",
-                    item.key === "market" && "bg-chart-3",
-                    item.key === "other" && "bg-chart-4"
-                  )}
+                  className={cn("size-2.5 rounded-full")}
+                  style={{ backgroundColor: colors[i % colors.length] }}
                 />
-                <span className="text-muted-foreground">{item.name}</span>
+                <span className="text-muted-foreground capitalize">{item.stage}</span>
               </div>
-              <span className="font-semibold">{item.value}%</span>
+              <span className="font-semibold">{item.percentage}%</span>
             </div>
           ))}
+          {stages.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center">No documents found</p>
+          )}
         </div>
       </CardContent>
     </Card>

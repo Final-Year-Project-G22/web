@@ -11,6 +11,8 @@ export interface AccountDTO {
   email: string;
   /** Account's unique identifier */
   id: string;
+  /** Account language preference (en, am) */
+  language?: string;
   /** Account status (pending_verification, active, locked, suspended, disabled) */
   status: string;
   /** Account username */

@@ -1090,6 +1090,92 @@ export const followCommunityThread = async (id: string, options?: RequestInit): 
   
 
 /**
+ * Unmutes notifications for a discussion thread.
+ * @summary Unmute thread
+ */
+export type unmuteCommunityThreadResponse200 = {
+  data: FollowResponseBody
+  status: 200
+}
+
+export type unmuteCommunityThreadResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type unmuteCommunityThreadResponseSuccess = (unmuteCommunityThreadResponse200) & {
+  headers: Headers;
+};
+export type unmuteCommunityThreadResponseError = (unmuteCommunityThreadResponseDefault) & {
+  headers: Headers;
+};
+
+export type unmuteCommunityThreadResponse = (unmuteCommunityThreadResponseSuccess | unmuteCommunityThreadResponseError)
+
+export const getUnmuteCommunityThreadUrl = (id: string,) => {
+
+
+  
+
+  return `/api/v1/community/threads/${id}/mute`
+}
+
+export const unmuteCommunityThread = async (id: string, options?: RequestInit): Promise<unmuteCommunityThreadResponse> => {
+  
+  return customFetch<unmuteCommunityThreadResponse>(getUnmuteCommunityThreadUrl(id),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
+  
+
+/**
+ * Mutes notifications for a discussion thread.
+ * @summary Mute thread
+ */
+export type muteCommunityThreadResponse200 = {
+  data: FollowResponseBody
+  status: 200
+}
+
+export type muteCommunityThreadResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type muteCommunityThreadResponseSuccess = (muteCommunityThreadResponse200) & {
+  headers: Headers;
+};
+export type muteCommunityThreadResponseError = (muteCommunityThreadResponseDefault) & {
+  headers: Headers;
+};
+
+export type muteCommunityThreadResponse = (muteCommunityThreadResponseSuccess | muteCommunityThreadResponseError)
+
+export const getMuteCommunityThreadUrl = (id: string,) => {
+
+
+  
+
+  return `/api/v1/community/threads/${id}/mute`
+}
+
+export const muteCommunityThread = async (id: string, options?: RequestInit): Promise<muteCommunityThreadResponse> => {
+  
+  return customFetch<muteCommunityThreadResponse>(getMuteCommunityThreadUrl(id),
+  {      
+    ...options,
+    method: 'POST'
+    
+    
+  }
+);}
+  
+
+/**
  * Lists posts in a thread.
  * @summary List thread posts
  */

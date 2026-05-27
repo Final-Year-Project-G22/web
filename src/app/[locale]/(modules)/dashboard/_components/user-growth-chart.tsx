@@ -9,17 +9,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
-
-const chartData = [
-  { month: "Jan", free: 12000, premium: 25000 },
-  { month: "Feb", free: 15000, premium: 28000 },
-  { month: "Mar", free: 14000, premium: 35000 },
-  { month: "Apr", free: 22000, premium: 42000 },
-  { month: "May", free: 25000, premium: 38000 },
-  { month: "Jun", free: 24000, premium: 45000 },
-  { month: "Jul", free: 31000, premium: 52000 },
-  { month: "Aug", free: 29000, premium: 48000 },
-];
+import { useUserGrowth } from "../_services/dashboard.hook";
 
 const chartConfig = {
   free: {
@@ -41,6 +31,9 @@ const periodBtn = (active?: boolean) =>
   );
 
 export function UserGrowthChart({ loading }: { loading?: boolean }) {
+  const { data: growthData } = useUserGrowth({ period: "monthly" });
+  const chartData = growthData?.data ?? [];
+
   if (loading) {
     return <div className="h-[324px] animate-pulse rounded-xl bg-muted" />;
   }
@@ -65,12 +58,6 @@ export function UserGrowthChart({ loading }: { loading?: boolean }) {
           <button type="button" className={periodBtn(true)}>
             Monthly
           </button>
-          <button type="button" className={periodBtn()}>
-            Quarterly
-          </button>
-          <button type="button" className={periodBtn()}>
-            Yearly
-          </button>
         </div>
       </CardHeader>
       <CardContent>
@@ -78,7 +65,7 @@ export function UserGrowthChart({ loading }: { loading?: boolean }) {
           <BarChart accessibilityLayer data={chartData} margin={{ top: 20 }}>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis
-              dataKey="month"
+              dataKey="period"
               tickLine={false}
               tickMargin={10}
               axisLine={false}
@@ -89,6 +76,9 @@ export function UserGrowthChart({ loading }: { loading?: boolean }) {
             <Bar dataKey="premium" fill="var(--color-premium)" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ChartContainer>
+        {chartData.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-8">No growth data available</p>
+        )}
       </CardContent>
     </Card>
   );

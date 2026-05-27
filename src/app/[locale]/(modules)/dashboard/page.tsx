@@ -1,13 +1,19 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Activity, AlertCircle, BrainCircuit, Users } from "lucide-react";
+import { Activity, AlertCircle, BrainCircuit, FileText, Users } from "lucide-react";
 import { Suspense } from "react";
 import { AIUsageChart } from "@/app/[locale]/(modules)/dashboard/_components/ai-usage-chart";
 import { RecentLogs } from "@/app/[locale]/(modules)/dashboard/_components/recent-logs";
 import { StatCard } from "@/app/[locale]/(modules)/dashboard/_components/stat-card";
 import { SystemHealth } from "@/app/[locale]/(modules)/dashboard/_components/system-health";
 import { UserGrowthChart } from "@/app/[locale]/(modules)/dashboard/_components/user-growth-chart";
+import {
+  useDocumentStats,
+  useReportStats,
+  useSessionStats,
+  useUserStats,
+} from "./_services/dashboard.hook";
 
 const container = {
   hidden: {},
@@ -19,7 +25,18 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
+function formatStat(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
+  return n.toLocaleString();
+}
+
 function StatCards() {
+  const { data: userStats } = useUserStats();
+  const { data: docStats } = useDocumentStats();
+  const { data: sessionStats } = useSessionStats();
+  const { data: reportStats } = useReportStats();
+
   return (
     <motion.div
       variants={container}
@@ -30,25 +47,25 @@ function StatCards() {
       <motion.div variants={item}>
         <StatCard
           title="Total MSME Users"
-          value="24,592"
-          trend={12.5}
+          value={userStats ? formatStat(userStats.total) : "—"}
+          trend={userStats?.trendPercent}
           icon={Users}
           colorIndex={1}
         />
       </motion.div>
       <motion.div variants={item}>
         <StatCard
-          title="AI Tokens Consumed"
-          value="8.4M"
-          trend={8.2}
-          icon={BrainCircuit}
+          title="Documents Processed"
+          value={docStats ? formatStat(docStats.total) : "—"}
+          trend={docStats ? docStats.trend : undefined}
+          icon={FileText}
           colorIndex={2}
         />
       </motion.div>
       <motion.div variants={item}>
         <StatCard
           title="Active Sessions"
-          value="1,520"
+          value={sessionStats ? formatStat(sessionStats.total) : "—"}
           icon={Activity}
           colorIndex={3}
           subtitle="Daily Avg"
@@ -57,8 +74,8 @@ function StatCards() {
       <motion.div variants={item}>
         <StatCard
           title="Flagged Content"
-          value="43"
-          trend={-2.1}
+          value={reportStats ? formatStat(reportStats.pending) : "—"}
+          trend={reportStats?.trendPercent ? -Math.abs(reportStats.trendPercent) : undefined}
           icon={AlertCircle}
           colorIndex={4}
         />
