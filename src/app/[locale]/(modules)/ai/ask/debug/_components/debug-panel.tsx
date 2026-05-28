@@ -34,8 +34,12 @@ export function DebugPanel() {
   const entriesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    entriesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  });
+    if (entries.length === 0) return;
+    const container = entriesEndRef.current?.closest(".overflow-y-auto");
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [entries.length]);
 
   const addEntry = useCallback((entry: DebugEntry) => {
     setEntries((prev) => [...prev, entry]);
@@ -196,12 +200,12 @@ export function DebugPanel() {
                 <div className="space-y-2 max-h-80 overflow-y-auto">
                   {entries
                     .filter((e) => e.type === "tool_use" || e.type === "tool_result")
-                    .map((entry, i) => {
+                    .map((entry) => {
                       if (entry.type === "tool_use") {
                         const tu = entry.data as ToolUseEvent;
                         return (
                           <div
-                            key={`${entry.timestamp}-${entry.type}-${i}`}
+                            key={`${entry.timestamp}-${entry.type}`}
                             className="border rounded-md p-2 bg-muted/20"
                           >
                             <div className="flex items-center gap-2">
@@ -224,7 +228,7 @@ export function DebugPanel() {
                         const tr = entry.data as { tool: string; resultSummary?: string };
                         return (
                           <div
-                            key={`${entry.timestamp}-${entry.type}-${i}`}
+                            key={`${entry.timestamp}-${entry.type}`}
                             className="border rounded-md p-2 bg-muted/20 ml-4"
                           >
                             <div className="flex items-center gap-2">

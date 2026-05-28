@@ -34,6 +34,7 @@ import {
 import { APP_NAME } from "@/lib/constants";
 import { hasPermission } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/auth.store";
 import { LanguageToggle } from "./language-toggle";
 import {
   type SidebarCollapsible,
@@ -199,6 +200,8 @@ function CollapsibleSection({
 function SidebarContent() {
   const t = useTranslations("sidebar");
   const pathname = usePathname();
+  const _permissions = useAuthStore((s) => s.permissions);
+  const _roles = useAuthStore((s) => s.roles);
 
   const [openSections, setOpenSections] = useState<Set<string>>(() => {
     const initial = new Set<string>();
@@ -206,7 +209,7 @@ function SidebarContent() {
       for (const item of section.items) {
         if (item.kind === "collapsible") {
           const anyActive = item.children.some(
-            (child) => pathname.startsWith(child.href + "/") || pathname === child.href
+            (child) => pathname.startsWith(`${child.href}/`) || pathname === child.href
           );
           if (anyActive) initial.add(item.labelKey);
         }
@@ -220,7 +223,7 @@ function SidebarContent() {
       for (const item of section.items) {
         if (item.kind === "collapsible") {
           const anyActive = item.children.some(
-            (child) => pathname.startsWith(child.href + "/") || pathname === child.href
+            (child) => pathname.startsWith(`${child.href}/`) || pathname === child.href
           );
           if (anyActive) {
             setOpenSections((prev) => {
@@ -329,7 +332,7 @@ function renderCollapsibleItem(
   openSections: Set<string>
 ) {
   const isActive = item.children.some(
-    (child) => pathname.startsWith(child.href + "/") || pathname === child.href
+    (child) => pathname.startsWith(`${child.href}/`) || pathname === child.href
   );
 
   return (
@@ -354,7 +357,7 @@ function renderDropdownItem(
   pathname: string
 ) {
   const isActive = item.children.some(
-    (child) => pathname.startsWith(child.href + "/") || pathname === child.href
+    (child) => pathname.startsWith(`${child.href}/`) || pathname === child.href
   );
 
   return (

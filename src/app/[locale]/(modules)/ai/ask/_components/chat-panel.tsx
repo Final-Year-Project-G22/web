@@ -94,8 +94,12 @@ export function ChatPanel({ sessionId, onSessionChange }: ChatPanelProps) {
   }, [conversation, sessionId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
+    if (messages.length === 0) return;
+    const container = messagesEndRef.current?.closest("[data-slot='card-content']");
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [messages.length]);
 
   const handleSend = useCallback(() => {
     if (!chatInput.trim() || isStreaming) return;
@@ -365,8 +369,11 @@ export function ChatPanel({ sessionId, onSessionChange }: ChatPanelProps) {
                           {tc.text}
                         </p>
                       ))}
-                      {msg.toolUses?.map((tu, i) => (
-                        <div key={`${tu.tool}-${i}`} className="flex items-start gap-1.5 text-xs">
+                      {msg.toolUses?.map((tu) => (
+                        <div
+                          key={`${tu.tool}-${tu.argumentsJson ?? ""}`}
+                          className="flex items-start gap-1.5 text-xs"
+                        >
                           <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1" />
                           <div>
                             <span className="font-medium text-blue-600 dark:text-blue-400">
