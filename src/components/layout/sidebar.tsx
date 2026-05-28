@@ -6,7 +6,6 @@ import {
   BookOpen,
   BrainCircuit,
   ChevronRight,
-  Folder,
   Folders,
   LayoutDashboard,
   Moon,
@@ -15,7 +14,6 @@ import {
   Sun,
   Tags,
   TriangleAlert,
-  Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -52,9 +50,7 @@ const iconMap: Record<string, ReactNode> = {
   Tags: <Tags className="size-4" />,
   Folders: <Folders className="size-4" />,
   Bell: <Bell className="size-4" />,
-  Folder: <Folder className="size-4" />,
   TriangleAlert: <TriangleAlert className="size-4" />,
-  Users: <Users className="size-4" />,
   ShieldAlert: <ShieldAlert className="size-4" />,
 };
 

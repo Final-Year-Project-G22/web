@@ -42,12 +42,6 @@ export const sidebarConfig: SidebarSection[] = [
         iconName: "LayoutDashboard",
       },
       {
-        kind: "link",
-        href: "#",
-        labelKey: "links.msme_users",
-        iconName: "Users",
-      },
-      {
         kind: "collapsible",
         labelKey: "links.guide",
         iconName: "BookOpen",
@@ -98,13 +92,6 @@ export const sidebarConfig: SidebarSection[] = [
     id: "community",
     labelKey: "sections.community",
     items: [
-      {
-        kind: "link",
-        href: "/community/categories",
-        labelKey: "links.community_categories",
-        iconName: "Folder",
-        permissionCode: "community.read",
-      },
       {
         kind: "dropdown",
         labelKey: "links.moderation",
