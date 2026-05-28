@@ -116,7 +116,7 @@ async function rehydrateSession(accessToken: string, expiresAt: string): Promise
     account = payload.account;
   }
 
-  useAuthStore.getState().setSession(accessToken, user, account, expiresAt);
+  useAuthStore.getState().setSession(accessToken, user, account, expiresAt, state.roles, state.permissions);
   setAccessCookie(accessToken, expiresAt);
   return true;
 }
