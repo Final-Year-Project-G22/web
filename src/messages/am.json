@@ -7,7 +7,6 @@
     },
     "links": {
       "dashboard": "ዳሽቦርድ",
-      "msme_users": "MSME ተጠቃሚዎች",
       "guide": "መመሪያ ሞጁል",
       "guides": "መመሪያዎች",
       "ai_knowledge": "AI እውቀት",
@@ -25,7 +24,6 @@
       "campaign_templates": "የዘመቻ ቅርጸቶች",
       "campaigns": "ዘመቻዎች",
       "queue": "ወረፋ",
-      "community_categories": "ምድቦች",
       "moderation": "ማስተካከያ",
       "blocked_users": "የታገዱ ተጠቃሚዎች",
       "reported_content": "ሪፖርት የተደረገ ይዘት",
