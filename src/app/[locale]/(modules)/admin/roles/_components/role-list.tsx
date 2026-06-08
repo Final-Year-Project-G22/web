@@ -1,8 +1,9 @@
 "use client";
 
-import { Pencil, Trash2 } from "lucide-react";
+import { KeyRound, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Table,
   TableBody,
@@ -26,7 +27,9 @@ export function RoleList({ roles, onEdit }: RoleListProps) {
   const deleteMutation = useDeleteRole();
 
   if (roles.length === 0) {
-    return <div className="text-center py-12 text-muted-foreground">No roles found.</div>;
+    return (
+      <EmptyState icon={KeyRound} title="No roles" description="No roles have been created yet." />
+    );
   }
 
   return (

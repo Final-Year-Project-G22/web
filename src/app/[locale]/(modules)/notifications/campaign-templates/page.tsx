@@ -1,6 +1,6 @@
 "use client";
 
-import { Languages, Trash2 } from "lucide-react";
+import { FileText, Languages, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import {
@@ -100,8 +101,12 @@ export default function CampaignTemplatesPage() {
                   <TableBody>
                     {templates.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-muted-foreground">
-                          No templates found.
+                        <TableCell colSpan={4}>
+                          <EmptyState
+                            icon={FileText}
+                            title="No templates"
+                            description="Create your first campaign template."
+                          />
                         </TableCell>
                       </TableRow>
                     ) : (

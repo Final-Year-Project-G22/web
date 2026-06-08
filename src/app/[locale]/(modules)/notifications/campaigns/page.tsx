@@ -1,5 +1,6 @@
 "use client";
 
+import { Send } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -20,6 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import {
   Select,
@@ -156,8 +158,12 @@ export default function CampaignsPage() {
                   <TableBody>
                     {campaigns.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-muted-foreground">
-                          No campaigns found.
+                        <TableCell colSpan={6}>
+                          <EmptyState
+                            icon={Send}
+                            title="No campaigns"
+                            description="Create your first notification campaign."
+                          />
                         </TableCell>
                       </TableRow>
                     ) : (
