@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { EditGuideHeader } from "@/app/[locale]/(modules)/guide/_components/edit-guide-header";
 import { EditGuideSidebar } from "@/app/[locale]/(modules)/guide/_components/edit-guide-sidebar";
@@ -145,7 +145,7 @@ function buildUpdatePayload(step: GuideEditorStep) {
 
 // ─── Component ─────────────────────────────────────────────────
 
-export default function EditGuidePage() {
+function EditGuideContent() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const pathname = usePathname();
@@ -387,5 +387,13 @@ export default function EditGuidePage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function EditGuidePage() {
+  return (
+    <Suspense fallback={<CardSkeleton lines={8} className="max-w-md mx-auto mt-8" />}>
+      <EditGuideContent />
+    </Suspense>
   );
 }

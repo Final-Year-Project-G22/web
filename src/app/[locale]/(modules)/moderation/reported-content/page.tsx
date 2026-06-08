@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useAdminListPostReports } from "@/app/[locale]/(modules)/moderation/_services/post-reports.hook";
 import { useAdminListThreadReports } from "@/app/[locale]/(modules)/moderation/_services/thread-reports.hook";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +40,14 @@ const STATUS_VARIANTS: Record<string, "secondary" | "default" | "outline"> = {
 };
 
 export default function ReportedContentPage() {
+  return (
+    <Suspense fallback={<TableSkeleton rows={10} columns={7} />}>
+      <ReportedContentContent />
+    </Suspense>
+  );
+}
+
+function ReportedContentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 

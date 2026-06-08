@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import {
   useAdminGuideList,
   useDeleteGuide,
@@ -35,7 +35,7 @@ import type { ListGuidesAdminParams } from "@/lib/api/types";
 import { getErrorMessage } from "@/lib/utils";
 import { useAdminLanguageStore } from "@/stores/admin-language.store";
 
-export default function GuideListPage() {
+function GuideListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const language = useAdminLanguageStore((s) => s.language);
@@ -181,5 +181,13 @@ export default function GuideListPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function GuideListPage() {
+  return (
+    <Suspense fallback={<TableSkeleton rows={10} columns={3} />}>
+      <GuideListContent />
+    </Suspense>
   );
 }

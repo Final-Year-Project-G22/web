@@ -3,6 +3,7 @@
 import { Tags } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -17,6 +18,20 @@ const navItems = [
 ];
 
 export default function TaxonomyLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-6">
+          <div className="h-8 animate-pulse rounded bg-muted" />
+        </div>
+      }
+    >
+      <TaxonomyLayoutContent>{children}</TaxonomyLayoutContent>
+    </Suspense>
+  );
+}
+
+function TaxonomyLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (

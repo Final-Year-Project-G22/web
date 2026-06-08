@@ -3,7 +3,7 @@
 import { Send } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useCampaignSSE } from "@/app/[locale]/(modules)/notifications/_services/campaign-sse.hook";
 import {
   useCancelCampaign,
@@ -64,6 +64,14 @@ function statusBadgeVariant(status: string) {
   }
 }
 export default function CampaignsPage() {
+  return (
+    <Suspense fallback={<TableSkeleton rows={10} columns={5} />}>
+      <CampaignsContent />
+    </Suspense>
+  );
+}
+
+function CampaignsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
