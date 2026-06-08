@@ -58,7 +58,7 @@ export default function AuthPage() {
               <h2 className="text-xl font-semibold tracking-tight">{APP_NAME}</h2>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4 leading-[1.1]">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4 leading-[1.1] font-display">
               Secure Access for Administrators
             </h1>
 

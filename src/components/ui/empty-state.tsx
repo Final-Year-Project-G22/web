@@ -66,7 +66,7 @@ export function EmptyState({
       <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-muted">
         <Icon className="size-6 text-muted-foreground/60" />
       </div>
-      <h3 className="text-base font-medium mb-1">{displayTitle}</h3>
+      <h3 className="text-base font-medium mb-1 font-display">{displayTitle}</h3>
       <p className="text-sm text-muted-foreground max-w-sm">
         {displayDescription}
       </p>
