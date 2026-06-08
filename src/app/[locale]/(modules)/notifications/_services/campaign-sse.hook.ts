@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import type { CampaignSummaryResponse } from "@/lib/api/types";
 import { env } from "@/lib/env";
+import { connectSse, type SseEvent } from "@/lib/sse-client";
 import { useAuthStore } from "@/store/auth.store";
 
 const CAMPAIGNS_KEY = ["admin", "notifications", "campaigns"];
@@ -21,45 +22,6 @@ function getCampaignSseUrl(): URL {
     return new URL(path, env.NEXT_PUBLIC_API_URL);
   }
   return new URL(path, window.location.origin);
-}
-
-/** Backoff before reconnecting SSE after a failed connect or dropped stream. */
-function sseReconnectDelayMs(attempt: number): number {
-  return Math.min(30_000, 1000 * 2 ** Math.min(Math.max(0, attempt - 1), 5));
-}
-
-function waitForReconnect(ms: number, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (signal.aborted) {
-      reject(new DOMException("Aborted", "AbortError"));
-      return;
-    }
-    const t = window.setTimeout(resolve, ms);
-    const onAbort = () => {
-      window.clearTimeout(t);
-      signal.removeEventListener("abort", onAbort);
-      reject(new DOMException("Aborted", "AbortError"));
-    };
-    signal.addEventListener("abort", onAbort);
-  });
-}
-
-function parseSSEChunk(chunk: string): { event?: string; data?: string } | null {
-  const lines = chunk.replace(/\r\n/g, "\n").split("\n");
-  let event: string | undefined;
-  const dataLines: string[] = [];
-  for (const line of lines) {
-    if (line.startsWith(":")) {
-      continue;
-    }
-    if (line.startsWith("event:")) {
-      event = line.slice(6).trim();
-    } else if (line.startsWith("data:")) {
-      dataLines.push(line.slice(5).trim());
-    }
-  }
-  const data = dataLines.join("\n");
-  return data ? { event, data } : null;
 }
 
 function findCampaignName(
@@ -112,97 +74,43 @@ export function useCampaignSSE() {
   useEffect(() => {
     if (!token) return;
 
-    const controller = new AbortController();
-    let disposed = false;
+    const url = getCampaignSseUrl().toString();
 
-    const run = async () => {
-      let failCount = 0;
-      while (!disposed) {
-        const url = getCampaignSseUrl();
+    const handleSseEvent = (event: SseEvent) => {
+      if (!event.data) return;
+
+      if (event.event === "campaign_status") {
         try {
-          const response = await fetch(url.toString(), {
-            headers: {
-              Accept: "text/event-stream",
-              Authorization: `Bearer ${token}`,
-            },
-            credentials: "include",
-            signal: controller.signal,
-          });
+          const data = JSON.parse(event.data) as CampaignStatusEvent;
+          const { campaignId, status } = data;
 
-          if (!response.ok || !response.body) {
-            failCount++;
-            try {
-              await waitForReconnect(sseReconnectDelayMs(failCount), controller.signal);
-            } catch {
-              break;
-            }
-            continue;
-          }
+          const name = findCampaignName(queryClient, campaignId);
+          updateCampaignStatusInCache(queryClient, campaignId, status);
 
-          failCount = 0;
-
-          const reader = response.body.getReader();
-          const decoder = new TextDecoder();
-          let buffer = "";
-
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-              break;
-            }
-
-            const chunk = decoder.decode(value, { stream: true });
-            buffer += chunk.replace(/\r\n/g, "\n");
-            const events = buffer.split("\n\n");
-            buffer = events.pop() ?? "";
-
-            for (const eventChunk of events) {
-              const trimmed = eventChunk.trim();
-              if (!trimmed || trimmed.startsWith(":")) {
-                continue;
-              }
-              const event = parseSSEChunk(eventChunk);
-              if (!event?.data) {
-                continue;
-              }
-
-              if (event.event === "campaign_status") {
-                try {
-                  const data = JSON.parse(event.data) as CampaignStatusEvent;
-                  const { campaignId, status } = data;
-
-                  const name = findCampaignName(queryClient, campaignId);
-                  updateCampaignStatusInCache(queryClient, campaignId, status);
-
-                  toast.info(
-                    name ? `Campaign "${name}" is now ${status}` : `Campaign is now ${status}`
-                  );
-                } catch {
-                  // silently ignore malformed events
-                }
-              }
-            }
-          }
+          toast.info(name ? `Campaign "${name}" is now ${status}` : `Campaign is now ${status}`);
         } catch {
-          // fetch error or stream error
-        }
-
-        if (!disposed) {
-          failCount++;
-          try {
-            await waitForReconnect(sseReconnectDelayMs(failCount), controller.signal);
-          } catch {
-            break;
-          }
+          // silently ignore malformed events
         }
       }
     };
 
-    run();
+    const client = connectSse({
+      url,
+      method: "GET",
+      headers: {
+        Accept: "text/event-stream",
+        Authorization: `Bearer ${token}`,
+      },
+      onEvent: handleSseEvent,
+      onError: () => {
+        // errors handled by SseClient's built-in reconnect
+      },
+      reconnect: true,
+      maxReconnectAttempts: 10,
+    });
 
     return () => {
-      disposed = true;
-      controller.abort();
+      client.close();
     };
   }, [queryClient, token]);
 }
