@@ -4,6 +4,7 @@ import { AlertTriangle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CardSkeleton } from "@/components/ui/skeleton";
 import { getErrorMessage } from "@/lib/utils";
 import { useAIDeadEvents, useRedriveEvent } from "../_services/ai.hook";
 
@@ -20,7 +21,7 @@ export function DlqPanel() {
   };
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground py-2">Loading DLQ...</p>;
+    return <CardSkeleton lines={2} />;
   }
 
   if (!events || events.length === 0) {

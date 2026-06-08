@@ -21,6 +21,7 @@ import {
   useEditGuide,
 } from "@/app/[locale]/(modules)/guide/_stores/edit-guide.store";
 import type { GuideEditorStep } from "@/app/[locale]/(modules)/guide/_stores/guide-editor.types";
+import { CardSkeleton } from "@/components/ui/skeleton";
 import type { AdminGuideStepDTO } from "@/lib/api/types";
 import { getErrorMessage } from "@/lib/utils";
 import { useAdminLanguageStore } from "@/stores/admin-language.store";
@@ -336,7 +337,7 @@ export default function EditGuidePage() {
   if (guideQuery.isLoading || stepsQuery.isLoading) {
     return (
       <div className="-m-8 flex h-[calc(100vh-4rem)] items-center justify-center bg-editor-surface">
-        <p className="text-sm text-muted-foreground">Loading guide&hellip;</p>
+        <CardSkeleton lines={8} className="max-w-md" />
       </div>
     );
   }

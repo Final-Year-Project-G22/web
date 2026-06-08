@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -133,7 +134,7 @@ export default function CampaignsPage() {
           </div>
 
           {campaignsQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading campaigns&hellip;</p>
+            <TableSkeleton rows={10} columns={5} />
           ) : campaignsQuery.isError ? (
             <p className="text-sm text-destructive">
               Failed to load: {getErrorMessage(campaignsQuery.error)}

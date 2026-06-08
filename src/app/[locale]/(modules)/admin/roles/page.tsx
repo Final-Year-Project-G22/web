@@ -3,6 +3,7 @@
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import type { RoleDTO } from "@/lib/api/types";
 import { hasPermission } from "@/lib/permissions";
 import { useListRoles } from "../_services/roles.hook";
@@ -29,7 +30,7 @@ export default function RolesPage() {
       </div>
 
       {rolesQuery.isLoading ? (
-        <div className="text-center py-12 text-muted-foreground">Loading roles…</div>
+        <TableSkeleton rows={10} columns={4} />
       ) : rolesQuery.isError ? (
         <div className="text-center py-12 text-destructive">Failed to load roles.</div>
       ) : (

@@ -31,6 +31,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TagSelect } from "@/components/ui/multi-select";
+import { CardSkeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -118,7 +119,7 @@ export default function GuideDetailPage() {
   if (guideQuery.isLoading || stepsQuery.isLoading) {
     return (
       <div className="mx-auto max-w-7xl py-8">
-        <p className="text-sm text-muted-foreground">Loading guide&hellip;</p>
+        <CardSkeleton lines={6} />
       </div>
     );
   }

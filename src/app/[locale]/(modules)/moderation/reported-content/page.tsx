@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PaginationBar } from "@/components/ui/pagination-bar";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -147,7 +148,7 @@ export default function ReportedContentPage() {
           )}
 
           {activeQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading&hellip;</p>
+            <TableSkeleton rows={10} columns={7} />
           ) : activeQuery.isError ? (
             <p className="text-sm text-destructive">
               Failed to load: {getErrorMessage(activeQuery.error)}

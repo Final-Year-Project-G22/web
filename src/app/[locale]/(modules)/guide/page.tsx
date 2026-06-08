@@ -21,6 +21,7 @@ import {
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -109,7 +110,7 @@ export default function GuideListPage() {
           </div>
 
           {guidesQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading guides&hellip;</p>
+            <TableSkeleton rows={10} columns={3} />
           ) : guidesQuery.isError ? (
             <p className="text-sm text-destructive">
               Failed to load: {getErrorMessage(guidesQuery.error)}

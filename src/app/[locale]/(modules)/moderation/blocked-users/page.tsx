@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { PaginationBar } from "@/components/ui/pagination-bar";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -65,7 +66,7 @@ export default function BlockedUsersPage() {
           {notice ? <p className="text-sm text-muted-foreground">{notice}</p> : null}
 
           {blockedQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading&hellip;</p>
+            <TableSkeleton rows={10} columns={5} />
           ) : blockedQuery.isError ? (
             <p className="text-sm text-destructive">
               Failed to load: {getErrorMessage(blockedQuery.error)}

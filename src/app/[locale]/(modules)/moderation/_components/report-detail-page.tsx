@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { CardSkeleton } from "@/components/ui/skeleton";
 import { getErrorMessage } from "@/lib/utils";
 import {
   useAdminDeleteReportedPost,
@@ -266,7 +267,7 @@ export function ReportDetailPage({
 
         <CardContent className="space-y-6">
           {reportQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading&hellip;</p>
+            <CardSkeleton lines={5} />
           ) : reportQuery.isError ? (
             <p className="text-sm text-destructive">
               Failed to load: {getErrorMessage(reportQuery.error)}
