@@ -1,5 +1,6 @@
 "use client";
 
+import { ListChecks } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -28,6 +29,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TagSelect } from "@/components/ui/multi-select";
@@ -316,7 +318,11 @@ export default function GuideDetailPage() {
               Failed to load steps: {getErrorMessage(stepsQuery.error)}
             </p>
           ) : steps.length === 0 ? (
-            <p className="py-4 text-sm text-muted-foreground">No steps yet.</p>
+            <EmptyState
+              icon={ListChecks}
+              title="No steps yet"
+              description="Add the first step to this guide."
+            />
           ) : (
             <div className="overflow-hidden rounded-lg border">
               <Table>

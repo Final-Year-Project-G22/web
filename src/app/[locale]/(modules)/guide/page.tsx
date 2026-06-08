@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { TableSkeleton } from "@/components/ui/skeleton";
@@ -129,8 +130,8 @@ export default function GuideListPage() {
                   <TableBody>
                     {guides.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={3} className="text-muted-foreground">
-                          No guides found.
+                        <TableCell colSpan={3}>
+                          <EmptyState variant="guide" />
                         </TableCell>
                       </TableRow>
                     ) : (

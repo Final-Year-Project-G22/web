@@ -1,6 +1,8 @@
 "use client";
 
+import { Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Table,
   TableBody,
@@ -31,7 +33,13 @@ function statusVariant(status: string): React.ComponentProps<typeof Badge>["vari
 
 export function AdminList({ admins, onSelect }: AdminListProps) {
   if (admins.length === 0) {
-    return <div className="text-center py-12 text-muted-foreground">No admin accounts found.</div>;
+    return (
+      <EmptyState
+        icon={Users}
+        title="No admin accounts"
+        description="No admin accounts match your filters."
+      />
+    );
   }
 
   return (

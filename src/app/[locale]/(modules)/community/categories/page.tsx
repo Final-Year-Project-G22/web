@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FolderTree } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
@@ -21,6 +21,7 @@ import {
 import { CategoryEditModal, EditCategoryButton } from "@/components/ui/category-edit-modal";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import {
@@ -198,8 +199,12 @@ export default function AdminCommunityCategoriesPage() {
                 <TableBody>
                   {visibleItems.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-muted-foreground">
-                        No categories found.
+                      <TableCell colSpan={5}>
+                        <EmptyState
+                          icon={FolderTree}
+                          title="No categories"
+                          description="Create your first category to organize the community."
+                        />
                       </TableCell>
                     </TableRow>
                   ) : (

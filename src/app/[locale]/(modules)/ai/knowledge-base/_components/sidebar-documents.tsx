@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useSectorList, useTagList } from "@/app/[locale]/(modules)/admin/_services/taxonomy.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { CardSkeleton } from "@/components/ui/skeleton";
@@ -159,7 +160,7 @@ export function SidebarDocuments() {
           <p className="text-sm text-destructive text-center py-4">Failed to load documents</p>
         )}
         {!isLoading && !isError && filteredDocs.length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-4">No documents found.</p>
+          <EmptyState variant="ai" className="py-8" />
         )}
         {filteredDocs.map((doc) => {
           const stage = doc.currentStage.toLowerCase();

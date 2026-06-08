@@ -7,6 +7,7 @@ import { useAdminListThreadReports } from "@/app/[locale]/(modules)/moderation/_
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import { TableSkeleton } from "@/components/ui/skeleton";
@@ -170,8 +171,8 @@ export default function ReportedContentPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-muted-foreground">
-                        No reports found.
+                      <TableCell colSpan={7}>
+                        <EmptyState variant="moderation" />
                       </TableCell>
                     </TableRow>
                   ) : (

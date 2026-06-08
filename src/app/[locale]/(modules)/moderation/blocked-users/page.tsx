@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import { TableSkeleton } from "@/components/ui/skeleton";
@@ -86,8 +87,12 @@ export default function BlockedUsersPage() {
                 <TableBody>
                   {filtered.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-muted-foreground">
-                        No blocked users found.
+                      <TableCell colSpan={5}>
+                        <EmptyState
+                          variant="moderation"
+                          title="No blocked users"
+                          description="No users are currently blocked."
+                        />
                       </TableCell>
                     </TableRow>
                   ) : (
