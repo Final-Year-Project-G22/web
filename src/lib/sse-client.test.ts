@@ -144,7 +144,9 @@ describe("sse-client", () => {
 
     global.fetch = vi
       .fn()
-      .mockResolvedValue(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
       .mockResolvedValueOnce(createSseResponse(["event: ok\ndata: a\n\n"]))
       .mockResolvedValueOnce(createSseResponse(["event: ok\ndata: b\n\n"]))
       .mockResolvedValueOnce(createSseResponse(["event: ok\ndata: c\n\n"]));
