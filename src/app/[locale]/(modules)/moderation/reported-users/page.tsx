@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useAdminListUserReports } from "@/app/[locale]/(modules)/moderation/_services/user-reports.hook";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,14 @@ const STATUS_VARIANTS: Record<string, "secondary" | "default" | "outline"> = {
 };
 
 export default function ReportedUsersPage() {
+  return (
+    <Suspense fallback={<TableSkeleton rows={10} columns={6} />}>
+      <ReportedUsersContent />
+    </Suspense>
+  );
+}
+
+function ReportedUsersContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 

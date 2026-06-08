@@ -3,7 +3,7 @@
 import { KeyRound, Shield, UserPlus, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { hasPermission } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +29,20 @@ const navItems = [
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-6">
+          <div className="h-8 animate-pulse rounded bg-muted" />
+        </div>
+      }
+    >
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </Suspense>
+  );
+}
+
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 

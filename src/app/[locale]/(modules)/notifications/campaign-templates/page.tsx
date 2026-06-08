@@ -3,7 +3,7 @@
 import { FileText, Languages, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 import {
   useDeleteCampaignTemplate,
@@ -35,6 +35,14 @@ import { getErrorMessage } from "@/lib/utils";
 import { CampaignTemplateTranslationDrawer } from "../_components/campaign-template-translation-drawer";
 
 export default function CampaignTemplatesPage() {
+  return (
+    <Suspense fallback={<TableSkeleton rows={10} columns={4} />}>
+      <CampaignTemplatesContent />
+    </Suspense>
+  );
+}
+
+function CampaignTemplatesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
