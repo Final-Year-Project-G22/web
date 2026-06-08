@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import type { AdminAccountDTO } from "@/lib/api/types";
 import { useListAdmins } from "../_services/admin-management.hook";
 import { useListRoles } from "../_services/roles.hook";
@@ -39,7 +40,7 @@ export default function AdminListPage() {
       <AdminFilters filters={filters} onChange={handleFilterChange} roles={rolesQuery.data} />
 
       {adminsQuery.isLoading ? (
-        <div className="text-center py-12 text-muted-foreground">Loading admins…</div>
+        <TableSkeleton rows={10} columns={6} />
       ) : adminsQuery.isError ? (
         <div className="text-center py-12 text-destructive">Failed to load admins.</div>
       ) : (

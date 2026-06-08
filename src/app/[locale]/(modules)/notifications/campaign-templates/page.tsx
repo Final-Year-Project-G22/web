@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -79,7 +80,7 @@ export default function CampaignTemplatesPage() {
 
         <CardContent className="space-y-4 pt-4">
           {templatesQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading templates&hellip;</p>
+            <TableSkeleton rows={10} columns={4} />
           ) : templatesQuery.isError ? (
             <p className="text-sm text-destructive">
               Failed to load: {getErrorMessage(templatesQuery.error)}

@@ -22,6 +22,7 @@ import { CategoryEditModal, EditCategoryButton } from "@/components/ui/category-
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -177,7 +178,7 @@ export default function AdminCommunityCategoriesPage() {
           {notice && <p className="text-sm text-muted-foreground">{notice}</p>}
 
           {categoriesQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading categories&hellip;</p>
+            <TableSkeleton rows={10} columns={5} />
           ) : categoriesQuery.isError ? (
             <p className="text-sm text-destructive">
               Failed to load: {getErrorMessage(categoriesQuery.error)}

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { CardSkeleton } from "@/components/ui/skeleton";
 import { getErrorMessage } from "@/lib/utils";
 import { useAIStatusList, useDeleteDocument, useUploadDocument } from "../_services/ai.hook";
 import { DlqPanel } from "./dlq-panel";
@@ -147,7 +148,13 @@ export function SidebarDocuments() {
 
       {/* Document list */}
       <div className="grid gap-2">
-        {isLoading && <p className="text-sm text-muted-foreground text-center py-4">Loading...</p>}
+        {isLoading && (
+          <div className="space-y-2">
+            <CardSkeleton lines={2} />
+            <CardSkeleton lines={2} />
+            <CardSkeleton lines={2} />
+          </div>
+        )}
         {isError && (
           <p className="text-sm text-destructive text-center py-4">Failed to load documents</p>
         )}
