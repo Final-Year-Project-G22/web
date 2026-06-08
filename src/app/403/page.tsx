@@ -9,7 +9,7 @@ export default function ForbiddenPage() {
         <div className="rounded-full bg-destructive/10 p-4">
           <ShieldAlert className="h-12 w-12 text-destructive" />
         </div>
-        <h1 className="text-4xl font-bold tracking-tight">403</h1>
+        <h1 className="text-4xl font-bold tracking-tight font-display">403</h1>
         <p className="text-lg text-muted-foreground max-w-sm">
           You don&apos;t have permission to access this page.
         </p>

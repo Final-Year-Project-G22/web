@@ -41,7 +41,7 @@ export function EditGuideHeader({ guideName }: EditGuideHeaderProps) {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
-          <h1 className="text-xl font-semibold tracking-tight">{guideName}</h1>
+          <h1 className="text-xl font-semibold tracking-tight font-display">{guideName}</h1>
         </div>
 
         <div className="flex items-center gap-3">
