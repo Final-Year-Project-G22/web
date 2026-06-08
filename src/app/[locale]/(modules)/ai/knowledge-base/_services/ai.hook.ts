@@ -205,8 +205,8 @@ export function useAIStatusList(page = 1, pageSize = 50) {
         Accept: "text/event-stream",
         Authorization: `Bearer ${token}`,
       },
-      onEvent: handleSseEvent,
-      onError: (err) => {
+      onEventAction: handleSseEvent,
+      onErrorAction: (err) => {
         if (process.env.NODE_ENV !== "production") {
           console.warn("[SSE] Ingestion stream error, will reconnect", err);
         }

@@ -287,9 +287,9 @@ export function useAskAIStream() {
       method: "POST",
       headers,
       body: JSON.stringify(req),
-      onEvent: handleSseEvent,
-      onError: handleSseError,
-      onClose: handleSseClose,
+      onEventAction: handleSseEvent,
+      onErrorAction: handleSseError,
+      onCloseAction: handleSseClose,
       reconnect: false,
     });
     clientRef.current = client;

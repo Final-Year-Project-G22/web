@@ -17,10 +17,10 @@ export type SseClientOptions = {
   method?: "GET" | "POST";
   headers?: Record<string, string>;
   body?: BodyInit | null;
-  onEvent: (event: SseEvent) => void;
-  onError?: (error: Error) => void;
-  onOpen?: () => void;
-  onClose?: () => void;
+  onEventAction: (event: SseEvent) => void;
+  onErrorAction?: (error: Error) => void;
+  onOpenAction?: () => void;
+  onCloseAction?: () => void;
   signal?: AbortSignal;
   reconnect?: boolean;
   maxReconnectAttempts?: number;
@@ -125,10 +125,10 @@ export function connectSse(options: SseClientOptions): SseClientHandle {
     method = "GET",
     headers = {},
     body = null,
-    onEvent,
-    onError,
-    onOpen,
-    onClose,
+    onEventAction,
+    onErrorAction,
+    onOpenAction,
+    onCloseAction,
     signal: externalSignal,
     reconnect = true,
     maxReconnectAttempts = 10,
@@ -150,7 +150,7 @@ export function connectSse(options: SseClientOptions): SseClientHandle {
     if (closed) return;
     closed = true;
     controller.abort();
-    onClose?.();
+    onCloseAction?.();
   };
 
   (async () => {
@@ -177,7 +177,7 @@ export function connectSse(options: SseClientOptions): SseClientHandle {
         }
 
         attempt = 0;
-        onOpen?.();
+        onOpenAction?.();
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -194,7 +194,7 @@ export function connectSse(options: SseClientOptions): SseClientHandle {
 
           for (const eventChunk of events) {
             const event = parseSSEChunk(eventChunk);
-            if (event) onEvent(event);
+            if (event) onEventAction(event);
           }
         }
       } catch (err) {
@@ -202,7 +202,7 @@ export function connectSse(options: SseClientOptions): SseClientHandle {
           break;
         }
         const error = err instanceof Error ? err : new Error(String(err));
-        onError?.(error);
+        onErrorAction?.(error);
       }
 
       if (!reconnect || closed || controller.signal.aborted) {
@@ -211,7 +211,7 @@ export function connectSse(options: SseClientOptions): SseClientHandle {
 
       attempt += 1;
       if (attempt > maxReconnectAttempts) {
-        onError?.(new Error(`Max reconnect attempts (${maxReconnectAttempts}) reached`));
+        onErrorAction?.(new Error(`Max reconnect attempts (${maxReconnectAttempts}) reached`));
         break;
       }
 

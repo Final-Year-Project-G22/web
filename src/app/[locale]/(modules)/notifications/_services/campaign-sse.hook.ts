@@ -101,8 +101,8 @@ export function useCampaignSSE() {
         Accept: "text/event-stream",
         Authorization: `Bearer ${token}`,
       },
-      onEvent: handleSseEvent,
-      onError: () => {
+      onEventAction: handleSseEvent,
+      onErrorAction: () => {
         // errors handled by SseClient's built-in reconnect
       },
       reconnect: true,

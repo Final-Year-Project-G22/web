@@ -52,7 +52,7 @@ describe("sse-client", () => {
 
   it("connects and dispatches parsed events", async () => {
     const events: SseEvent[] = [];
-    const onEvent = vi.fn((e: SseEvent) => events.push(e));
+    const onEventAction = vi.fn((e: SseEvent) => events.push(e));
 
     global.fetch = vi
       .fn()
@@ -63,11 +63,11 @@ describe("sse-client", () => {
         ])
       );
 
-    const handle = connectSse({ url: "/api/stream", onEvent, reconnect: false });
+    const handle = connectSse({ url: "/api/stream", onEventAction, reconnect: false });
 
     await new Promise((r) => setTimeout(r, 50));
 
-    expect(onEvent).toHaveBeenCalledTimes(2);
+    expect(onEventAction).toHaveBeenCalledTimes(2);
     expect(events[0]).toEqual({ event: "chunk", data: '{"text":"hello"}' });
     expect(events[1]).toEqual({ event: "done", data: '{"ok":true}' });
 
@@ -83,7 +83,7 @@ describe("sse-client", () => {
 
     const handle = connectSse({
       url: "/api/stream",
-      onEvent: (e) => events.push(e),
+      onEventAction: (e) => events.push(e),
       reconnect: false,
     });
 
@@ -103,7 +103,7 @@ describe("sse-client", () => {
 
     const handle = connectSse({
       url: "/api/stream",
-      onEvent: (e) => events.push(e),
+      onEventAction: (e) => events.push(e),
       reconnect: false,
     });
 
@@ -126,7 +126,7 @@ describe("sse-client", () => {
 
     const handle = connectSse({
       url: "/api/stream",
-      onEvent: (e) => events.push(e),
+      onEventAction: (e) => events.push(e),
       reconnect: false,
     });
 
@@ -153,9 +153,9 @@ describe("sse-client", () => {
       .mockResolvedValueOnce(createSseResponse(["event: ok\ndata: b\n\n"]))
       .mockResolvedValueOnce(createSseResponse(["event: ok\ndata: c\n\n"]));
 
-    const h1 = connectSse({ url: "/api/stream1", onEvent: () => {}, reconnect: false });
-    const h2 = connectSse({ url: "/api/stream2", onEvent: () => {}, reconnect: false });
-    const h3 = connectSse({ url: "/api/stream3", onEvent: () => {}, reconnect: false });
+    const h1 = connectSse({ url: "/api/stream1", onEventAction: () => {}, reconnect: false });
+    const h2 = connectSse({ url: "/api/stream2", onEventAction: () => {}, reconnect: false });
+    const h3 = connectSse({ url: "/api/stream3", onEventAction: () => {}, reconnect: false });
 
     await new Promise((r) => setTimeout(r, 50));
 
@@ -176,7 +176,7 @@ describe("sse-client", () => {
 
     const handle = connectSse({
       url: "/api/stream",
-      onEvent: () => {},
+      onEventAction: () => {},
       reconnect: false,
     });
 
@@ -188,7 +188,7 @@ describe("sse-client", () => {
   });
 
   it("aborts cleanly when signal is triggered", async () => {
-    const onError = vi.fn();
+    const onErrorAction = vi.fn();
     const controller = new AbortController();
 
     global.fetch = vi.fn().mockImplementation(
@@ -200,8 +200,8 @@ describe("sse-client", () => {
 
     const handle = connectSse({
       url: "/api/stream",
-      onEvent: () => {},
-      onError,
+      onEventAction: () => {},
+      onErrorAction,
       signal: controller.signal,
       reconnect: false,
     });
@@ -209,46 +209,46 @@ describe("sse-client", () => {
     controller.abort();
     await new Promise((r) => setTimeout(r, 150));
 
-    expect(onError).not.toHaveBeenCalled();
+    expect(onErrorAction).not.toHaveBeenCalled();
 
     handle.close();
   });
 
-  it("calls onOpen when connection establishes", async () => {
-    const onOpen = vi.fn();
+  it("calls onOpenAction when connection establishes", async () => {
+    const onOpenAction = vi.fn();
 
     global.fetch = vi.fn().mockResolvedValueOnce(createSseResponse([]));
 
     const handle = connectSse({
       url: "/api/stream",
-      onEvent: () => {},
-      onOpen,
+      onEventAction: () => {},
+      onOpenAction,
       reconnect: false,
     });
 
     await new Promise((r) => setTimeout(r, 30));
 
-    expect(onOpen).toHaveBeenCalledTimes(1);
+    expect(onOpenAction).toHaveBeenCalledTimes(1);
 
     handle.close();
   });
 
-  it("calls onError when fetch fails", async () => {
-    const onError = vi.fn();
+  it("calls onErrorAction when fetch fails", async () => {
+    const onErrorAction = vi.fn();
     const networkError = new Error("Network down");
 
     global.fetch = vi.fn().mockRejectedValueOnce(networkError);
 
     const handle = connectSse({
       url: "/api/stream",
-      onEvent: () => {},
-      onError,
+      onEventAction: () => {},
+      onErrorAction,
       reconnect: false,
     });
 
     await new Promise((r) => setTimeout(r, 30));
 
-    expect(onError).toHaveBeenCalledWith(networkError);
+    expect(onErrorAction).toHaveBeenCalledWith(networkError);
 
     handle.close();
   });
@@ -258,7 +258,7 @@ describe("sse-client", () => {
 
     const handle = connectSse({
       url: "/api/stream",
-      onEvent: () => {},
+      onEventAction: () => {},
       reconnect: false,
     });
 
