@@ -2,11 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import {
-  ensureFreshSession,
-  logoutAndRedirect,
-  refreshToken,
-} from "@/lib/api/mutator/custom-fetch";
 import { ask } from "@/lib/api/services/ai-ask";
 import {
   archiveConversation,
@@ -23,6 +18,7 @@ import type {
   UsageDTO,
 } from "@/lib/api/types";
 import { env } from "@/lib/env";
+import { connectSse, type SseEvent } from "@/lib/sse-client";
 import { useAuthStore } from "@/store/auth.store";
 
 /** Ask-stream SSE must hit the API origin when configured. */
@@ -32,69 +28,6 @@ function getAskStreamSseUrl(): URL {
     return new URL(path, env.NEXT_PUBLIC_API_URL);
   }
   return new URL(path, window.location.origin);
-}
-
-/** Backoff before reconnecting SSE. */
-function _sseReconnectDelayMs(attempt: number): number {
-  return Math.min(30_000, 1000 * 2 ** Math.min(Math.max(0, attempt - 1), 5));
-}
-
-function _waitForReconnect(ms: number, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (signal.aborted) {
-      reject(new DOMException("Aborted", "AbortError"));
-      return;
-    }
-    const t = window.setTimeout(resolve, ms);
-    const onAbort = () => {
-      window.clearTimeout(t);
-      signal.removeEventListener("abort", onAbort);
-      reject(new DOMException("Aborted", "AbortError"));
-    };
-    signal.addEventListener("abort", onAbort);
-  });
-}
-
-async function fetchSseWithAuth(url: string, init: RequestInit): Promise<Response> {
-  const fresh = await ensureFreshSession();
-  if (!fresh) {
-    return new Response(null, { status: 401 });
-  }
-  const buildInit = (): RequestInit => {
-    const headers = new Headers(init.headers);
-    const latestToken = useAuthStore.getState().token;
-    if (latestToken) {
-      headers.set("Authorization", `Bearer ${latestToken}`);
-    } else {
-      headers.delete("Authorization");
-    }
-    return { ...init, headers };
-  };
-  let response = await fetch(url, buildInit());
-  if (response.status !== 401) return response;
-  const refreshed = await refreshToken();
-  if (refreshed) {
-    response = await fetch(url, buildInit());
-    if (response.status !== 401) return response;
-  }
-  logoutAndRedirect();
-  return response;
-}
-
-function parseSSEChunk(chunk: string): { event?: string; data?: string } | null {
-  const lines = chunk.replace(/\r\n/g, "\n").split("\n");
-  let event: string | undefined;
-  const dataLines: string[] = [];
-  for (const line of lines) {
-    if (line.startsWith(":")) continue;
-    if (line.startsWith("event:")) {
-      event = line.slice(6).trim();
-    } else if (line.startsWith("data:")) {
-      dataLines.push(line.slice(5).trim());
-    }
-  }
-  const data = dataLines.join("\n");
-  return data ? { event, data } : null;
 }
 
 const QUERY_KEYS = {
@@ -231,11 +164,11 @@ export function useAskAIStream() {
   const queryClient = useQueryClient();
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<AskStreamErrorEventBody | null>(null);
-  const controllerRef = useRef<AbortController | null>(null);
+  const clientRef = useRef<{ close: () => void } | null>(null);
 
   const cancel = () => {
-    controllerRef.current?.abort();
-    controllerRef.current = null;
+    clientRef.current?.close();
+    clientRef.current = null;
     setIsStreaming(false);
   };
 
@@ -244,9 +177,7 @@ export function useAskAIStream() {
     handlers: AskStreamHandlers = {},
     useDebugEndpoint = false
   ) => {
-    controllerRef.current?.abort();
-    const controller = new AbortController();
-    controllerRef.current = controller;
+    clientRef.current?.close();
 
     setIsStreaming(true);
     setError(null);
@@ -258,110 +189,86 @@ export function useAskAIStream() {
     let completed = false;
     let receivedEvent = false;
 
-    try {
-      const headers: Record<string, string> = {
-        Accept: "text/event-stream",
-        "Content-Type": "application/json",
-      };
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
+    const url = useDebugEndpoint
+      ? getAskStreamSseUrl().toString().replace("/stream", "/stream/debug")
+      : getAskStreamSseUrl().toString();
 
-      const url = useDebugEndpoint
-        ? getAskStreamSseUrl().toString().replace("/stream", "/stream/debug")
-        : getAskStreamSseUrl().toString();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
 
-      const response = await fetchSseWithAuth(url, {
-        method: "POST",
-        headers,
-        credentials: "include",
-        body: JSON.stringify(req),
-        signal: controller.signal,
-      });
+    const handleSseEvent = (event: SseEvent) => {
+      if (!event.data) return;
+      receivedEvent = true;
 
-      if (!response.ok || !response.body) {
-        const err = {
-          code: "stream_failed",
-          message: `Stream failed (${response.status})`,
-        };
-        setError(err);
-        handlers.onError?.(err);
-        setIsStreaming(false);
-        controllerRef.current = null;
-        return;
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        buffer += chunk.replace(/\r\n/g, "\n");
-        const events = buffer.split("\n\n");
-        buffer = events.pop() ?? "";
-
-        for (const eventChunk of events) {
-          const event = parseSSEChunk(eventChunk);
-          if (!event?.data) continue;
-          receivedEvent = true;
-
-          try {
-            if (event.event === "chunk") {
-              const parsed = JSON.parse(event.data) as AskStreamChunkEventBody;
-              if (parsed?.text) {
-                answer += parsed.text;
-                handlers.onChunk?.(parsed.text, { answer, citations, toolUses, thinkingChunks });
-              }
-            } else if (event.event === "citations") {
-              const parsed = JSON.parse(event.data) as AskStreamCitationEventBody;
-              citations = parsed.citations ?? [];
-              handlers.onCitations?.(citations);
-            } else if (event.event === "tool_use") {
-              const parsed = JSON.parse(event.data) as ToolUseEvent;
-              toolUses.push(parsed);
-              handlers.onToolUse?.(parsed);
-            } else if (event.event === "tool_result") {
-              const parsed = JSON.parse(event.data) as ToolResultEvent;
-              handlers.onToolResult?.(parsed);
-            } else if (event.event === "thinking") {
-              const parsed = JSON.parse(event.data) as AskStreamThinkingEventBody;
-              if (parsed?.text) {
-                thinkingChunks.push({ text: parsed.text, timestamp: Date.now() });
-                handlers.onThinking?.(parsed, { answer, citations, toolUses, thinkingChunks });
-              }
-            } else if (event.event === "done") {
-              const parsed = JSON.parse(event.data) as AskStreamDoneEventBody;
-              completed = true;
-              handlers.onDone?.({ ...parsed, answer, citations, toolUses, thinkingChunks });
-
-              queryClient.invalidateQueries({
-                queryKey: QUERY_KEYS.conversationsList,
-              });
-
-              setIsStreaming(false);
-              controllerRef.current = null;
-              return;
-            } else if (event.event === "error") {
-              const parsed = JSON.parse(event.data) as AskStreamErrorEventBody;
-              completed = true;
-              setError(parsed);
-              handlers.onError?.(parsed);
-              setIsStreaming(false);
-              controllerRef.current = null;
-              return;
-            }
-          } catch (err) {
-            if (process.env.NODE_ENV !== "production") {
-              console.warn("[SSE] Failed to parse ask stream event", err);
-            }
+      try {
+        if (event.event === "chunk") {
+          const parsed = JSON.parse(event.data) as AskStreamChunkEventBody;
+          if (parsed?.text) {
+            answer += parsed.text;
+            handlers.onChunk?.(parsed.text, { answer, citations, toolUses, thinkingChunks });
           }
+        } else if (event.event === "citations") {
+          const parsed = JSON.parse(event.data) as AskStreamCitationEventBody;
+          citations = parsed.citations ?? [];
+          handlers.onCitations?.(citations);
+        } else if (event.event === "tool_use") {
+          const parsed = JSON.parse(event.data) as ToolUseEvent;
+          toolUses.push(parsed);
+          handlers.onToolUse?.(parsed);
+        } else if (event.event === "tool_result") {
+          const parsed = JSON.parse(event.data) as ToolResultEvent;
+          handlers.onToolResult?.(parsed);
+        } else if (event.event === "thinking") {
+          const parsed = JSON.parse(event.data) as AskStreamThinkingEventBody;
+          if (parsed?.text) {
+            thinkingChunks.push({ text: parsed.text, timestamp: Date.now() });
+            handlers.onThinking?.(parsed, { answer, citations, toolUses, thinkingChunks });
+          }
+        } else if (event.event === "done") {
+          const parsed = JSON.parse(event.data) as AskStreamDoneEventBody;
+          completed = true;
+          handlers.onDone?.({ ...parsed, answer, citations, toolUses, thinkingChunks });
+
+          queryClient.invalidateQueries({
+            queryKey: QUERY_KEYS.conversationsList,
+          });
+
+          clientRef.current?.close();
+          clientRef.current = null;
+          setIsStreaming(false);
+        } else if (event.event === "error") {
+          const parsed = JSON.parse(event.data) as AskStreamErrorEventBody;
+          completed = true;
+          setError(parsed);
+          handlers.onError?.(parsed);
+          clientRef.current?.close();
+          clientRef.current = null;
+          setIsStreaming(false);
+        }
+      } catch (err) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("[SSE] Failed to parse ask stream event", err);
         }
       }
-      if (!completed) {
+    };
+
+    const handleSseError = (_err: Error) => {
+      if (completed) return;
+      const parsed = {
+        code: "stream_error",
+        message: "Stream connection failed",
+      };
+      setError(parsed);
+      handlers.onError?.(parsed);
+      setIsStreaming(false);
+    };
+
+    const handleSseClose = () => {
+      if (clientRef.current && !completed) {
         const parsed = {
           code: "stream_closed",
           message: receivedEvent
@@ -371,21 +278,21 @@ export function useAskAIStream() {
         setError(parsed);
         handlers.onError?.(parsed);
       }
-    } catch (err) {
-      if (!(err instanceof DOMException && err.name === "AbortError")) {
-        const parsed = {
-          code: "stream_error",
-          message: "Stream connection failed",
-        };
-        setError(parsed);
-        handlers.onError?.(parsed);
-      }
-    } finally {
-      if (controllerRef.current === controller) {
-        controllerRef.current = null;
-      }
+      clientRef.current = null;
       setIsStreaming(false);
-    }
+    };
+
+    const client = connectSse({
+      url,
+      method: "POST",
+      headers,
+      body: JSON.stringify(req),
+      onEvent: handleSseEvent,
+      onError: handleSseError,
+      onClose: handleSseClose,
+      reconnect: false,
+    });
+    clientRef.current = client;
   };
 
   return { start, cancel, isStreaming, error };
