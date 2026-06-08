@@ -1,3 +1,5 @@
+"use client";
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { connectSse, type SseEvent } from "@/lib/sse-client";
 
