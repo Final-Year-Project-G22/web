@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { FileText, Globe, Search, Trash2, UploadCloud } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -7,6 +8,7 @@ import { useSectorList, useTagList } from "@/app/[locale]/(modules)/admin/_servi
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { InlineError } from "@/components/ui/inline-error";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { CardSkeleton } from "@/components/ui/skeleton";
@@ -61,6 +63,7 @@ const STAGE_META: Record<
 };
 
 export function SidebarDocuments() {
+  const queryClient = useQueryClient();
   const [searchDoc, setSearchDoc] = useState("");
   const { data: documents, isLoading, isError } = useAIStatusList(1, 100);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -157,7 +160,10 @@ export function SidebarDocuments() {
           </div>
         )}
         {isError && (
-          <p className="text-sm text-destructive text-center py-4">Failed to load documents</p>
+          <InlineError
+            error="Failed to load documents"
+            onRetry={() => queryClient.invalidateQueries({ queryKey: ["ai", "status"] })}
+          />
         )}
         {!isLoading && !isError && filteredDocs.length === 0 && (
           <EmptyState variant="ai" className="py-8" />

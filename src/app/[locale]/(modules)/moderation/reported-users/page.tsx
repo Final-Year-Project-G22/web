@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { InlineError } from "@/components/ui/inline-error";
 import { Input } from "@/components/ui/input";
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import { TableSkeleton } from "@/components/ui/skeleton";
@@ -133,9 +134,7 @@ function ReportedUsersContent() {
           {reportsQuery.isLoading ? (
             <TableSkeleton rows={10} columns={6} />
           ) : reportsQuery.isError ? (
-            <p className="text-sm text-destructive">
-              Failed to load: {getErrorMessage(reportsQuery.error)}
-            </p>
+            <InlineError error={reportsQuery.error} onRetry={() => reportsQuery.refetch()} />
           ) : (
             <div className="rounded-lg border overflow-hidden">
               <Table>

@@ -21,6 +21,7 @@ import {
   useEditGuide,
 } from "@/app/[locale]/(modules)/guide/_stores/edit-guide.store";
 import type { GuideEditorStep } from "@/app/[locale]/(modules)/guide/_stores/guide-editor.types";
+import { InlineError } from "@/components/ui/inline-error";
 import { CardSkeleton } from "@/components/ui/skeleton";
 import type { AdminGuideStepDTO } from "@/lib/api/types";
 import { getErrorMessage } from "@/lib/utils";
@@ -345,9 +346,13 @@ function EditGuideContent() {
   if (guideQuery.isError || stepsQuery.isError) {
     return (
       <div className="-m-8 flex h-[calc(100vh-4rem)] items-center justify-center bg-editor-surface">
-        <p className="text-sm text-destructive">
-          Failed to load: {getErrorMessage(guideQuery.error ?? stepsQuery.error)}
-        </p>
+        <InlineError
+          error={guideQuery.error ?? stepsQuery.error}
+          onRetry={() => {
+            guideQuery.refetch();
+            stepsQuery.refetch();
+          }}
+        />
       </div>
     );
   }

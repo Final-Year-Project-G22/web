@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { InlineError } from "@/components/ui/inline-error";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import type { AdminAccountDTO } from "@/lib/api/types";
@@ -42,7 +43,7 @@ export default function AdminListPage() {
       {adminsQuery.isLoading ? (
         <TableSkeleton rows={10} columns={6} />
       ) : adminsQuery.isError ? (
-        <div className="text-center py-12 text-destructive">Failed to load admins.</div>
+        <InlineError error={adminsQuery.error} onRetry={() => adminsQuery.refetch()} />
       ) : (
         <>
           <AdminList admins={adminsQuery.data?.admins ?? []} onSelect={setSelectedAdmin} />
