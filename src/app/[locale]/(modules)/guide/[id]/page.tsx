@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { InlineError } from "@/components/ui/inline-error";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TagSelect } from "@/components/ui/multi-select";
@@ -129,9 +130,7 @@ export default function GuideDetailPage() {
   if (guideQuery.isError) {
     return (
       <div className="mx-auto max-w-7xl py-8">
-        <p className="text-sm text-destructive">
-          Failed to load: {getErrorMessage(guideQuery.error)}
-        </p>
+        <InlineError error={guideQuery.error} onRetry={() => guideQuery.refetch()} />
       </div>
     );
   }

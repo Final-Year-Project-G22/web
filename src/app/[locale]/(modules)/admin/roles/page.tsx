@@ -3,6 +3,7 @@
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { InlineError } from "@/components/ui/inline-error";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import type { RoleDTO } from "@/lib/api/types";
 import { hasPermission } from "@/lib/permissions";
@@ -32,7 +33,7 @@ export default function RolesPage() {
       {rolesQuery.isLoading ? (
         <TableSkeleton rows={10} columns={4} />
       ) : rolesQuery.isError ? (
-        <div className="text-center py-12 text-destructive">Failed to load roles.</div>
+        <InlineError error={rolesQuery.error} onRetry={() => rolesQuery.refetch()} />
       ) : (
         <RoleList roles={rolesQuery.data ?? []} onEdit={setEditingRole} />
       )}

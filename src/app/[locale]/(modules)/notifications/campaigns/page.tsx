@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { InlineError } from "@/components/ui/inline-error";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import {
   Select,
@@ -146,9 +147,7 @@ function CampaignsContent() {
           {campaignsQuery.isLoading ? (
             <TableSkeleton rows={10} columns={5} />
           ) : campaignsQuery.isError ? (
-            <p className="text-sm text-destructive">
-              Failed to load: {getErrorMessage(campaignsQuery.error)}
-            </p>
+            <InlineError error={campaignsQuery.error} onRetry={() => campaignsQuery.refetch()} />
           ) : (
             <>
               <div className="overflow-hidden rounded-lg border">

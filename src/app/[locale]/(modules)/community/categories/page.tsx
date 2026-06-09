@@ -22,6 +22,7 @@ import { CategoryEditModal, EditCategoryButton } from "@/components/ui/category-
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { InlineError } from "@/components/ui/inline-error";
 import { Input } from "@/components/ui/input";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import {
@@ -181,9 +182,7 @@ export default function AdminCommunityCategoriesPage() {
           {categoriesQuery.isLoading ? (
             <TableSkeleton rows={10} columns={5} />
           ) : categoriesQuery.isError ? (
-            <p className="text-sm text-destructive">
-              Failed to load: {getErrorMessage(categoriesQuery.error)}
-            </p>
+            <InlineError error={categoriesQuery.error} onRetry={() => categoriesQuery.refetch()} />
           ) : (
             <div className="rounded-lg border overflow-hidden">
               <Table>

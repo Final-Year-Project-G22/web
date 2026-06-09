@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { InlineError } from "@/components/ui/inline-error";
 import { Input } from "@/components/ui/input";
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import { TableSkeleton } from "@/components/ui/skeleton";
@@ -159,9 +160,7 @@ function ReportedContentContent() {
           {activeQuery.isLoading ? (
             <TableSkeleton rows={10} columns={7} />
           ) : activeQuery.isError ? (
-            <p className="text-sm text-destructive">
-              Failed to load: {getErrorMessage(activeQuery.error)}
-            </p>
+            <InlineError error={activeQuery.error} onRetry={() => activeQuery.refetch()} />
           ) : (
             <div className="rounded-lg border overflow-hidden">
               <Table>

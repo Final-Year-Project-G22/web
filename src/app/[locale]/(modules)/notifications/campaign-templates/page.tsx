@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { InlineError } from "@/components/ui/inline-error";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import {
@@ -91,9 +92,7 @@ function CampaignTemplatesContent() {
           {templatesQuery.isLoading ? (
             <TableSkeleton rows={10} columns={4} />
           ) : templatesQuery.isError ? (
-            <p className="text-sm text-destructive">
-              Failed to load: {getErrorMessage(templatesQuery.error)}
-            </p>
+            <InlineError error={templatesQuery.error} onRetry={() => templatesQuery.refetch()} />
           ) : (
             <>
               <div className="overflow-hidden rounded-lg border">

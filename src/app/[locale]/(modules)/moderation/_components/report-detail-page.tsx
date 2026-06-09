@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { InlineError } from "@/components/ui/inline-error";
 import { CardSkeleton } from "@/components/ui/skeleton";
 import { getErrorMessage } from "@/lib/utils";
 import {
@@ -269,9 +270,7 @@ export function ReportDetailPage({
           {reportQuery.isLoading ? (
             <CardSkeleton lines={5} />
           ) : reportQuery.isError ? (
-            <p className="text-sm text-destructive">
-              Failed to load: {getErrorMessage(reportQuery.error)}
-            </p>
+            <InlineError error={reportQuery.error} onRetry={() => reportQuery.refetch()} />
           ) : report ? (
             <>
               <div className="grid grid-cols-2 gap-4 text-sm">
