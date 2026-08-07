@@ -12,8 +12,14 @@ const badgeVariants = cva(
         default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
         secondary:
           "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
+        // §5 pill grammar: color + icon + text, tint fill + strong text + hairline-of-self border
         destructive:
-          "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
+          "border-current/20 bg-destructive-tint text-destructive-strong focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive-tint/80",
+        success:
+          "border-current/20 bg-success-tint text-success-strong [a]:hover:bg-success-tint/80",
+        warning:
+          "border-current/25 bg-warning-tint text-warning-strong [a]:hover:bg-warning-tint/80",
+        info: "border-current/20 bg-info-tint text-info-strong [a]:hover:bg-info-tint/80",
         outline:
           "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost:
