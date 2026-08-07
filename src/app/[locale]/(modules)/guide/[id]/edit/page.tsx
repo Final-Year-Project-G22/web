@@ -363,7 +363,7 @@ function EditGuideContent() {
     <div className="-m-8 flex h-[calc(100vh-4rem)] flex-col bg-editor-surface">
       <EditGuideHeader guideName={guideName} />
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[18rem_1fr] xl:grid-cols-[18rem_1fr_24rem]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[16.5rem_minmax(0,1fr)] xl:grid-cols-[16.5rem_minmax(0,1fr)_24rem]">
         <EditGuideSidebar
           onDelete={handleDeleteStep}
           onSaveOrder={handleSaveOrder}
@@ -385,11 +385,7 @@ function EditGuideContent() {
           <EditStepForm onSave={handleSave} />
         </main>
 
-        <MobilePreview
-          guideName={guideName}
-          totalSteps={persistedSteps.length}
-          step={previewStep}
-        />
+        <MobilePreview guideName={guideName} totalSteps={allSteps.length} step={previewStep} />
       </div>
     </div>
   );
