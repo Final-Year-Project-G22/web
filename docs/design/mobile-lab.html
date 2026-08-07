@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Mobile palette lab — navy · emerald · amber — Adisu Serategna admin</title>
+<style>
+  :root{
+    --bg:#F2F2EF; --panel:#FFFFFF; --ink:#1E1C18; --muted:#6E6A60; --line:#E1E1DC;
+    --body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--body);background:var(--bg);color:var(--ink);padding:32px 28px 64px;-webkit-font-smoothing:antialiased}
+  header{max-width:1240px;margin:0 auto 8px}
+  h1{font-size:20px;font-weight:700;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px;margin-top:6px;line-height:1.55;max-width:940px}
+  .sub b{color:var(--ink)}
+  .grid{max-width:1240px;margin:24px auto 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(560px,1fr));gap:18px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .card .head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:4px}
+  .card h2{font-size:14px;font-weight:700}
+  .card h2 .am{font-weight:500;color:var(--muted);font-size:12px}
+  .card .char{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px}
+  .card .char b{color:var(--ink);font-weight:600}
+  .frames{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .frame{border:1px solid #D8D8D2;border-radius:8px;overflow:hidden;font-size:11px}
+  .frame .ftag{display:flex;align-items:center;justify-content:space-between;padding:5px 9px;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid rgba(0,0,0,.08)}
+  .frame .ftag .sw{display:inline-flex;gap:3px}
+  .frame .ftag .sw i{width:11px;height:11px;border-radius:3px;border:1px solid rgba(0,0,0,.1)}
+  .frame .fbody{padding:10px 11px 11px}
+  .fhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .fhead h3{font-size:12.5px;font-weight:700}
+  .fbtn{height:22px;padding:0 9px;border-radius:var(--r,6px);font-size:10px;font-weight:600;display:inline-flex;align-items:center;gap:4px;background:var(--primary,currentColor);color:#fff}
+  .fstrip{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}
+  .fcell{border:1px solid var(--l,currentColor);border-radius:var(--r,6px);padding:7px 9px;background:var(--p)}
+  .fcell .lbl{font-size:8.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.62}
+  .fcell .val{font-size:14px;font-weight:700;margin-top:1px}
+  .fchip{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:5px;vertical-align:-2px}
+  .frow{display:flex;align-items:center;gap:7px;border-top:1px solid var(--l,currentColor);padding-top:7px}
+  .frow .id{font-family:var(--mono);font-size:9.5px;opacity:.75}
+  .frow .who{font-weight:600;flex:1}
+  .fstamp{font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:1.5px 6px;border:1px solid currentColor;border-radius:2px;transform:rotate(-1deg)}
+  .fpill{font-size:8.5px;font-weight:700;padding:2px 7px;border-radius:999px}
+  .weave{height:3px;margin-bottom:8px;border-radius:2px}
+  .fhero{height:40px;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:7px;padding:0 12px;color:#fff;font-size:10.5px;font-weight:600;background:linear-gradient(135deg,#0F172A,#1E3A5F)}
+  .fhero .ring{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(255,255,255,.25);border-top-color:#6EE7B7;display:inline-flex;align-items:center;justify-content:center;font-size:8px}
+  .fhero span{flex:1}
+  .note{max-width:1240px;margin:22px auto 0;font-size:12px;color:var(--muted);line-height:1.6}
+  .note b{color:var(--ink)}
+
+  /* ── treatments ── */
+  .t1{--c:#F8FAFC;--c2:#F1F5F9;--p:#FFFFFF;--p2:#F8FAFC;--i:#0F172A;--m:#64748B;--l:#E2E8F0;--primary:#1E293B;--primary-ink:#FFFFFF;--good:#10B981;--bad:#EF4444;--warn:#F59E0B;--r:12px;--sh:0 1px 3px rgba(15,23,42,.07)}
+  .t1.dark{--c:#0C1220;--c2:#121921;--p:#121921;--p2:#1E293B;--i:#F1F5F9;--m:#94A3B8;--l:#334155;--primary:#94A3B8;--primary-ink:#0F172A;--good:#6EE7B7;--bad:#FCA5A5;--warn:#FCD34D;--r:12px;--sh:none}
+  .t2{--c:#F4F5F1;--c2:#ECEDE8;--p:#FFFFFF;--p2:#F3F4F0;--i:#0F172A;--m:#64748B;--l:#E2E8F0;--primary:#1E293B;--primary-ink:#FFFFFF;--good:#047857;--bad:#EF4444;--warn:#F59E0B;--r:8px;--sh:none}
+  .t2.dark{--c:#14171A;--c2:#171B1E;--p:#1B1E22;--p2:#20242A;--i:#ECEEEA;--m:#9AA0A6;--l:#2A2E33;--primary:#94A3B8;--primary-ink:#0F172A;--good:#6EE7B7;--bad:#FCA5A5;--warn:#FCD34D;--r:8px;--sh:none}
+  .t3{--c:#F8FAFC;--c2:#F1F5F9;--p:#FFFFFF;--p2:#F6F8FA;--i:#0F172A;--m:#64748B;--l:#E2E8F0;--primary:#047857;--primary-ink:#FFFFFF;--good:#047857;--bad:#EF4444;--warn:#F59E0B;--r:8px;--sh:none}
+  .t3.dark{--c:#0D1512;--c2:#111A16;--p:#141D19;--p2:#1B2821;--i:#E8F0EC;--m:#93A79B;--l:#26372E;--primary:#34D399;--primary-ink:#052E21;--good:#6EE7B7;--bad:#FCA5A5;--warn:#FCD34D;--r:8px;--sh:none}
+  .t4{--c:#F1ECDF;--c2:#E7E1D2;--p:#FBF8F0;--p2:#F0EBDC;--i:#1E1B16;--m:#76715F;--l:#DCD5C3;--primary:#1E7A46;--primary-ink:#FFFFFF;--good:#1E7A46;--bad:#B03A2A;--warn:#8A6210;--r:8px;--sh:none}
+  .t4.dark{--c:#0D1510;--c2:#111A14;--p:#15201A;--p2:#1C2A21;--i:#EDF3EC;--m:#8FA08E;--l:#29382D;--primary:#3FA06B;--primary-ink:#0D1510;--good:#6FC598;--bad:#E07960;--warn:#E0B34C;--r:8px;--sh:none}
+
+  .frame .fbody{background:var(--c);color:var(--i)}
+  .frame .ftag{background:var(--c2);color:var(--m)}
+  .fhead h3{color:var(--i)}
+  .fbtn{background:var(--primary);color:var(--primary-ink);box-shadow:var(--sh)}
+  .fcell{box-shadow:var(--sh)}
+  .frow{border-top-color:var(--l)}
+  .frow .id{color:var(--m)}
+  .frow .who{color:var(--i)}
+  .fstamp{color:var(--good)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Mobile palette lab — the consumer app's colors on the web admin</h1>
+  <p class="sub">
+    Read directly from <b><code>mobile/DESIGN.md</code></b> (M3 system): slate-navy primary <b>#1E293B</b>, emerald secondary <b>#10B981</b> (growth/success),
+    amber tertiary <b>#F59E0B</b> (cultural warmth), M3 slate surfaces, 12dp radius, elevation-over-borders, and the navy→blue hero gradient as their only ornament.
+    Four treatments below — light + dark each — plus the Flag reference for comparison. Honest notes: navy+emerald is the most common SaaS palette family (distinctiveness risk),
+    and M3 dark themes lighten the primary to pale slate <b>#94A3B8</b> (unusual on desktop but exactly what the app ships).
+  </p>
+</header>
+
+<div class="grid">
+
+  <div class="card">
+    <div class="head"><h2>1 · Mobile as-is <span class="am">(እንደ መተግበሪያው)</span></h2></div>
+    <p class="char"><b>Faithful M3.</b> Navy actions, emerald + amber accents, slate surfaces, 12px radius, elevation shadows instead of hairlines, and the navy hero-gradient card — the mobile app's identity, unadapted.</p>
+    <div class="frames">
+      <div class="frame t1"><div class="ftag"><span>light</span><span class="sw"><i style="background:#1E293B"></i><i style="background:#10B981"></i><i style="background:#F59E0B"></i><i style="background:#F8FAFC"></i></span></div><div class="fbody">
+        <div class="weave" style="background:repeating-linear-gradient(90deg,#1E293B 0 8px,#10B981 8px 15px,#F59E0B 15px 22px,#1E293B 22px 30px)"></div>
+        <div class="fhero"><span class="ring">65</span><span>Formalization · 65%</span></div>
+        <div class="fhead"><h3>Dashboard · ዳሽቦርድ</h3><span class="fbtn">+ New campaign</span></div>
+        <div class="fstrip"><div class="fcell"><span class="fchip" style="background:rgba(16,185,129,.14)"></span><span class="lbl">MSME users</span><div class="val">42,581</div></div><div class="fcell"><span class="fchip" style="background:rgba(245,158,11,.16)"></span><span class="lbl">Pending</span><div class="val">97</div></div></div>
+        <div class="frow"><span class="id">BIZ-0231</span><span class="who">Selam Bekele</span><span class="fpill" style="background:rgba(16,185,129,.14);color:#047857">✓ Completed</span></div>
+      </div></div>
+      <div class="frame t1 dark"><div class="ftag"><span>dark</span><span class="sw"><i style="background:#94A3B8"></i><i style="background:#6EE7B7"></i><i style="background:#FCD34D"></i><i style="background:#0C1220"></i></span></div><div class="fbody">
+        <div class="weave" style="background:repeating-linear-gradient(90deg,#94A3B8 0 8px,#6EE7B7 8px 15px,#FCD34D 15px 22px,#94A3B8 22px 30px)"></div>
+        <div class="fhero"><span class="ring">65</span><span>Formalization · 65%</span></div>
+        <div class="fhead"><h3>Dashboard · ዳሽቦርድ</h3><span class="fbtn">+ New campaign</span></div>
+        <div class="fstrip"><div class="fcell"><span class="fchip" style="background:rgba(110,231,183,.15)"></span><span class="lbl">MSME users</span><div class="val">42,581</div></div><div class="fcell"><span class="fchip" style="background:rgba(252,211,77,.15)"></span><span class="lbl">Pending</span><div class="val">97</div></div></div>
+        <div class="frow"><span class="id">BIZ-0231</span><span class="who">Selam Bekele</span><span class="fpill" style="background:rgba(110,231,183,.16);color:#6EE7B7">✓ Completed</span></div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h2>2 · Mobile × web-clean <span class="am">(ድብልቅ)</span></h2></div>
+    <p class="char"><b>The product's colors, the web's discipline.</b> Same navy/emerald/amber trio on the web's clean cool ground with hairline borders, 8px radius — the same identity across both apps, adapted to desktop density.</p>
+    <div class="frames">
+      <div class="frame t2"><div class="ftag"><span>light</span><span class="sw"><i style="background:#1E293B"></i><i style="background:#10B981"></i><i style="background:#F59E0B"></i><i style="background:#F4F5F1"></i></span></div><div class="fbody">
+        <div class="weave" style="background:repeating-linear-gradient(90deg,#1E293B 0 8px,#10B981 8px 15px,#F59E0B 15px 22px,#1E293B 22px 30px)"></div>
+        <div class="fhead"><h3>Dashboard · ዳሽቦርድ</h3><span class="fbtn">+ New campaign</span></div>
+        <div class="fstrip"><div class="fcell"><span class="fchip" style="background:rgba(16,185,129,.14)"></span><span class="lbl">MSME users</span><div class="val">42,581</div></div><div class="fcell"><span class="fchip" style="background:rgba(245,158,11,.16)"></span><span class="lbl">Pending</span><div class="val">97</div></div></div>
+        <div class="frow"><span class="id">BIZ-0231</span><span class="who">Selam Bekele</span><span class="fstamp" style="color:#047857">Approved</span></div>
+      </div></div>
+      <div class="frame t2 dark"><div class="ftag"><span>dark</span><span class="sw"><i style="background:#94A3B8"></i><i style="background:#6EE7B7"></i><i style="background:#FCD34D"></i><i style="background:#14171A"></i></span></div><div class="fbody">
+        <div class="weave" style="background:repeating-linear-gradient(90deg,#94A3B8 0 8px,#6EE7B7 8px 15px,#FCD34D 15px 22px,#94A3B8 22px 30px)"></div>
+        <div class="fhead"><h3>Dashboard · ዳሽቦርድ</h3><span class="fbtn">+ New campaign</span></div>
+        <div class="fstrip"><div class="fcell"><span class="fchip" style="background:rgba(110,231,183,.15)"></span><span class="lbl">MSME users</span><div class="val">42,581</div></div><div class="fcell"><span class="fchip" style="background:rgba(252,211,77,.15)"></span><span class="lbl">Pending</span><div class="val">97</div></div></div>
+        <div class="frow"><span class="id">BIZ-0231</span><span class="who">Selam Bekele</span><span class="fstamp" style="color:#6EE7B7">Approved</span></div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h2>3 · Emerald-led <span class="am">(ኢመራልድ)</span></h2></div>
+    <p class="char"><b>Growth first.</b> The mobile's emerald — the "growth / progress / formalization journey" color — promoted to primary action; navy becomes secondary; amber stays as warmth. The most product-true *story*: this admin is about progress.</p>
+    <div class="frames">
+      <div class="frame t3"><div class="ftag"><span>light</span><span class="sw"><i style="background:#047857"></i><i style="background:#1E293B"></i><i style="background:#F59E0B"></i><i style="background:#F8FAFC"></i></span></div><div class="fbody">
+        <div class="weave" style="background:repeating-linear-gradient(90deg,#047857 0 8px,#1E293B 8px 15px,#F59E0B 15px 22px,#047857 22px 30px)"></div>
+        <div class="fhead"><h3>Dashboard · ዳሽቦርድ</h3><span class="fbtn">+ New campaign</span></div>
+        <div class="fstrip"><div class="fcell"><span class="fchip" style="background:rgba(4,120,87,.14)"></span><span class="lbl">MSME users</span><div class="val">42,581</div></div><div class="fcell"><span class="fchip" style="background:rgba(245,158,11,.16)"></span><span class="lbl">Pending</span><div class="val">97</div></div></div>
+        <div class="frow"><span class="id">BIZ-0231</span><span class="who">Selam Bekele</span><span class="fstamp">Approved</span></div>
+      </div></div>
+      <div class="frame t3 dark"><div class="ftag"><span>dark</span><span class="sw"><i style="background:#34D399"></i><i style="background:#94A3B8"></i><i style="background:#FCD34D"></i><i style="background:#0D1512"></i></span></div><div class="fbody">
+        <div class="weave" style="background:repeating-linear-gradient(90deg,#34D399 0 8px,#94A3B8 8px 15px,#FCD34D 15px 22px,#34D399 22px 30px)"></div>
+        <div class="fhead"><h3>Dashboard · ዳሽቦርድ</h3><span class="fbtn">+ New campaign</span></div>
+        <div class="fstrip"><div class="fcell"><span class="fchip" style="background:rgba(52,211,153,.15)"></span><span class="lbl">MSME users</span><div class="val">42,581</div></div><div class="fcell"><span class="fchip" style="background:rgba(252,211,77,.15)"></span><span class="lbl">Pending</span><div class="val">97</div></div></div>
+        <div class="frow"><span class="id">BIZ-0231</span><span class="who">Selam Bekele</span><span class="fstamp" style="color:#6EE7B7">Approved</span></div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h2>4 · Flag <span class="am">(ሰንደቅ ዓላማ)</span> <span style="font-weight:500;color:#8a8578">reference</span></h2></div>
+    <p class="char"><b>The current direction</b> (v6), as the comparison anchor: parchment / forest canvas, green acts, gold highlights, red stamps.</p>
+    <div class="frames">
+      <div class="frame t4"><div class="ftag"><span>light</span><span class="sw"><i style="background:#1E7A46"></i><i style="background:#C08A1E"></i><i style="background:#B03A2A"></i><i style="background:#F1ECDF"></i></span></div><div class="fbody">
+        <div class="weave" style="background:repeating-linear-gradient(90deg,#1E7A46 0 8px,#C08A1E 8px 15px,#B03A2A 15px 22px,#1E7A46 22px 30px)"></div>
+        <div class="fhead"><h3>Dashboard · ዳሽቦርድ</h3><span class="fbtn">+ New campaign</span></div>
+        <div class="fstrip"><div class="fcell"><span class="fchip" style="background:rgba(30,122,70,.12)"></span><span class="lbl">MSME users</span><div class="val">42,581</div></div><div class="fcell"><span class="fchip" style="background:rgba(176,58,42,.12)"></span><span class="lbl">Flagged</span><div class="val">97</div></div></div>
+        <div class="frow"><span class="id">BIZ-0231</span><span class="who">Selam Bekele</span><span class="fstamp" style="color:#1E7A46">Approved</span></div>
+      </div></div>
+      <div class="frame t4 dark"><div class="ftag"><span>dark</span><span class="sw"><i style="background:#3FA06B"></i><i style="background:#E0B34C"></i><i style="background:#E07960"></i><i style="background:#0D1510"></i></span></div><div class="fbody">
+        <div class="weave" style="background:repeating-linear-gradient(90deg,#3FA06B 0 8px,#E0B34C 8px 15px,#E07960 15px 22px,#3FA06B 22px 30px)"></div>
+        <div class="fhead"><h3>Dashboard · ዳሽቦርድ</h3><span class="fbtn">+ New campaign</span></div>
+        <div class="fstrip"><div class="fcell"><span class="fchip" style="background:rgba(111,197,152,.15)"></span><span class="lbl">MSME users</span><div class="val">42,581</div></div><div class="fcell"><span class="fchip" style="background:rgba(224,121,96,.14)"></span><span class="lbl">Flagged</span><div class="val">97</div></div></div>
+        <div class="frow"><span class="id">BIZ-0231</span><span class="who">Selam Bekele</span><span class="fstamp" style="color:#6FC598">Approved</span></div>
+      </div></div>
+    </div>
+  </div>
+
+</div>
+
+<p class="note">
+  <b>The real tradeoff:</b> the mobile trio (navy/emerald/amber) is the <i>same product's</i> identity — one design system across both apps is a genuine argument, and emerald's "growth" meaning is a perfect fit for a formalization admin.
+  The cost: navy + emerald is the most common SaaS palette on earth (Linear, Vercel-adjacent, dozens of admin tools), so the web admin would lose some of the originality this effort is about — though the tibeb weave, stamps, Ethiopic numerals, and parchment/forest surfaces stay in every option.
+  <b>Pick:</b> a number + mode, a mix ("2 light + 3 dark"), or stay with 4 (Flag). Then the chosen direction goes into the full prototype.
+</p>
+
+</body>
+</html>

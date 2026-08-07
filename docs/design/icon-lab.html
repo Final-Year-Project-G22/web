@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="am" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Icon lab — icon sets, rail presentation, brand marks — Adisu Serategna admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─────────── tokens (locked) ─────────── */
+:root{
+  --canvas:#F8FAFC; --canvas-2:#F1F5F9; --panel:#FFFFFF; --panel-2:#F1F5F9;
+  --ink:#0F172A; --ink-2:#475569; --muted:#64748B;
+  --line:#E2E8F0; --line-2:#CBD5E1;
+  --navy:#1E293B; --navy-strong:#0F172A; --navy-tint:rgba(30,41,59,.06);
+  --emerald:#10B981; --emerald-strong:#047857; --emerald-tint:rgba(16,185,129,.12);
+  --amber:#F59E0B; --amber-strong:#92400E; --amber-tint:rgba(245,158,11,.14);
+  --red:#EF4444; --red-strong:#DC2626; --red-tint:rgba(239,68,68,.10);
+  --blue:#3B82F6; --blue-strong:#2563EB; --blue-tint:rgba(59,130,246,.10);
+  --good:#047857; --good-tint:rgba(16,185,129,.12);
+  --bad:#DC2626; --bad-tint:rgba(239,68,68,.10);
+  --warn:#92400E; --warn-tint:rgba(245,158,11,.16);
+  --radius:8px;
+  --display:"Sora","Noto Sans Ethiopic",system-ui,sans-serif;
+  --body:"Inter","Noto Sans Ethiopic",system-ui,sans-serif;
+  --mono:"JetBrains Mono","Noto Sans Ethiopic",ui-monospace,monospace;
+  --shadow:0 1px 2px rgba(15,23,42,.05);
+}
+[data-theme="dark"]{
+  --canvas:#14171A; --canvas-2:#171B1E; --panel:#1B1E22; --panel-2:#20242A;
+  --ink:#ECEEEA; --ink-2:#B4BBC4; --muted:#9AA0A6;
+  --line:#2A2E33; --line-2:#373C45;
+  --navy:#94A3B8; --navy-strong:#CBD5E1; --navy-tint:rgba(148,163,184,.12);
+  --emerald:#6EE7B7; --emerald-strong:#34D399; --emerald-tint:rgba(110,231,183,.14);
+  --amber:#FCD34D; --amber-strong:#FDE68A; --amber-tint:rgba(252,211,77,.14);
+  --red:#FCA5A5; --red-strong:#F87171; --red-tint:rgba(252,165,165,.12);
+  --blue:#93C5FD; --blue-strong:#7DB4FA; --blue-tint:rgba(147,197,253,.12);
+  --good:#6EE7B7; --good-tint:rgba(110,231,183,.14);
+  --bad:#F87171; --bad-tint:rgba(252,165,165,.12);
+  --warn:#FCD34D; --warn-tint:rgba(252,211,77,.14);
+  --shadow:0 1px 2px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);font-size:14px;line-height:1.5;background:var(--canvas);color:var(--ink);-webkit-font-smoothing:antialiased;padding-bottom:60px}
+:focus-visible{outline:2px solid var(--navy);outline-offset:2px;border-radius:4px}
+.seg{display:inline-flex;background:var(--canvas-2);border:1px solid var(--line);border-radius:6px;padding:2px}
+.seg button{flex:1;border:0;background:transparent;padding:4px 12px;border-radius:4px;font-family:var(--body);font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--canvas)}
+.switch{position:relative;width:32px;height:18px;border-radius:999px;background:var(--line-2);border:0;cursor:pointer;transition:background .15s}
+.switch[aria-checked="true"]{background:var(--navy)}
+.switch i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch[aria-checked="true"] i{transform:translateX(14px)}
+
+/* ─────────── lab header ─────────── */
+.banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 20px;font-size:12.5px;color:var(--ink-2);background:var(--canvas-2);border-bottom:1px solid var(--line)}
+.banner b{color:var(--navy-strong);font-weight:600}
+.banner .ctl{margin-left:auto;display:flex;align-items:center;gap:14px}
+.banner .dot{width:6px;height:6px;border-radius:50%;background:var(--amber)}
+.wrap{max-width:1420px;margin:20px auto 0;padding:0 20px}
+.wrap h1{font-family:var(--display);font-size:18px;font-weight:600;letter-spacing:-.01em}
+.wrap .sub{font-size:12.5px;color:var(--muted);margin-top:4px;max-width:980px}
+.sec-tag{margin:26px 0 10px;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* ─────────── frames ─────────── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(430px,1fr));gap:16px}
+.frame{background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:12px;display:flex;flex-direction:column;gap:10px}
+.fhead{display:flex;align-items:baseline;gap:8px}
+.fhead b{font-family:var(--display);font-size:13px;font-weight:600}
+.fhead span{font-size:11px;color:var(--muted)}
+.mini{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;min-height:300px}
+.tibeb{height:3px;flex:0 0 3px;background:repeating-linear-gradient(90deg,var(--navy) 0 8px,var(--emerald) 8px 15px,var(--amber) 15px 22px,var(--navy) 22px 30px)}
+
+/* mini rail */
+.mrail{width:196px;flex:0 0 196px;background:var(--canvas-2);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:10px 10px 12px}
+.mrail .brand{display:flex;align-items:center;gap:8px;padding:2px 6px 12px}
+.mrail .brand .mark{width:26px;height:26px;flex:0 0 26px;border-radius:7px;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--panel)}
+.mrail .brand .mark svg{width:15px;height:15px}
+.mrail .brand .word{font-family:var(--display);font-size:12px;font-weight:600;line-height:1.1;white-space:nowrap}
+.mrail .brand .word small{display:block;font-size:9.5px;color:var(--muted);font-family:var(--body);font-weight:500}
+.mrail .mnav{display:flex;flex-direction:column;gap:1px;overflow:hidden}
+.mrail .row{display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:7px;font-size:12.5px;font-weight:500;color:var(--ink-2);border:1px solid transparent;cursor:pointer;white-space:nowrap}
+.mrail .row .ic{width:15px;height:15px;flex:0 0 15px}
+.mrail .row .lbl{overflow:hidden;text-overflow:ellipsis}
+.mrail .row.active{background:var(--navy-tint);color:var(--navy);font-weight:600;box-shadow:inset 2px 0 0 var(--navy)}
+.mrail .row:hover{background:var(--panel);border-color:var(--line)}
+
+/* tile presentation */
+.frame[kind="tile"] .mrail .row{gap:10px;padding:5px 9px}
+.frame[kind="tile"] .mrail .icw{width:26px;height:26px;flex:0 0 26px;border-radius:7px;background:var(--panel-2);color:var(--ink-2);display:flex;align-items:center;justify-content:center}
+.frame[kind="tile"] .mrail .row.active{background:transparent;box-shadow:none}
+.frame[kind="tile"] .mrail .row.active .icw{background:var(--navy);color:#fff}
+[data-theme="dark"] .frame[kind="tile"] .mrail .row.active .icw{color:#0F172A}
+.frame[kind="tile"] .mrail .row.active{color:var(--navy);font-weight:600}
+
+/* fill presentation */
+.frame[kind="fill"] .mrail .row{padding:7px 10px}
+.frame[kind="fill"] .mrail .row.active{background:var(--navy);color:#fff;box-shadow:none}
+[data-theme="dark"] .frame[kind="fill"] .mrail .row.active{color:#0F172A}
+
+/* chip presentation */
+.frame[kind="chip"] .mrail .icw{width:26px;height:26px;flex:0 0 26px;border-radius:7px;display:flex;align-items:center;justify-content:center}
+.frame[kind="chip"] .mrail .row.active{background:transparent;box-shadow:none;font-weight:600;color:var(--ink)}
+
+/* dot presentation */
+.frame[kind="dot"] .mrail .dot{width:7px;height:7px;border-radius:50%;margin-left:auto;flex:0 0 7px;background:var(--line-2)}
+.frame[kind="dot"] .mrail .row.active{background:transparent;box-shadow:none}
+
+/* numbered */
+.frame[kind="num"] .mrail .num{font-family:var(--mono);font-size:9.5px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:1px 5px;background:var(--panel)}
+.frame[kind="num"] .mrail .row.active{background:transparent;box-shadow:none}
+.frame[kind="num"] .mrail .row.active .num{background:var(--navy);color:#fff;border-color:var(--navy)}
+[data-theme="dark"] .frame[kind="num"] .mrail .row.active .num{color:#0F172A}
+
+/* weave dividers */
+.frame[kind="weave"] .mrail .wsec{display:flex;align-items:center;gap:8px;margin:12px 6px 5px;font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.frame[kind="weave"] .mrail .wsec:first-of-type{margin-top:2px}
+.frame[kind="weave"] .mrail .wbar{width:22px;height:3px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--navy) 0 4px,var(--emerald) 4px 8px,var(--amber) 8px 11px,var(--navy) 11px 15px);flex:0 0 22px}
+.frame[kind="weave"] .mrail .row.active{background:transparent;box-shadow:none}
+
+/* pagume accent */
+.frame[kind="pagume"] .mrail .p13{display:flex;gap:2px;margin-left:auto;flex:0 0 auto}
+.frame[kind="pagume"] .mrail .p13 i{width:3px;height:3px;border-radius:50%;background:var(--line-2)}
+.frame[kind="pagume"] .mrail .p13 i.g{background:var(--amber)}
+.frame[kind="pagume"] .mrail .row.active{background:transparent;box-shadow:none}
+
+/* stage card */
+.mstage{flex:1;display:flex;flex-direction:column;gap:10px;padding:14px;min-width:0}
+.mstage .mhead{display:flex;align-items:center;justify-content:space-between}
+.mstage .mhead b{font-family:var(--display);font-size:13.5px;font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;border:1px solid transparent}
+.pill.good{color:var(--good);background:var(--good-tint);border-color:color-mix(in srgb,var(--good) 25%,transparent)}
+.mstage .mrow{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);padding:7px 10px;border:1px solid var(--line);border-radius:7px;background:var(--panel)}
+.mstage .mrow b{font-family:var(--display);font-size:13px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.mstage .mrow b.g{color:var(--good)}
+.mstage .mrow b.r{color:var(--bad)}
+.stamp{position:relative;display:inline-flex;align-items:center;padding:3px 12px 3px 14px;font-family:var(--display);font-size:9.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--good);border:1.4px solid currentColor;border-radius:3px;clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px);transform:rotate(-1.2deg);align-self:flex-start;margin-top:2px}
+.stamp::before{content:"";position:absolute;inset:2px;border:1px dashed currentColor;border-radius:2px;opacity:.5}
+
+/* brand marks */
+.brands{display:flex;flex-direction:column;gap:10px}
+.brow{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--canvas)}
+.brow .bmark{width:36px;height:36px;flex:0 0 36px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--panel)}
+.brow .bmark svg{width:20px;height:20px}
+.brow .binfo{line-height:1.3}
+.brow .binfo b{display:block;font-family:var(--display);font-size:12.5px;font-weight:600}
+.brow .binfo span{font-size:11px;color:var(--muted)}
+.bmark.m-mesh{background:#1E293B}
+.bmark.m-tibeb{background:#0F172A}
+.bmark.m-pagume{background:#047857}
+
+.foot{max-width:1420px;margin:26px auto 0;padding:0 20px;font-size:12px;color:var(--muted);line-height:1.6}
+.foot b{color:var(--amber)}
+@media (max-width:760px){.banner .ctl{margin-left:0;margin-top:4px}}
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <span class="dot"></span>
+  <span><b>Icon lab</b> — icon sets · rail presentation · brand marks · signature decorations. Same locked palette, አማ/EN + dark everywhere.</span>
+  <span class="ctl">
+    <div class="seg" role="group" aria-label="Language">
+      <button data-lang="en" type="button">EN</button>
+      <button data-lang="am" class="on" type="button">አማ</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:11.5px"><span data-en="Dark" data-am="ጨለማ">ጨለማ</span><button class="switch" id="darkSwitch" role="switch" aria-checked="false" aria-label="Dark mode"><i></i></button></div>
+  </span>
+</div>
+
+<div class="wrap">
+  <h1>Icon &amp; ornament lab</h1>
+  <p class="sub" data-en="The same admin, eight ways: four icon sets, four rail presentations, then brand marks and Ethiopian signature decorations. Pick any combination — icon set and presentation are independent." data-am="ተመሳሳይ አስተዳደር፣ በስምንት መልክ፡- አራት አዶ ስብስቦች፣ አራት የአዶ አቀራረብ ዘዴዎች፣ ከዚያም የምርት ስም ምልክቶች እና የኢትዮጵያ ፊርማ ጌጦች።">ተመሳሳይ አስተዳደር፣ በስምንት መልክ፡- አራት አዶ ስብስቦች፣ አራት የአዶ አቀራረብ ዘዴዎች፣ ከዚያም የምርት ስም ምልክቶች እና የኢትዮጵያ ፊርማ ጌጦች።</p>
+
+  <div class="sec-tag" data-en="Icon sets" data-am="አዶ ስብስቦች">አዶ ስብስቦች</div>
+  <div class="grid" id="setGrid"></div>
+
+  <div class="sec-tag" data-en="Rail presentation" data-am="የአዶ አቀራረብ">የአዶ አቀራረብ</div>
+  <div class="grid" id="presGrid"></div>
+
+  <div class="sec-tag" data-en="Brand marks & decorations" data-am="የምርት ስም ምልክቶች እና ጌጦች">የምርት ስም ምልክቶች እና ጌጦች</div>
+  <div class="grid" id="sigGrid"></div>
+</div>
+
+<div class="foot"><b>Signature</b> · navy acts, emerald grows, amber warms. Icon sets and presentation are independent axes — e.g. duotone icons + tiled active state, or line icons + status dots.</div>
+
+<script>
+(function(){
+  var lang = (new URLSearchParams(location.search)).get('lang') || localStorage.getItem('proto-lang') || 'am';
+  var theme = (new URLSearchParams(location.search)).get('theme') || localStorage.getItem('proto-theme') || 'light';
+
+  var I = {
+    dashboard:{line:'<rect x="3" y="3" width="7" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="12" width="7" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="16" width="7" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="2"/>',
+      solid:'<rect x="3" y="3" width="7" height="9" rx="1.5" fill="currentColor"/><rect x="14" y="3" width="7" height="5" rx="1.5" fill="currentColor"/><rect x="14" y="12" width="7" height="9" rx="1.5" fill="currentColor"/><rect x="3" y="16" width="7" height="5" rx="1.5" fill="currentColor"/>',
+      duo:'<rect x="3" y="3" width="7" height="9" rx="1.5" fill="currentColor" opacity=".25"/><rect x="14" y="3" width="7" height="5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="3" y="16" width="7" height="5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="14" y="12" width="7" height="9" rx="1.5" fill="var(--emerald-strong)"/><rect x="14" y="3" width="7" height="5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/>'},
+    guides:{line:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+      solid:'<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2zm3 4.5h8v1.6h-8zm0 3.2h8v1.6h-8zm0 3.2h5v1.6h-5z" fill="currentColor"/>',
+      duo:'<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="currentColor" opacity=".22"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M14.5 2v6.5l2-1.3 2 1.3V2" fill="none" stroke="var(--emerald-strong)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'},
+    knowledge:{line:'<path d="M9 18h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 22h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 2a7 7 0 0 1 4.9 11.9c-.8.8-1.4 1.5-1.6 2.6H8.7c-.2-1.1-.8-1.8-1.6-2.6A7 7 0 0 1 12 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+      solid:'<path d="M12 2a7 7 0 0 1 4.9 11.9c-.8.8-1.4 1.5-1.6 2.6H8.7c-.2-1.1-.8-1.8-1.6-2.6A7 7 0 0 1 12 2z" fill="currentColor"/><path d="M9 18h6v2.4H9z" fill="currentColor"/><path d="M10 22h4v2h-4z" fill="currentColor"/>',
+      duo:'<path d="M12 2a7 7 0 0 1 4.9 11.9c-.8.8-1.4 1.5-1.6 2.6H8.7c-.2-1.1-.8-1.8-1.6-2.6A7 7 0 0 1 12 2z" fill="var(--amber-strong)" opacity=".85"/><path d="M9 18h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 22h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'},
+    ask:{line:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+      solid:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill="currentColor"/>',
+      duo:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill="currentColor" opacity=".22"/><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="11" r="1.7" fill="var(--emerald-strong)"/>'},
+    admin:{line:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+      solid:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor"/>',
+      duo:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" opacity=".22"/><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 11.6l2 2 4-4" fill="none" stroke="var(--emerald-strong)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'},
+    sectors:{line:'<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="7" cy="7" r="1.4" fill="currentColor"/>',
+      solid:'<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" fill="currentColor"/><circle cx="7" cy="7" r="1.7" fill="var(--canvas)"/>',
+      duo:'<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" fill="var(--emerald-strong)" opacity=".3"/><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="7" r="1.4" fill="var(--amber-strong)"/>'},
+    library:{line:'<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.2 3.9A2 2 0 0 0 7.5 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+      solid:'<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.2 3.9A2 2 0 0 0 7.5 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z" fill="currentColor"/>',
+      duo:'<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.2 3.9A2 2 0 0 0 7.5 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z" fill="currentColor" opacity=".22"/><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.2 3.9A2 2 0 0 0 7.5 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="13" r="2.6" fill="var(--amber-strong)"/>'},
+    moderation:{line:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 17h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+      solid:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="currentColor"/><path d="M12 9v4" fill="none" stroke="var(--canvas)" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.1" fill="var(--canvas)"/>',
+      duo:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="var(--red-strong)" opacity=".35"/><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 9v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 17h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'},
+    notifications:{line:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+      solid:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9z" fill="currentColor"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0z" fill="currentColor"/>',
+      duo:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9z" fill="var(--amber-strong)" opacity=".3"/><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="18.5" cy="5.5" r="2.6" fill="var(--red-strong)"/>'}
+  };
+
+  var ITEMS = [
+    {id:'dashboard', en:'Dashboard', am:'ዳሽቦርድ'},
+    {id:'guides', en:'Guide Module', am:'የመመሪያ ሞዱል'},
+    {id:'knowledge', en:'AI Knowledge', am:'ኤአይ ዕውቀት'},
+    {id:'ask', en:'Ask AI', am:'ኤአይን ጠይቅ'},
+    {id:'admin', en:'Admin Hub', am:'የአስተዳደር ማዕከል'},
+    {id:'sectors', en:'Taxonomy', am:'ታክሶኖሚ'},
+    {id:'library', en:'Library', am:'ቤተ-መዛግብት'},
+    {id:'moderation', en:'Moderation', am:'ቁጥጥር'},
+    {id:'notifications', en:'Notifications', am:'ማስታወቂያዎች'}
+  ];
+
+  var CHIP = {dashboard:['emerald-tint','emerald-strong'], guides:['navy-tint','navy'], knowledge:['amber-tint','amber-strong'], ask:['amber-tint','amber-strong'], admin:['red-tint','red-strong'], sectors:['blue-tint','blue-strong'], library:['navy-tint','navy'], moderation:['red-tint','red-strong'], notifications:['amber-tint','amber-strong']};
+  var DOT = {dashboard:'emerald', notifications:'amber', moderation:'red'};
+
+  var STAGE = '<div class="mhead"><b data-en="Dashboard" data-am="ዳሽቦርድ">ዳሽቦርድ</b><span class="pill good"><span data-en="Operational" data-am="ሥራ ላይ">ሥራ ላይ</span></span></div>' +
+    '<div class="mrow"><span data-en="Total MSME users" data-am="ጠቅላላ ተጠቃሚዎች">ጠቅላላ ተጠቃሚዎች</span><b>፬፼፳፻፭፻፹፩</b></div>' +
+    '<div class="mrow"><span data-en="Documents processed" data-am="የተሰሩ ሰነዶች">የተሰሩ ሰነዶች</span><b class="g">፹፻፫፻፲፬</b></div>' +
+    '<div class="mrow"><span data-en="Flagged content" data-am="ሪፖርት የተደረገ">ሪፖርት የተደረገ</span><b class="r">፺፯</b></div>' +
+    '<span class="stamp" data-en="Approved" data-am="ጸድቋል">ጸድቋል</span>';
+
+  function svg(inner, sw){
+    var s = '<svg viewBox="0 0 24 24" class="ic" fill="none" stroke-linecap="round" stroke-linejoin="round">';
+    if(sw) inner = inner.replace(/stroke-width="2"/g, 'stroke-width="' + sw + '"');
+    return s + inner + '</svg>';
+  }
+
+  function railHTML(f){
+    var html = '<div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="4" stroke="currentColor" stroke-width="2"/><rect x="6" y="6" width="8" height="8" rx="2" fill="currentColor" opacity=".85"/></svg></span><span class="word">Adisu<small data-en="አዲሱ ሥራተኛ" data-am="አዲሱ ሥራተኛ">አዲሱ ሥራተኛ</small></span></div><nav class="mnav">';
+    ITEMS.forEach(function(it, i){
+      var art = I[it.id][f.art] || I[it.id].line;
+      var ic = svg(art, f.sw);
+      var chip = '';
+      if(f.kind === 'chip'){ chip = ' style="background:var(--' + CHIP[it.id][0] + ');color:var(--' + CHIP[it.id][1] + ')"'; }
+      var extra = '';
+      if(f.kind === 'dot'){ extra = '<span class="dot" style="background:var(--' + (DOT[it.id] || 'line-2') + ')"></span>'; }
+      if(f.kind === 'num'){ extra = '<span class="num">0' + (i + 1) + '</span>'; }
+      if(f.kind === 'pagume' && i === 0){
+        extra = '<span class="p13" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="g"></i></span>';
+      }
+      html += '<a class="row' + (i === 0 ? ' active' : '') + '" data-page="' + it.id + '"><span class="icw"' + chip + '>' + ic + '</span><span class="lbl" data-en="' + it.en + '" data-am="' + it.am + '">' + (lang === 'am' ? it.am : it.en) + '</span>' + extra + '</a>';
+    });
+    return html + '</nav>';
+  }
+
+  function frame(f){
+    var r = railHTML(f);
+    if(f.kind === 'weave'){
+      r = r.replace('<nav class="mnav">', '<nav class="mnav"><div class="wsec"><span class="wbar"></span><span data-en="Main" data-am="ዋና">ዋና</span></div>');
+      r = r.replace('</nav>', '<div class="wsec"><span class="wbar"></span><span data-en="Community" data-am="ማህበረሰብ">ማህበረሰብ</span></div><div class="wsec"><span class="wbar"></span><span data-en="System" data-am="ስርዓት">ስርዓት</span></div></nav>');
+    }
+    return '<div class="frame" kind="' + f.kind + '"><div class="fhead"><b>' + f.name + '</b><span>' + f.note + '</span></div><div class="mini"><div class="tibeb" style="position:absolute;width:0;height:0"></div><aside class="mrail">' + r + '</aside><div class="mstage">' + STAGE + '</div></div></div>';
+  }
+
+  function frame2(f){
+    var r = railHTML(f);
+    return '<div class="frame" kind="' + f.kind + '"><div class="fhead"><b>' + f.name + '</b><span>' + f.note + '</span></div><div class="mini"><aside class="mrail">' + r + '</aside><div class="mstage">' + STAGE + '</div></div></div>';
+  }
+
+  var SETS = [
+    {id:'line', name:'Line', note:'reference — thin 2px strokes, tinted active', art:'line', kind:'bare'},
+    {id:'solid', name:'Solid', note:'filled shapes, cutout details', art:'solid', kind:'bare'},
+    {id:'duotone', name:'Duotone', note:'muted body + emerald/amber/red accents', art:'duo', kind:'bare'},
+    {id:'chunky', name:'Chunky', note:'2.6px rounded strokes — bolder presence', art:'line', kind:'bare', sw:2.6}
+  ];
+  var PRES = [
+    {id:'tile', name:'Tiled', note:'icons in 26px tiles; active tile fills navy', art:'line', kind:'tile'},
+    {id:'fill', name:'Filled row', note:'active row fills navy; icon + label invert', art:'line', kind:'fill'},
+    {id:'chip', name:'Color chips', note:'each module owns a color (emerald/navy/amber/red/blue)', art:'line', kind:'chip'},
+    {id:'dot', name:'Status dots', note:'emerald active · amber attention · red concern', art:'line', kind:'dot'}
+  ];
+  var SIGS = [
+    {id:'num', name:'Numbered', note:'mono 01–09 badges — ordered, administrative', art:'line', kind:'num'},
+    {id:'weave', name:'Woven sections', note:'tibeb bars introduce each section', art:'line', kind:'weave'},
+    {id:'pagume', name:'ጳጉሜን accent', note:'13-month progress dots on the active item', art:'line', kind:'pagume'}
+  ];
+
+  document.getElementById('setGrid').innerHTML = SETS.map(frame2).join('');
+  document.getElementById('presGrid').innerHTML = PRES.map(frame2).join('');
+  document.getElementById('sigGrid').innerHTML = SIGS.map(frame).join('') +
+    '<div class="frame" kind="bare"><div class="fhead"><b>Brand marks</b><span>three mark candidates for the brand tile</span></div><div class="brands">' +
+    '<div class="brow"><span class="bmark m-mesh"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M10 3.5a6.5 6.5 0 0 1 6.5 6.5" stroke="currentColor" stroke-width="1.6"/><path d="M10 16.5A6.5 6.5 0 0 1 3.5 10" stroke="currentColor" stroke-width="1.6"/><path d="M10 6.5a3.5 3.5 0 0 1 3.5 3.5" stroke="currentColor" stroke-width="1.4" opacity=".7"/><path d="M10 13.5a3.5 3.5 0 0 1-3.5-3.5" stroke="currentColor" stroke-width="1.4" opacity=".7"/></svg></span><div class="binfo"><b data-en="Mesh · coffee bean" data-am="ሜሽ · የቡና ፍሬ">ሜሽ · የቡና ፍሬ</b><span data-en="growth rings, the formalization journey" data-am="የእድገት ቀለበቶች፣ የመደበኛነት ጉዞ">የእድገት ቀለበቶች፣ የመደበኛነት ጉዞ</span></div></div>' +
+    '<div class="brow"><span class="bmark m-tibeb"><svg viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="3.6" rx="1.4" fill="currentColor"/><rect x="2" y="8.2" width="16" height="3.6" rx="1.4" fill="currentColor" opacity=".75"/><rect x="2" y="12.4" width="16" height="3.6" rx="1.4" fill="currentColor" opacity=".5"/></svg></span><div class="binfo"><b data-en="Tibeb · weave" data-am="ጥበብ · ሽመና">ጥበብ · ሽመና</b><span data-en="woven bands, the craft of making" data-am="የተሸመኑ ቀለበቶች፣ የጥበብ ሥራ">የተሸመኑ ቀለበቶች፣ የጥበብ ሥራ</span></div></div>' +
+    '<div class="brow"><span class="bmark m-pagume"><svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="4" width="15" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="8.5" r="1" fill="currentColor"/><circle cx="9" cy="8.5" r="1" fill="currentColor"/><circle cx="12" cy="8.5" r="1" fill="currentColor"/><circle cx="15" cy="8.5" r="1" fill="currentColor" opacity=".45"/><circle cx="6" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor" opacity=".45"/><circle cx="6" cy="15" r="1" fill="currentColor" opacity=".45"/><circle cx="9" cy="15" r="1" fill="currentColor" opacity=".45"/><circle cx="12" cy="15" r="1" fill="currentColor" opacity=".45"/><circle cx="15" cy="15" r="1" fill="#FCD34D"/></svg></span><div class="binfo"><b data-en="ጳጉሜን · 13 months" data-am="ጳጉሜን · ፲፫ ወራት">ጳጉሜን · ፲፫ ወራት</b><span data-en="the calendar itself as the mark" data-am="ቀን መቁጠሪያው እንደ ምልክት">ቀን መቁጠሪያው እንደ ምልክት</span></div></div>' +
+    '</div></div>';
+
+  function applyLang(l){
+    document.documentElement.lang = l;
+    document.querySelectorAll('[data-en]').forEach(function(el){
+      el.textContent = l === 'am' ? el.getAttribute('data-am') : el.getAttribute('data-en');
+    });
+    document.querySelectorAll('.seg button[data-lang]').forEach(function(b){
+      b.classList.toggle('on', b.getAttribute('data-lang') === l);
+    });
+  }
+  function applyTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('darkSwitch').setAttribute('aria-checked', t === 'dark');
+  }
+
+  document.querySelectorAll('.seg button[data-lang]').forEach(function(b){
+    b.addEventListener('click', function(){
+      lang = b.getAttribute('data-lang');
+      localStorage.setItem('proto-lang', lang);
+      applyLang(lang);
+    });
+  });
+  document.getElementById('darkSwitch').addEventListener('click', function(){
+    theme = theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('proto-theme', theme);
+    applyTheme(theme);
+  });
+
+  applyLang(lang);
+  applyTheme(theme);
+})();
+</script>
+</body>
+</html>

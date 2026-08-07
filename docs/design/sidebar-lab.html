@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="am" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Sidebar lab — 10 structural nav patterns — Adisu Serategna admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─────────── tokens (locked: mobile palette, web discipline) ─────────── */
+:root{
+  --canvas:#F8FAFC; --canvas-2:#F1F5F9; --panel:#FFFFFF; --panel-2:#F1F5F9;
+  --ink:#0F172A; --ink-2:#475569; --muted:#64748B;
+  --line:#E2E8F0; --line-2:#CBD5E1;
+  --navy:#1E293B; --navy-strong:#0F172A; --navy-tint:rgba(30,41,59,.06);
+  --emerald:#10B981; --emerald-strong:#047857; --emerald-tint:rgba(16,185,129,.12);
+  --amber:#F59E0B; --amber-strong:#92400E; --amber-tint:rgba(245,158,11,.14);
+  --red:#EF4444; --red-strong:#DC2626; --red-tint:rgba(239,68,68,.10);
+  --blue:#3B82F6; --blue-strong:#2563EB; --blue-tint:rgba(59,130,246,.10);
+  --good:#047857; --good-tint:rgba(16,185,129,.12);
+  --bad:#DC2626; --bad-tint:rgba(239,68,68,.10);
+  --warn:#92400E; --warn-tint:rgba(245,158,11,.16);
+  --info:#2563EB; --info-tint:rgba(59,130,246,.10);
+  --radius:8px; --rail:236px;
+  --display:"Sora","Noto Sans Ethiopic",system-ui,sans-serif;
+  --body:"Inter","Noto Sans Ethiopic",system-ui,sans-serif;
+  --mono:"JetBrains Mono","Noto Sans Ethiopic",ui-monospace,monospace;
+  --shadow:0 1px 2px rgba(15,23,42,.05);
+}
+[data-theme="dark"]{
+  --canvas:#14171A; --canvas-2:#171B1E; --panel:#1B1E22; --panel-2:#20242A;
+  --ink:#ECEEEA; --ink-2:#B4BBC4; --muted:#9AA0A6;
+  --line:#2A2E33; --line-2:#373C45;
+  --navy:#94A3B8; --navy-strong:#CBD5E1; --navy-tint:rgba(148,163,184,.12);
+  --emerald:#6EE7B7; --emerald-strong:#34D399; --emerald-tint:rgba(110,231,183,.14);
+  --amber:#FCD34D; --amber-strong:#FDE68A; --amber-tint:rgba(252,211,77,.14);
+  --red:#FCA5A5; --red-strong:#F87171; --red-tint:rgba(252,165,165,.12);
+  --blue:#93C5FD; --blue-strong:#7DB4FA; --blue-tint:rgba(147,197,253,.12);
+  --good:#6EE7B7; --good-tint:rgba(110,231,183,.14);
+  --bad:#F87171; --bad-tint:rgba(252,165,165,.12);
+  --warn:#FCD34D; --warn-tint:rgba(252,211,77,.14);
+  --info:#93C5FD; --info-tint:rgba(147,197,253,.12);
+  --shadow:0 1px 2px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--body);font-size:14px;line-height:1.5;background:var(--canvas);color:var(--ink);-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--navy);outline-offset:2px;border-radius:4px}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ─────────── lab chrome ─────────── */
+.labbar{position:sticky;top:0;z-index:200;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 16px;background:var(--panel);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--muted)}
+.labbar .g{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.labbar .g label{font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:9.5px;color:var(--muted)}
+.seg{display:flex;background:var(--canvas-2);border:1px solid var(--line);border-radius:6px;padding:2px;flex-wrap:wrap}
+.seg button{flex:1;border:0;background:transparent;padding:4px 9px;border-radius:4px;font-family:var(--body);font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--ink);color:var(--canvas)}
+.darkrow{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted)}
+.switch{position:relative;width:32px;height:18px;border-radius:999px;background:var(--line-2);border:0;cursor:pointer;transition:background .15s;flex:0 0 32px}
+.switch[aria-checked="true"]{background:var(--navy)}
+.switch i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch[aria-checked="true"] i{transform:translateX(14px)}
+
+/* ─────────── viewport simulator ─────────── */
+.simwrap{max-width:1480px;margin:16px auto 0;padding:0 16px}
+.viewsim{container-type:inline-size;background:var(--canvas);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:var(--shadow);width:100%;transition:width .25s ease}
+.viewsim[data-view="tablet"]{width:820px;margin:0 auto}
+.viewsim[data-view="mobile"]{width:390px;margin:0 auto}
+@media (max-width:900px){.viewsim[data-view="tablet"]{width:100%}}
+@media (max-width:480px){.viewsim[data-view="mobile"]{width:100%}}
+
+.tibeb{height:3px;flex:0 0 3px;background:repeating-linear-gradient(90deg,var(--navy) 0 8px,var(--emerald) 8px 15px,var(--amber) 15px 22px,var(--navy) 22px 30px);border-bottom:1px solid var(--line)}
+.banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;font-size:12px;color:var(--ink-2);background:var(--canvas-2);border-bottom:1px solid var(--line)}
+.banner b{color:var(--navy-strong);font-weight:600}
+.banner .dot{width:6px;height:6px;border-radius:50%;background:var(--amber)}
+
+/* ─────────── shell ─────────── */
+.shell{display:flex;min-height:calc(100vh - 40px)}
+.rail,.railmail,.railcmd,.railws{width:var(--rail);flex:0 0 var(--rail);background:var(--canvas-2);border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;overflow-x:hidden;z-index:40;transition:width .2s ease,flex-basis .2s ease}
+.railmail,.railcmd,.railws{display:none}
+.brand{display:flex;align-items:center;gap:10px;padding:16px 16px 14px;overflow:hidden;flex:0 0 auto}
+.brand .mark{width:30px;height:30px;flex:0 0 30px;border-radius:7px;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--panel)}
+.brand .mark svg{width:18px;height:18px}
+.brand .word{font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:.01em;line-height:1.15;white-space:nowrap}
+.brand .word small{display:block;font-family:var(--body);font-weight:500;font-size:11px;color:var(--muted)}
+
+.nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 10px 16px;scrollbar-width:thin}
+.nav .sec{display:flex;align-items:center;gap:8px;margin:18px 6px 8px;padding:0 4px;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden}
+.nav .sec::before{content:"";width:18px;height:3px;border-radius:2px;flex:0 0 18px;background:repeating-linear-gradient(90deg,var(--navy) 0 4px,var(--emerald) 4px 8px,var(--amber) 8px 11px,var(--navy) 11px 15px)}
+.shell.icons .nav .sec::before, .shell[data-sidebar="hub"] .nav .sec::before{display:none}
+.nav .sec:first-child{margin-top:6px}
+.nav a{display:flex;align-items:center;gap:10px;padding:6px 10px;margin:1px 0;border-radius:6px;color:var(--ink-2);font-size:13px;font-weight:500;border:1px solid transparent;cursor:pointer;white-space:nowrap}
+.nav a:hover{background:var(--panel);color:var(--ink);border-color:var(--line);text-decoration:none}
+.nav a.active{background:var(--navy);color:#fff;font-weight:600;box-shadow:none}
+[data-theme="dark"] .nav a.active{color:#0F172A}
+.nav a.active:hover{background:var(--navy)}
+.nav a svg{width:15px;height:15px;flex:0 0 15px;opacity:.9}
+.nav .sub{display:flex;flex-direction:column;margin:2px 0 4px 28px;padding-left:12px;border-left:1px solid var(--line-2);gap:1px}
+.nav .sub a{padding:5px 10px;font-size:12.5px}
+.rail-foot{padding:10px 14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px;flex:0 0 auto}
+.rail-toggle,.dock-toggle{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink-2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 26px}
+.rail-toggle:hover,.dock-toggle:hover{color:var(--ink);border-color:var(--line-2)}
+.rail-toggle svg,.dock-toggle svg{width:13px;height:13px}
+.dock-toggle{display:none}
+
+/* ─────────── icon mode (labels hidden) ─────────── */
+.shell.icons .rail{width:64px;flex-basis:64px}
+.shell.icons .brand{justify-content:center;padding:16px 0 14px}
+.shell.icons .brand .word{display:none}
+.shell.icons .nav{padding:6px 8px 16px}
+.shell.icons .nav .sec{height:1px;margin:10px 10px;padding:0;font-size:0;letter-spacing:0;background:var(--line)}
+.shell.icons .nav a{justify-content:center;padding:8px 0;margin:2px 0}
+.shell.icons .nav a span{display:none}
+.shell.icons .nav .sub{display:none}
+.shell.icons .rail-foot{padding:10px 8px;align-items:center}
+.shell.icons .rail-foot .darkrow span{display:none}
+.shell.icons .rail-foot .darkrow{justify-content:center}
+.shell.icons .rail-toggle{align-self:center}
+.shell.icons .rail-toggle svg{transform:rotate(180deg)}
+.shell.icons .seg button{padding:4px 2px;font-size:10px}
+
+/* ─────────── design: overlay + topbar (no persistent rail) ─────────── */
+.shell[data-sidebar="overlay"] .rail,.shell[data-sidebar="topbar"] .rail{display:none}
+.burger{display:none;width:32px;height:32px;border-radius:6px;border:1px solid var(--line);background:var(--panel);align-items:center;justify-content:center;cursor:pointer;color:var(--ink-2);flex:0 0 32px}
+.burger:hover{background:var(--panel-2);color:var(--ink)}
+.burger svg{width:15px;height:15px}
+.shell[data-sidebar="overlay"] .burger{display:inline-flex}
+
+/* ─────────── design: dock (floating pill) ─────────── */
+.shell[data-sidebar="dock"]{display:block}
+.shell[data-sidebar="dock"] .rail{position:fixed;left:10px;top:50%;transform:translateY(-50%);height:auto;width:54px;flex-basis:54px;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 30px rgba(15,23,42,.14);padding:10px 6px;overflow:visible}
+.shell[data-sidebar="dock"] .brand{justify-content:center;padding:2px 0 10px}
+.shell[data-sidebar="dock"] .brand .word{display:none}
+.shell[data-sidebar="dock"] .nav{padding:0}
+.shell[data-sidebar="dock"] .nav .sec,.shell[data-sidebar="dock"] .nav .sub{display:none}
+.shell[data-sidebar="dock"] .nav a{justify-content:center;padding:9px 0;margin:3px 0;border-radius:12px}
+.shell[data-sidebar="dock"] .nav a span{display:none}
+.shell[data-sidebar="dock"] .nav a svg{width:18px;height:18px}
+.shell[data-sidebar="dock"] .nav a:hover{background:var(--panel-2);border-color:var(--line)}
+.shell[data-sidebar="dock"] .nav a.active{background:var(--emerald-tint);color:var(--emerald);box-shadow:inset 2px 0 0 var(--emerald)}
+.shell[data-sidebar="dock"] .rail-foot{display:none}
+.shell[data-sidebar="dock"] .dock-toggle{display:flex}
+.shell[data-sidebar="dock"][data-collapsed="true"] .rail{display:none}
+.shell[data-sidebar="dock"][data-collapsed="true"] .burger{display:inline-flex}
+
+/* ─────────── design: hub (switchboard + page tabs) ─────────── */
+.shell[data-sidebar="hub"] .rail{width:64px;flex-basis:64px}
+.shell[data-sidebar="hub"] .brand{justify-content:center;padding:16px 0 14px}
+.shell[data-sidebar="hub"] .brand .word{display:none}
+.shell[data-sidebar="hub"] .nav{padding:6px 8px 16px}
+.shell[data-sidebar="hub"] .nav .sec{height:1px;margin:10px 10px;padding:0;font-size:0;background:var(--line)}
+.shell[data-sidebar="hub"] .nav a{justify-content:center;padding:8px 0;margin:2px 0}
+.shell[data-sidebar="hub"] .nav a span,.shell[data-sidebar="hub"] .nav .sub{display:none}
+.shell[data-sidebar="hub"] .rail-foot{padding:10px 8px;align-items:center}
+.shell[data-sidebar="hub"] .rail-foot .darkrow span{display:none}
+.shell[data-sidebar="hub"] .rail-foot .darkrow{justify-content:center}
+.shell[data-sidebar="hub"] .rail-toggle{align-self:center}
+.shell[data-sidebar="hub"] .rail-toggle svg{transform:rotate(180deg)}
+.shell[data-sidebar="hub"] .seg button{padding:4px 2px;font-size:10px}
+.shell[data-sidebar="hub"][data-collapsed="true"] .rail{display:none}
+.shell[data-sidebar="hub"][data-collapsed="true"] .burger{display:inline-flex}
+.page-tabs{display:none;gap:4px;padding:10px 0 0;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.page-tabs::-webkit-scrollbar{display:none}
+.page-tabs a{padding:7px 13px;font-size:12.5px;font-weight:500;color:var(--ink-2);border-bottom:2px solid transparent;white-space:nowrap;cursor:pointer}
+.page-tabs a:hover{color:var(--ink);text-decoration:none}
+.page-tabs a.active{color:var(--navy);border-bottom-color:var(--navy)}
+.shell[data-sidebar="hub"] .page-tabs{display:flex}
+
+/* ─────────── design: mail (icon strip + context column) ─────────── */
+.shell[data-sidebar="mail"] .rail{display:none}
+.shell[data-sidebar="mail"] .railmail{display:flex;width:272px;flex-basis:272px;flex-direction:row;padding:0;overflow:hidden}
+.shell[data-sidebar="mail"] .mleft{width:60px;flex:0 0 60px;border-right:1px solid var(--line);background:var(--canvas-2);display:flex;flex-direction:column;padding:10px 6px;overflow-y:auto}
+.shell[data-sidebar="mail"] .mleft .brand{justify-content:center;padding:0 0 10px}
+.shell[data-sidebar="mail"] .mleft .brand .word{display:none}
+.shell[data-sidebar="mail"] .mleft .nav{padding:0}
+.shell[data-sidebar="mail"] .mleft .nav .sec{display:none}
+.shell[data-sidebar="mail"] .mleft .nav .sub{display:none}
+.shell[data-sidebar="mail"] .mleft .nav a{justify-content:center;padding:8px 0;margin:2px 0}
+.shell[data-sidebar="mail"] .mleft .nav a span{display:none}
+.shell[data-sidebar="mail"] .ctx{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--panel)}
+.shell[data-sidebar="mail"] .ctx-head{display:flex;align-items:center;justify-content:space-between;padding:16px 14px 10px;border-bottom:1px solid var(--line)}
+.shell[data-sidebar="mail"] .ctx-head b{font-family:var(--display);font-size:12.5px;font-weight:600}
+.shell[data-sidebar="mail"] .ctx-items{padding:8px 8px;display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto}
+.shell[data-sidebar="mail"] .ctx-items a{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;font-size:12.5px;color:var(--ink-2);cursor:pointer;font-weight:500}
+.shell[data-sidebar="mail"] .ctx-items a:hover{background:var(--panel-2);color:var(--ink);text-decoration:none}
+.shell[data-sidebar="mail"] .ctx-items a.active{background:var(--navy-tint);color:var(--navy);font-weight:600}
+.shell[data-sidebar="mail"] .ctx-items a .cnt{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.shell[data-sidebar="mail"] .mleft-toggle{margin-top:auto;align-self:center;margin-bottom:8px}
+.shell[data-sidebar="mail"]:not([data-collapsed="true"]) .mleft-toggle{display:none}
+.shell[data-sidebar="mail"] .ctx-note{padding:10px 12px;font-size:11.5px;color:var(--muted);line-height:1.5}
+.shell[data-sidebar="mail"][data-collapsed="true"] .railmail{width:60px;flex-basis:60px}
+.shell[data-sidebar="mail"][data-collapsed="true"] .ctx{display:none}
+.shell[data-sidebar="mail"][data-collapsed="true"] .mleft{border-right:0}
+
+/* ─────────── design: tree (collapsible modules) ─────────── */
+.shell[data-sidebar="tree"] .nav .sub{display:none}
+.shell[data-sidebar="tree"] .nav .sub.open{display:flex}
+.shell[data-sidebar="tree"] .nav a.has-sub .chev{margin-left:auto;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--muted);transition:transform .15s;flex:0 0 0}
+.shell[data-sidebar="tree"] .nav a.has-sub.open .chev{transform:rotate(180deg)}
+.shell[data-sidebar="tree"] .nav a.has-sub{font-weight:600;color:var(--ink)}
+.shell[data-sidebar="tree"] .nav .sub{margin-left:24px}
+
+/* ─────────── design: command (search-first rail) ─────────── */
+.shell[data-sidebar="command"] .rail{display:none}
+.shell[data-sidebar="command"] .railcmd{display:flex;width:264px;flex-basis:264px}
+.railcmd .cmd-search{padding:14px 12px 8px;flex:0 0 auto}
+.railcmd .cmd-search input{width:100%;height:32px;border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:0 10px;font-family:var(--body);font-size:12px;color:var(--ink)}
+.railcmd .cmd-sec{margin:12px 0 4px;padding:0 12px;font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.railcmd .fav,.railcmd .rec{display:flex;align-items:center;gap:9px;padding:6px 12px;margin:1px 0;font-size:12.5px;color:var(--ink-2);cursor:pointer;border-radius:6px;border:1px solid transparent}
+.railcmd .fav:hover,.railcmd .rec:hover{background:var(--panel);color:var(--ink);border-color:var(--line);text-decoration:none}
+.railcmd .fav.active,.railcmd .rec.active{background:var(--navy-tint);color:var(--navy);font-weight:600}
+.railcmd .fav svg{width:14px;height:14px;flex:0 0 14px;color:var(--muted)}
+.railcmd .rec .dot{width:6px;height:6px;border-radius:50%;flex:0 0 6px;background:var(--line-2)}
+.railcmd .rec .t{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.shell[data-sidebar="command"] .rail-foot{display:none}
+.shell[data-sidebar="command"] .cmd-toggle{align-self:center;margin:8px 0}
+.shell[data-sidebar="command"] .cmd-toggle{display:flex}
+.cmd-toggle{display:none}
+.shell[data-sidebar="command"].icons .railcmd{width:64px;flex-basis:64px}
+.shell[data-sidebar="command"].icons .cmd-search,.shell[data-sidebar="command"].icons .cmd-sec,.shell[data-sidebar="command"].icons .rec{display:none}
+.shell[data-sidebar="command"].icons .fav{justify-content:center;padding:8px 0}
+.shell[data-sidebar="command"].icons .fav span{display:none}
+.shell[data-sidebar="command"].icons .fav svg{width:16px;height:16px}
+
+/* ─────────── design: workspace (switcher + spaces) ─────────── */
+.shell[data-sidebar="workspace"] .rail{display:none}
+.shell[data-sidebar="workspace"] .railws{display:flex;width:272px;flex-basis:272px}
+.railws .ws-row{display:flex;align-items:center;gap:8px;padding:14px 14px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.railws .ws-ava{width:30px;height:30px;border-radius:9px;background:var(--navy);color:var(--panel);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:12px;font-weight:600;cursor:pointer;border:2px solid transparent}
+.railws .ws-ava.on{border-color:var(--emerald)}
+.railws .ws-ava.add{background:var(--panel-2);color:var(--muted);border:1px dashed var(--line-2)}
+.railws .ws-label{padding:12px 14px 4px;font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.shell[data-sidebar="workspace"] .railws .nav{padding:4px 10px 12px}
+.shell[data-sidebar="workspace"].icons .railws{width:64px;flex-basis:64px}
+.shell[data-sidebar="workspace"].icons .ws-row{justify-content:center;padding:14px 6px 10px}
+.shell[data-sidebar="workspace"].icons .ws-label,.shell[data-sidebar="workspace"].icons .nav a span,.shell[data-sidebar="workspace"].icons .nav .sub{display:none}
+.shell[data-sidebar="workspace"].icons .nav a{justify-content:center;padding:8px 0}
+
+/* ─────────── topnav (topbar style) ─────────── */
+.topnav{display:none;gap:2px;padding:0 22px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;background:var(--canvas)}
+.topnav::-webkit-scrollbar{display:none}
+.topnav a{padding:9px 12px;font-size:13px;font-weight:500;color:var(--ink-2);border-bottom:2px solid transparent;white-space:nowrap;cursor:pointer}
+.topnav a:hover{color:var(--ink);text-decoration:none}
+.topnav a.active{color:var(--navy);border-bottom-color:var(--navy)}
+.shell[data-sidebar="topbar"] .topnav{display:flex}
+
+/* ─────────── drawer (mobile / overlay) ─────────── */
+.drawer{position:fixed;top:0;left:0;bottom:0;width:min(300px,86vw);z-index:120;background:var(--canvas-2);border-right:1px solid var(--line);transform:translateX(-105%);transition:transform .22s ease;display:flex;flex-direction:column;overflow-y:auto}
+.drawer.open{transform:none}
+.drawer .dhead{display:flex;align-items:center;justify-content:space-between;padding:16px 14px 10px}
+.drawer .dhead .mark{width:30px;height:30px;border-radius:7px;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--panel)}
+.drawer .dhead .mark svg{width:18px;height:18px}
+.drawer .dclose{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink-2);cursor:pointer;font-size:14px;line-height:1}
+.drawer .nav{flex:1}
+.drawer-foot{padding:12px 14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+.backdrop{position:fixed;inset:0;z-index:110;background:rgba(10,14,18,.45);opacity:0;pointer-events:none;transition:opacity .2s}
+.backdrop.open{opacity:1;pointer-events:auto}
+
+/* ─────────── stage / content (v7 dashboard) ─────────── */
+.stage{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{height:54px;flex:0 0 54px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 22px;background:var(--canvas);border-bottom:1px solid var(--line)}
+.topbar .left{display:flex;align-items:center;gap:12px;min-width:0}
+.crumb{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumb b{font-weight:600;color:var(--ink)}
+.top-actions{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+.search{position:relative;display:flex;align-items:center}
+.search input{width:210px;height:32px;border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:0 34px 0 30px;font-family:var(--body);font-size:12.5px;color:var(--ink)}
+.search input::placeholder{color:var(--muted)}
+.search svg{position:absolute;left:9px;width:13px;height:13px;color:var(--muted)}
+.search kbd{position:absolute;right:8px;font-family:var(--mono);font-size:10px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px;background:var(--panel-2)}
+.bell{position:relative;width:32px;height:32px;border-radius:6px;border:1px solid var(--line);background:var(--panel);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-2)}
+.bell .n{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;border-radius:999px;background:var(--red);color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid var(--canvas)}
+[data-theme="dark"] .bell .n{background:var(--red);color:#7F1D1D}
+.avatar{display:flex;align-items:center;gap:9px;cursor:pointer;padding:4px 6px;border-radius:6px;border:1px solid transparent}
+.avatar .face{width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--canvas);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;font-family:var(--display)}
+.avatar .who{line-height:1.1;text-align:right}
+.avatar .who b{display:block;font-size:12px;font-weight:600}
+.avatar .who span{font-size:10.5px;color:var(--muted)}
+
+.content{padding:20px 22px 0;max-width:1240px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.pagehead h1{font-family:var(--display);font-size:22px;font-weight:600;letter-spacing:-.01em}
+.pagehead p{font-size:13px;color:var(--muted);margin-top:3px}
+.actions{display:flex;gap:8px}
+.btn{height:34px;padding:0 14px;border-radius:6px;font-family:var(--body);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px;border:1px solid transparent;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.btn svg{width:14px;height:14px}
+.btn-primary{background:var(--navy);color:#fff}
+.btn-primary:hover{background:var(--navy-strong)}
+[data-theme="dark"] .btn-primary{background:var(--navy);color:#0F172A}
+[data-theme="dark"] .btn-primary:hover{background:var(--navy-strong);color:#0F172A}
+.btn-ghost{background:transparent;color:var(--ink-2);border-color:var(--line)}
+.btn-ghost:hover{background:var(--panel-2);color:var(--ink)}
+
+.ledger{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);overflow:hidden;box-shadow:var(--shadow)}
+.cell{padding:18px 20px 16px;border-right:1px solid var(--line);position:relative}
+.cell:last-child{border-right:0}
+.cell:hover{background:var(--panel-2)}
+.cell .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.chip{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center}
+.chip svg{width:16px;height:16px}
+.chip.ink{background:var(--panel-2);color:var(--ink-2);border:1px solid var(--line)}
+.chip.amber{background:var(--amber-tint);color:var(--amber-strong)}
+.chip.navy{background:var(--navy-tint);color:var(--navy)}
+.chip.red{background:var(--red-tint);color:var(--red)}
+.chip.good{background:var(--good-tint);color:var(--good)}
+.trend{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 7px;border-radius:999px;border:1px solid transparent}
+.trend svg{width:11px;height:11px}
+.trend.up{color:var(--good);background:var(--good-tint);border-color:color-mix(in srgb,var(--good) 22%,transparent)}
+.trend.down{color:var(--bad);background:var(--bad-tint);border-color:color-mix(in srgb,var(--bad) 22%,transparent)}
+.trend.flat{color:var(--muted);background:var(--panel-2);border-color:var(--line)}
+.cell .label{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.cell .value{font-family:var(--display);font-size:25px;font-weight:600;letter-spacing:-.01em;margin-top:2px;font-variant-numeric:tabular-nums}
+.cell .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+.panels{display:grid;grid-template-columns:1.45fr 1fr;gap:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;min-width:0}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--line)}
+.panel-head h2{font-family:var(--display);font-size:13.5px;font-weight:600}
+.panel-head .meta{font-size:11.5px;color:var(--muted)}
+.panel-body{padding:14px 18px}
+svg text{font-family:var(--body);font-size:10px;fill:var(--muted)}
+.grid-l{stroke:var(--line);stroke-width:1}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:9px 18px;border-bottom:1px solid var(--line);background:var(--panel-2);white-space:nowrap}
+.tbl td{padding:9px 18px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr:hover{background:var(--panel-2)}
+.tbl .id{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.tbl .strong{font-weight:500;color:var(--ink)}
+.tbl .dim{color:var(--muted);font-size:12px}
+.tbl .time{font-family:var(--mono);font-size:11.5px;color:var(--muted);white-space:nowrap;text-align:right}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2.5px 9px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+.pill svg{width:11px;height:11px}
+.pill.good{color:var(--good);background:var(--good-tint);border-color:color-mix(in srgb,var(--good) 25%,transparent)}
+.pill.warn{color:var(--warn);background:var(--warn-tint);border-color:color-mix(in srgb,var(--amber) 30%,transparent)}
+.pill.info{color:var(--blue);background:var(--blue-tint);border-color:color-mix(in srgb,var(--blue) 25%,transparent)}
+.pill.bad{color:var(--bad);background:var(--bad-tint);border-color:color-mix(in srgb,var(--bad) 25%,transparent)}
+.stamp{position:relative;display:inline-flex;align-items:center;gap:6px;padding:3px 14px 3px 16px;font-family:var(--display);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--navy);border:1.5px solid currentColor;border-radius:3px;clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px);transform:rotate(-1.2deg);user-select:none;white-space:nowrap}
+.stamp::before{content:"";position:absolute;inset:2px;border:1px dashed currentColor;border-radius:2px;opacity:.5;pointer-events:none}
+.stamp.good{color:var(--good)}
+.stamp.bad{color:var(--bad);transform:rotate(1.1deg)}
+.pagume{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid var(--amber);border-radius:var(--radius);background:var(--amber-tint);padding:10px 14px;font-size:12.5px}
+.pagume .flag{font-family:var(--display);font-weight:700;color:var(--amber-strong);border:1px solid currentColor;border-radius:4px;padding:2px 9px;font-size:11.5px;letter-spacing:.06em;background:var(--panel);white-space:nowrap}
+.pagume .bar{flex:1;min-width:140px;height:8px;display:flex;gap:3px;border-radius:3px;overflow:hidden}
+.pagume .bar i{flex:1;border-radius:2px;background:var(--good)}
+.pagume .bar i.g{background:var(--amber)}
+.pagume .meta{font-size:11.5px;color:var(--muted);font-weight:500;white-space:nowrap}
+.foot-note{font-size:11.5px;color:var(--muted);text-align:center;padding:14px 0 22px}
+.foot-note b{color:var(--amber);font-weight:600}
+
+/* ─────────── responsive: container queries ─────────── */
+@container (max-width:760px){
+  .rail,.railmail,.railws{display:none}
+  .burger{display:inline-flex}
+  .topnav,.shell[data-sidebar="topbar"] .topnav{display:none}
+  .search{display:none}
+  .avatar .who{display:none}
+  .content{padding:16px 14px 0}
+  .topbar{padding:0 14px}
+}
+@container (max-width:1080px){
+  .panels{grid-template-columns:1fr}
+  .ledger{grid-template-columns:repeat(2,1fr)}
+  .cell:nth-child(2){border-right:0}
+  .cell:nth-child(-n+2){border-bottom:1px solid var(--line)}
+}
+@container (max-width:560px){
+  .ledger{grid-template-columns:1fr}
+  .cell{border-right:0;border-bottom:1px solid var(--line)}
+  .cell:last-child{border-bottom:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+
+<div class="labbar" role="toolbar">
+  <div class="g"><label>Pattern</label>
+    <div class="seg" id="sideSeg">
+      <button data-sidebar="full" class="on">Full</button>
+      <button data-sidebar="icons">Activity</button>
+      <button data-sidebar="overlay">Overlay</button>
+      <button data-sidebar="topbar">Topbar</button>
+      <button data-sidebar="dock">Dock</button>
+      <button data-sidebar="mail">Mail</button>
+      <button data-sidebar="tree">Tree</button>
+      <button data-sidebar="hub">Hub</button>
+      <button data-sidebar="command">Cmd</button>
+      <button data-sidebar="workspace">Spaces</button>
+    </div>
+  </div>
+  <div class="g"><label>Viewport</label>
+    <div class="seg" id="viewSeg">
+      <button data-view="desktop" class="on">Desktop</button>
+      <button data-view="tablet">Tablet</button>
+      <button data-view="mobile">Mobile</button>
+    </div>
+  </div>
+  <div class="g" style="margin-left:auto"><label>Dark</label><button class="switch" id="darkSwitch2" role="switch" aria-checked="false" aria-label="Dark mode"><i></i></button></div>
+</div>
+
+<div class="simwrap">
+<div class="viewsim" id="sim" data-view="desktop">
+
+  <div class="banner">
+    <span class="dot"></span>
+    <span><b>Sidebar lab · v2</b> — 10 structural nav patterns from shipped products (Linear, VS Code, Mail, WordPress-tree, Vercel tabs, Raycast search, Notion spaces). Same locked palette everywhere.</span>
+    <span style="margin-left:auto">Nav clicks highlight structure — full pages live in <b>prototype-v7.html</b>.</span>
+  </div>
+
+  <div class="shell" id="shell" data-sidebar="full">
+
+    <!-- 1–5, 7, 8: main rail -->
+    <aside class="rail" id="rail">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="4" stroke="currentColor" stroke-width="2"/><rect x="6" y="6" width="8" height="8" rx="2" fill="currentColor" opacity=".85"/></svg></span>
+        <span class="word">Adisu Serategna<small data-en="አዲሱ ሥራተኛ · admin" data-am="አዲሱ ሥራተኛ · አስተዳደር">አዲሱ ሥራተኛ · አስተዳደር</small></span>
+      </div>
+      <nav class="nav" id="railNav" aria-label="Main">
+        <div class="sec" data-en="Main" data-am="ዋና">ዋና</div>
+        <a data-page="dashboard" title="Dashboard" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span data-en="Dashboard" data-am="ዳሽቦርድ">ዳሽቦርድ</span></a>
+        <a data-page="guides" title="Guide Module"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span data-en="Guide Module" data-am="የመመሪያ ሞዱል">የመመሪያ ሞዱል</span></a>
+        <div class="sub">
+          <a data-page="guides" title="Guides"><span data-en="Guides" data-am="መመሪያዎች">መመሪያዎች</span></a>
+        </div>
+        <a data-page="knowledge" title="AI Knowledge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M12 14v4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span data-en="AI Knowledge" data-am="ኤአይ ዕውቀት">ኤአይ ዕውቀት</span></a>
+        <div class="sub">
+          <a data-page="knowledge" title="Knowledge Base"><span data-en="Knowledge Base" data-am="የዕውቀት ቋት">የዕውቀት ቋት</span></a>
+          <a data-page="ask" title="Ask AI"><span data-en="Ask AI" data-am="ኤአይን ጠይቅ">ኤአይን ጠይቅ</span></a>
+        </div>
+        <a data-page="admin" title="Admin Hub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span data-en="Admin Hub" data-am="የአስተዳደር ማዕከል">የአስተዳደር ማዕከል</span></a>
+        <a data-page="sectors" title="Taxonomy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r=".5"/></svg><span data-en="Taxonomy" data-am="ታክሶኖሚ">ታክሶኖሚ</span></a>
+        <div class="sub">
+          <a data-page="sectors" title="Sectors"><span data-en="Sectors" data-am="ዘርፎች">ዘርፎች</span></a>
+          <a data-page="tags" title="Tags"><span data-en="Tags" data-am="መለያዎች">መለያዎች</span></a>
+        </div>
+        <a data-page="categories" title="Library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.2 3.9A2 2 0 0 0 7.5 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/></svg><span data-en="Library" data-am="ቤተ-መዛግብት">ቤተ-መዛግብት</span></a>
+        <div class="sub">
+          <a data-page="categories" title="Categories"><span data-en="Categories" data-am="ምድቦች">ምድቦች</span></a>
+          <a data-page="tgroups" title="Template Groups"><span data-en="Template Groups" data-am="የቅርጸት ቡድኖች">የቅርጸት ቡድኖች</span></a>
+          <a data-page="downloads" title="Download Logs"><span data-en="Download Logs" data-am="የማውረድ መዝገብ">የማውረድ መዝገብ</span></a>
+        </div>
+        <div class="sec" data-en="Community" data-am="ማህበረሰብ">ማህበረሰብ</div>
+        <a data-page="blocked" title="Moderation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span data-en="Moderation" data-am="ቁጥጥር">ቁጥጥር</span></a>
+        <div class="sub">
+          <a data-page="blocked" title="Blocked Users"><span data-en="Blocked Users" data-am="የተዘጉ ተጠቃሚዎች">የተዘጉ ተጠቃሚዎች</span></a>
+          <a data-page="rcontent" title="Reported Content"><span data-en="Reported Content" data-am="ሪፖርት የተደረገ ይዘት">ሪፖርት የተደረገ ይዘት</span></a>
+          <a data-page="rusers" title="Reported Users"><span data-en="Reported Users" data-am="ሪፖርት የተደረጉ ተጠቃሚዎች">ሪፖርት የተደረጉ ተጠቃሚዎች</span></a>
+        </div>
+        <div class="sec" data-en="System" data-am="ስርዓት">ስርዓት</div>
+        <a data-page="ctemplates" title="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span data-en="Notifications" data-am="ማስታወቂያዎች">ማስታወቂያዎች</span></a>
+        <div class="sub">
+          <a data-page="ctemplates" title="Campaign Templates"><span data-en="Campaign Templates" data-am="የዘመቻ ቅርጸቶች">የዘመቻ ቅርጸቶች</span></a>
+          <a data-page="campaigns" title="Campaigns"><span data-en="Campaigns" data-am="ዘመቻዎች">ዘመቻዎች</span></a>
+          <a data-page="queue" title="Queue"><span data-en="Queue" data-am="ወረፋ">ወረፋ</span></a>
+        </div>
+      </nav>
+      <div class="rail-foot">
+        <button class="rail-toggle" id="railToggle" type="button" title="Collapse" aria-label="Collapse">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="controls" id="controls">
+          <div class="seg" role="group" aria-label="Language">
+            <button data-lang="en" type="button">EN</button>
+            <button data-lang="am" class="on" type="button">አማ</button>
+          </div>
+          <div class="darkrow"><span data-en="Dark mode" data-am="ጨለማ ሁነታ">ጨለማ ሁነታ</span><button class="switch" id="darkSwitch" role="switch" aria-checked="false" aria-label="Toggle dark mode"><i></i></button></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 6: mail two-pane rail -->
+    <aside class="railmail" id="railMail">
+      <div class="mleft">
+        <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="4" stroke="currentColor" stroke-width="2"/><rect x="6" y="6" width="8" height="8" rx="2" fill="currentColor" opacity=".85"/></svg></span></div>
+        <nav class="nav" id="mleftNav" aria-label="Modules"></nav>
+        <button class="rail-toggle mleft-toggle" id="mailToggle2" type="button" title="Expand" aria-label="Expand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="ctx">
+        <div class="ctx-head"><b id="ctxTitle">ዋና</b><button class="rail-toggle" id="mailToggle" type="button" title="Collapse" aria-label="Collapse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button></div>
+        <div class="ctx-items" id="ctxItems"></div>
+      </div>
+    </aside>
+
+    <!-- 9: command rail -->
+    <aside class="railcmd" id="railCmd">
+      <div class="cmd-search"><input type="text" placeholder="Search…" data-en-ph="Search…" data-am-ph="ፈልግ…"/></div>
+      <div class="cmd-sec" data-en="Favorites" data-am="ተወዳጆች">ተወዳጆች</div>
+      <a class="fav active" data-page="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span data-en="Dashboard" data-am="ዳሽቦርድ">ዳሽቦርድ</span></a>
+      <a class="fav" data-page="guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span data-en="Guides" data-am="መመሪያዎች">መመሪያዎች</span></a>
+      <a class="fav" data-page="ask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M12 14v4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span data-en="Ask AI" data-am="ኤአይን ጠይቅ">ኤአይን ጠይቅ</span></a>
+      <a class="fav" data-page="campaigns"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span data-en="Campaigns" data-am="ዘመቻዎች">ዘመቻዎች</span></a>
+      <a class="fav" data-page="blocked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg><span data-en="Moderation" data-am="ቁጥጥር">ቁጥጥር</span></a>
+      <div class="cmd-sec" data-en="Recent" data-am="የቅርብ">የቅርብ</div>
+      <a class="rec" data-page="knowledge"><span class="dot"></span><span data-en="Knowledge Base" data-am="የዕውቀት ቋት">የዕውቀት ቋት</span><span class="t">09:41</span></a>
+      <a class="rec" data-page="queue"><span class="dot"></span><span data-en="Queue" data-am="ወረፋ">ወረፋ</span><span class="t">09:12</span></a>
+      <a class="rec" data-page="rusers"><span class="dot"></span><span data-en="Reported Users" data-am="ሪፖርት የተደረጉ ተጠቃሚዎች">ሪፖርት የተደረጉ ተጠቃሚዎች</span><span class="t">08:55</span></a>
+      <button class="rail-toggle cmd-toggle" id="cmdToggle" type="button" title="Collapse" aria-label="Collapse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    </aside>
+
+    <!-- 10: workspace rail -->
+    <aside class="railws" id="railWs">
+      <div class="ws-row">
+        <span class="ws-ava on" title="Adisu Serategna Admin">አ</span>
+        <span class="ws-ava" title="Guide Module">መ</span>
+        <span class="ws-ava" title="Community">ማ</span>
+        <span class="ws-ava add" title="New space">+</span>
+      </div>
+      <div class="ws-label" data-en="Spaces" data-am="ቦታዎች">ቦታዎች</div>
+      <nav class="nav" id="wsNav" aria-label="Workspace"></nav>
+    </aside>
+
+    <button class="dock-toggle" id="dockToggle" type="button" title="Hide dock" aria-label="Hide dock">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+    </button>
+
+    <!-- drawer -->
+    <div class="backdrop" id="backdrop"></div>
+    <div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Navigation">
+      <div class="dhead">
+        <span class="mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="4" stroke="currentColor" stroke-width="2"/><rect x="6" y="6" width="8" height="8" rx="2" fill="currentColor" opacity=".85"/></svg></span>
+        <button class="dclose" id="dclose" type="button" aria-label="Close">✕</button>
+      </div>
+      <nav class="nav" id="drawerNav" aria-label="Drawer"></nav>
+      <div class="drawer-foot" id="drawerFoot"></div>
+    </div>
+
+    <!-- stage -->
+    <div class="stage">
+      <div class="tibeb" aria-hidden="true"></div>
+      <header class="topbar">
+        <div class="left">
+          <button class="burger" id="burger" type="button" aria-label="Open navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+          <div class="crumb"><span data-en="Modules / " data-am="ሞዱሎች / ">ሞዱሎች / </span><b id="crumb">ዳሽቦርድ</b></div>
+        </div>
+        <div class="top-actions">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Search…" data-en-ph="Search…" data-am-ph="ፈልግ…" aria-label="Search"/><kbd>⌘K</kbd>
+          </div>
+          <button class="bell" type="button" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span class="n">3</span>
+          </button>
+          <div class="avatar" tabindex="0" role="button" aria-label="Account">
+            <span class="face" data-en="AB" data-am="ሀ">ሀ</span>
+            <span class="who"><b data-en="Abebe Kebede" data-am="አበበ ከበደ">አበበ ከበደ</b><span data-en="Super admin" data-am="ሱፐር አድሚን">ሱፐር አድሚን</span></span>
+          </div>
+        </div>
+      </header>
+
+      <nav class="topnav" id="topnav" aria-label="Top">
+        <a data-page="dashboard" class="active" title="Dashboard"><span data-en="Dashboard" data-am="ዳሽቦርድ">ዳሽቦርድ</span></a>
+        <a data-page="guides" title="Guide Module"><span data-en="Guide Module" data-am="የመመሪያ ሞዱል">የመመሪያ ሞዱል</span></a>
+        <a data-page="knowledge" title="AI Knowledge"><span data-en="AI Knowledge" data-am="ኤአይ ዕውቀት">ኤአይ ዕውቀት</span></a>
+        <a data-page="admin" title="Admin Hub"><span data-en="Admin Hub" data-am="የአስተዳደር ማዕከል">የአስተዳደር ማዕከል</span></a>
+        <a data-page="sectors" title="Taxonomy"><span data-en="Taxonomy" data-am="ታክሶኖሚ">ታክሶኖሚ</span></a>
+        <a data-page="categories" title="Library"><span data-en="Library" data-am="ቤተ-መዛግብት">ቤተ-መዛግብት</span></a>
+        <a data-page="blocked" title="Moderation"><span data-en="Moderation" data-am="ቁጥጥር">ቁጥጥር</span></a>
+        <a data-page="ctemplates" title="Notifications"><span data-en="Notifications" data-am="ማስታወቂያዎች">ማስታወቂያዎች</span></a>
+      </nav>
+
+      <main class="content">
+        <div class="pagehead">
+          <div>
+            <h1 data-en="Dashboard" data-am="ዳሽቦርድ">ዳሽቦርድ</h1>
+            <p data-en="Overview of Adisu Serategna operations · Aug 7, 2025" data-am="የአዲሱ ሥራተኛ ሥራዎች አጠቃላይ እይታ · ነሐሴ ፩ ፳፻፲፯ ዓ.ም.">የአዲሱ ሥራተኛ ሥራዎች አጠቃላይ እይታ · ነሐሴ ፩ ፳፻፲፯ ዓ.ም.</p>
+          </div>
+          <div class="actions">
+            <button class="btn btn-ghost" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span data-en="Export" data-am="አውርድ">አውርድ</span></button>
+            <button class="btn btn-primary" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span data-en="New campaign" data-am="አዲስ ዘመቻ">አዲስ ዘመቻ</span></button>
+          </div>
+        </div>
+
+        <div class="page-tabs" id="pageTabs"></div>
+
+        <div class="pagume" role="note">
+          <span class="flag">ጳጉሜን</span>
+          <span data-en="Year-end filing window — the 13th month begins Sep 6. 12 of 13 months complete." data-am="የዓመት መጨረሻ ማቅረቢያ ጊዜ — ፲፫ኛው ወር መስከረም ፮ ይጀምራል። ከ፲፫ ወራት ፲፪ ተጠናቀዋል።">የዓመት መጨረሻ ማቅረቢያ ጊዜ — ፲፫ኛው ወር መስከረም ፮ ይጀምራል። ከ፲፫ ወራት ፲፪ ተጠናቀዋል።</span>
+          <span class="bar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="g"></i></span>
+          <span class="meta" data-en="Month 12 · ነሐሴ" data-am="ወር ፲፪ · ነሐሴ">ወር ፲፪ · ነሐሴ</span>
+        </div>
+
+        <section class="ledger" aria-label="Key metrics">
+          <div class="cell">
+            <div class="top"><span class="chip good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="trend up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><span data-en="+12.4%" data-am="+፲፪.፬%">+፲፪.፬%</span></span></div>
+            <div class="label" data-en="Total MSME Users" data-am="ጠቅላላ ኤምኤስኤምኤ ተጠቃሚዎች">ጠቅላላ ኤምኤስኤምኤ ተጠቃሚዎች</div>
+            <div class="value" data-en="42,581" data-am="፬፼፳፻፭፻፹፩">፬፼፳፻፭፻፹፩</div>
+          </div>
+          <div class="cell">
+            <div class="top"><span class="chip amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="trend up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><span data-en="+3.2%" data-am="+፫.፪%">+፫.፪%</span></span></div>
+            <div class="label" data-en="Documents Processed" data-am="የተሰሩ ሰነዶች">የተሰሩ ሰነዶች</div>
+            <div class="value" data-en="8,314" data-am="፹፻፫፻፲፬">፹፻፫፻፲፬</div>
+          </div>
+          <div class="cell">
+            <div class="top"><span class="chip ink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span><span class="trend flat"><span data-en="Daily avg" data-am="ዕለታዊ አማካይ">ዕለታዊ አማካይ</span></span></div>
+            <div class="label" data-en="Active Sessions" data-am="ንቁ ክፍለ-ጊዜዎች">ንቁ ክፍለ-ጊዜዎች</div>
+            <div class="value" data-en="2,847" data-am="፳፻፰፻፵፯">፳፻፰፻፵፯</div>
+          </div>
+          <div class="cell">
+            <div class="top"><span class="chip red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><span class="trend down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg><span data-en="−8.1%" data-am="−፰.፩%">−፰.፩%</span></span></div>
+            <div class="label" data-en="Flagged Content" data-am="ሪፖርት የተደረገ ይዘት">ሪፖርት የተደረገ ይዘት</div>
+            <div class="value" data-en="97" data-am="፺፯">፺፯</div>
+            <div class="sub" data-en="↓ fewer than last week" data-am="↓ ካለፈው ሳምንት ያነሰ">↓ ካለፈው ሳምንት ያነሰ</div>
+          </div>
+        </section>
+
+        <section class="panels">
+          <div class="panel">
+            <div class="panel-head"><h2 data-en="User growth" data-am="የተጠቃሚዎች እድገት">የተጠቃሚዎች እድገት</h2><span class="meta" data-en="12 months" data-am="፲፪ ወራት">፲፪ ወራት</span></div>
+            <div class="panel-body">
+              <svg viewBox="0 0 560 190" role="img" aria-label="User growth line chart">
+                <line class="grid-l" x1="36" y1="30" x2="552" y2="30"/><line class="grid-l" x1="36" y1="72" x2="552" y2="72"/><line class="grid-l" x1="36" y1="114" x2="552" y2="114"/><line class="grid-l" x1="36" y1="156" x2="552" y2="156"/>
+                <polygon points="36,148 79,144 122,138 165,132 208,126 251,118 294,110 337,104 380,96 423,88 466,78 509,66 552,58 552,156 36,156" fill="var(--emerald-tint)" stroke="none"/>
+                <polyline points="36,148 79,144 122,138 165,132 208,126 251,118 294,110 337,104 380,96 423,88 466,78 509,66 552,58" fill="none" stroke="var(--emerald)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="552" cy="58" r="3.5" fill="var(--amber)" stroke="var(--ink)" stroke-width="1.5"/>
+                <text x="36" y="20" data-en="40k" data-am="፵፻">፵፻</text><text x="36" y="62" data-en="30k" data-am="፴፻">፴፻</text><text x="36" y="104" data-en="20k" data-am="፳፻">፳፻</text><text x="36" y="146" data-en="10k" data-am="፲፻">፲፻</text>
+                <g font-size="9.5">
+                  <text x="36" y="172" data-en="Sep" data-am="መስከረም">መስከረም</text><text x="78" y="172" data-en="Oct" data-am="ጥቅምት">ጥቅምት</text><text x="120" y="172" data-en="Nov" data-am="ኅዳር">ኅዳር</text><text x="162" y="172" data-en="Dec" data-am="ታኅሣሥ">ታኅሣሥ</text><text x="204" y="172" data-en="Jan" data-am="ጥር">ጥር</text><text x="246" y="172" data-en="Feb" data-am="የካቲት">የካቲት</text><text x="288" y="172" data-en="Mar" data-am="መጋቢት">መጋቢት</text><text x="330" y="172" data-en="Apr" data-am="ሚያዝያ">ሚያዝያ</text><text x="372" y="172" data-en="May" data-am="ግንቦት">ግንቦት</text><text x="414" y="172" data-en="Jun" data-am="ሰኔ">ሰኔ</text><text x="456" y="172" data-en="Jul" data-am="ሐምሌ">ሐምሌ</text><text x="498" y="172" data-en="Aug" data-am="ነሐሴ">ነሐሴ</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2 data-en="AI usage by module" data-am="በሞዱል የኤአይ አጠቃቀም">በሞዱል የኤአይ አጠቃቀም</h2><span class="meta" data-en="tokens · today" data-am="ቶከኖች · ዛሬ">ቶከኖች · ዛሬ</span></div>
+            <div class="panel-body" style="display:flex;flex-direction:column;gap:16px;padding-top:20px">
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span data-en="Knowledge Base" data-am="የዕውቀት ቋት">የዕውቀት ቋት</span><span style="font-family:var(--mono);color:var(--muted)" data-en="128k" data-am="፩፻፳፰፻">፩፻፳፰፻</span></div><div style="height:8px;border-radius:4px;background:var(--panel-2);border:1px solid var(--line)"><div style="width:68%;height:100%;border-radius:4px;background:var(--emerald)"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span data-en="Ask AI" data-am="ኤአይን ጠይቅ">ኤአይን ጠይቅ</span><span style="font-family:var(--mono);color:var(--muted)" data-en="84k" data-am="፹፬፻">፹፬፻</span></div><div style="height:8px;border-radius:4px;background:var(--panel-2);border:1px solid var(--line)"><div style="width:44%;height:100%;border-radius:4px;background:var(--amber)"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span data-en="Guide QA" data-am="የመመሪያ ጥያቄዎች">የመመሪያ ጥያቄዎች</span><span style="font-family:var(--mono);color:var(--muted)" data-en="41k" data-am="፵፩፻">፵፩፻</span></div><div style="height:8px;border-radius:4px;background:var(--panel-2);border:1px solid var(--line)"><div style="width:22%;height:100%;border-radius:4px;background:var(--line-2)"></div></div></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="foot-note"><b>Signature</b> · the product's trio: navy acts, emerald grows, amber warms. Ten nav architectures, one palette; under 760px every pattern becomes the same off-canvas drawer.</div>
+      </main>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  var qs = new URLSearchParams(location.search);
+  var lang = qs.get('lang') || localStorage.getItem('proto-lang') || 'am';
+  var theme = qs.get('theme') || localStorage.getItem('proto-theme') || 'light';
+  var sidebar = qs.get('sidebar') || localStorage.getItem('proto-sidebar') || 'full';
+  var view = qs.get('view') || localStorage.getItem('proto-view') || 'desktop';
+
+  var shell = document.getElementById('shell');
+  var sim = document.getElementById('sim');
+  var drawer = document.getElementById('drawer');
+  var backdrop = document.getElementById('backdrop');
+  var crumbB = document.getElementById('crumb');
+
+  var MODULES = {
+    dashboard:{name:{en:'Dashboard',am:'ዳሽቦርድ'},items:[]},
+    guides:{name:{en:'Guide Module',am:'የመመሪያ ሞዱል'},items:[{id:'guides',en:'Guides',am:'መመሪያዎች'}]},
+    knowledge:{name:{en:'AI Knowledge',am:'ኤአይ ዕውቀት'},items:[{id:'knowledge',en:'Knowledge Base',am:'የዕውቀት ቋት'},{id:'ask',en:'Ask AI',am:'ኤአይን ጠይቅ'}]},
+    admin:{name:{en:'Admin Hub',am:'የአስተዳደር ማዕከል'},items:[]},
+    sectors:{name:{en:'Taxonomy',am:'ታክሶኖሚ'},items:[{id:'sectors',en:'Sectors',am:'ዘርፎች'},{id:'tags',en:'Tags',am:'መለያዎች'}]},
+    categories:{name:{en:'Library',am:'ቤተ-መዛግብት'},items:[{id:'categories',en:'Categories',am:'ምድቦች'},{id:'tgroups',en:'Template Groups',am:'የቅርጸት ቡድኖች'},{id:'downloads',en:'Download Logs',am:'የማውረድ መዝገብ'}]},
+    blocked:{name:{en:'Moderation',am:'ቁጥጥር'},items:[{id:'blocked',en:'Blocked Users',am:'የተዘጉ ተጠቃሚዎች'},{id:'rcontent',en:'Reported Content',am:'ሪፖርት የተደረገ ይዘት'},{id:'rusers',en:'Reported Users',am:'ሪፖርት የተደረጉ ተጠቃሚዎች'}]},
+    ctemplates:{name:{en:'Notifications',am:'ማስታወቂያዎች'},items:[{id:'ctemplates',en:'Campaign Templates',am:'የዘመቻ ቅርጸቶች'},{id:'campaigns',en:'Campaigns',am:'ዘመቻዎች'},{id:'queue',en:'Queue',am:'ወረፋ'}]}
+  };
+  function moduleOf(id){
+    if(MODULES[id]) return id;
+    for(var k in MODULES){ if(MODULES[k].items.some(function(i){return i.id===id;})) return k; }
+    return 'dashboard';
+  }
+  var currentModule = 'dashboard';
+  var currentPage = 'dashboard';
+
+  /* clones */
+  document.getElementById('drawerNav').innerHTML = document.getElementById('railNav').innerHTML;
+  document.getElementById('mleftNav').innerHTML = document.getElementById('railNav').innerHTML;
+  document.getElementById('wsNav').innerHTML = document.getElementById('railNav').innerHTML;
+  document.getElementById('drawerFoot').innerHTML = document.getElementById('controls').innerHTML;
+
+  function label(it){ return lang === 'am' ? it.am : it.en; }
+
+  function renderCtx(){
+    var m = MODULES[currentModule];
+    document.getElementById('ctxTitle').textContent = label(m.name);
+    var box = document.getElementById('ctxItems');
+    if(!m.items.length){
+      box.innerHTML = '<div class="ctx-note">' + (lang === 'am' ? 'የላይኛ ሞዱል — ንዑስ ገጾች የሉትም። ይዘት በመድረኩ ላይ ይታያል።' : 'Top-level module — no sub-pages. Content renders in the stage.') + '</div>';
+      return;
+    }
+    box.innerHTML = m.items.map(function(it){
+      var counts = {guides:248, knowledge:1284, ask:284, sectors:18, tags:74, categories:8, tgroups:5, downloads:1842, blocked:214, rcontent:72, rusers:16, ctemplates:8, campaigns:96, queue:4};
+      return '<a data-page="'+it.id+'">'+label(it)+(counts[it.id]!==undefined?'<span class="cnt">'+counts[it.id]+'</span>':'')+'</a>';
+    }).join('');
+    bindNav(document.getElementById('ctxItems'));
+    refreshActive();
+  }
+
+  function renderTabs(){
+    var m = MODULES[currentModule];
+    var box = document.getElementById('pageTabs');
+    if(!m.items.length){
+      box.innerHTML = '<a class="active" data-page="'+currentModule+'">'+label(m.name)+'</a>';
+    } else {
+      box.innerHTML = m.items.map(function(it){
+        return '<a data-page="'+it.id+'">'+label(it)+'</a>';
+      }).join('');
+    }
+    bindNav(box);
+    refreshActive();
+  }
+
+  function refreshActive(){
+    document.querySelectorAll('[data-page]').forEach(function(a){
+      a.classList.toggle('active', a.getAttribute('data-page') === currentPage);
+    });
+  }
+
+  function setPage(id){
+    currentPage = id;
+    currentModule = moduleOf(id);
+    refreshActive();
+    var m = MODULES[currentModule];
+    var it = null;
+    m.items.forEach(function(i){ if(i.id === id) it = i; });
+    var titleEn = it ? it.en : m.name.en;
+    var titleAm = it ? it.am : m.name.am;
+    var h1 = document.querySelector('.content h1');
+    if(h1){
+      h1.setAttribute('data-en', titleEn);
+      h1.setAttribute('data-am', titleAm);
+      h1.textContent = lang === 'am' ? titleAm : titleEn;
+    }
+    if(crumbB) crumbB.textContent = lang === 'am' ? titleAm : titleEn;
+    if(sidebar === 'mail') renderCtx();
+    if(sidebar === 'hub') renderTabs();
+    closeDrawer();
+  }
+
+  function bindNav(root){
+    root.querySelectorAll('a[data-page]').forEach(function(a){
+      a.addEventListener('click', function(e){
+        e.preventDefault();
+        setPage(a.getAttribute('data-page'));
+      });
+    });
+  }
+
+  function applyLang(l){
+    document.documentElement.lang = l;
+    document.querySelectorAll('[data-en]').forEach(function(el){
+      el.textContent = l === 'am' ? el.getAttribute('data-am') : el.getAttribute('data-en');
+    });
+    document.querySelectorAll('[data-en-ph]').forEach(function(el){
+      el.placeholder = l === 'am' ? el.getAttribute('data-am-ph') : el.getAttribute('data-en-ph');
+    });
+    document.querySelectorAll('.seg button[data-lang]').forEach(function(b){
+      b.classList.toggle('on', b.getAttribute('data-lang') === l);
+    });
+    if(sidebar === 'mail') renderCtx();
+    if(sidebar === 'hub') renderTabs();
+  }
+  function applyTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    document.querySelectorAll('.switch').forEach(function(s){ s.setAttribute('aria-checked', t === 'dark'); });
+  }
+  function applyIcons(){
+    var icons = sidebar === 'hub' || sidebar === 'icons' || (['full','tree','command','workspace'].indexOf(sidebar) > -1 && collapsed);
+    shell.classList.toggle('icons', icons);
+  }
+  function applySidebar(s){
+    sidebar = s;
+    shell.setAttribute('data-sidebar', s);
+    applyIcons();
+    document.querySelectorAll('#sideSeg button').forEach(function(b){
+      b.classList.toggle('on', b.getAttribute('data-sidebar') === s);
+    });
+    localStorage.setItem('proto-sidebar', s);
+    if(s === 'mail') renderCtx();
+    if(s === 'hub') renderTabs();
+  }
+  function applyView(v){
+    view = v;
+    sim.setAttribute('data-view', v);
+    document.querySelectorAll('#viewSeg button').forEach(function(b){
+      b.classList.toggle('on', b.getAttribute('data-view') === v);
+    });
+    localStorage.setItem('proto-view', v);
+  }
+  function openDrawer(){
+    drawer.classList.add('open'); backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer(){
+    drawer.classList.remove('open'); backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  /* tree: chevrons + collapsible subs */
+  function setupTree(){
+    document.querySelectorAll('#railNav a').forEach(function(a){
+      var nxt = a.nextElementSibling;
+      if(nxt && nxt.classList.contains('sub')){
+        a.classList.add('has-sub');
+        if(!a.querySelector('.chev')) a.insertAdjacentHTML('beforeend','<span class="chev"></span>');
+        a.addEventListener('click', function(){
+          if(sidebar !== 'tree') return;
+          nxt.classList.toggle('open');
+          a.classList.toggle('open', nxt.classList.contains('open'));
+        });
+      }
+    });
+    var openFirst = true;
+    document.querySelectorAll('#railNav .sub').forEach(function(s){
+      var prev = s.previousElementSibling;
+      var isCur = prev && prev.getAttribute('data-page') === currentModule;
+      if(isCur){ s.classList.add('open'); if(prev) prev.classList.add('open'); openFirst = false; }
+    });
+    if(openFirst){
+      var first = document.querySelector('#railNav .sub');
+      if(first){ first.classList.add('open'); var p = first.previousElementSibling; if(p) p.classList.add('open'); }
+    }
+  }
+
+  /* toggle handlers */
+  document.getElementById('railToggle').addEventListener('click', function(){
+    if(['overlay','topbar','mail'].indexOf(sidebar) > -1) return;
+    collapsed = !collapsed;
+    shell.setAttribute('data-collapsed', collapsed ? 'true' : 'false');
+    localStorage.setItem('proto-rail-collapsed', collapsed ? '1' : '0');
+    applyIcons();
+  });
+  document.getElementById('mailToggle').addEventListener('click', function(){
+    collapsed = !collapsed;
+    shell.setAttribute('data-collapsed', collapsed ? 'true' : 'false');
+    localStorage.setItem('proto-rail-collapsed', collapsed ? '1' : '0');
+  });
+  document.getElementById('mailToggle2').addEventListener('click', function(){
+    collapsed = !collapsed;
+    shell.setAttribute('data-collapsed', collapsed ? 'true' : 'false');
+    localStorage.setItem('proto-rail-collapsed', collapsed ? '1' : '0');
+  });
+  document.getElementById('cmdToggle').addEventListener('click', function(){
+    collapsed = !collapsed;
+    shell.setAttribute('data-collapsed', collapsed ? 'true' : 'false');
+    localStorage.setItem('proto-rail-collapsed', collapsed ? '1' : '0');
+    applyIcons();
+  });
+  document.getElementById('dockToggle').addEventListener('click', function(){
+    collapsed = !collapsed;
+    shell.setAttribute('data-collapsed', collapsed ? 'true' : 'false');
+    localStorage.setItem('proto-rail-collapsed', collapsed ? '1' : '0');
+  });
+  document.getElementById('burger').addEventListener('click', function(){
+    if((sidebar === 'dock' || sidebar === 'hub') && collapsed){
+      collapsed = false;
+      shell.setAttribute('data-collapsed', 'false');
+      localStorage.setItem('proto-rail-collapsed', '0');
+      return;
+    }
+    openDrawer();
+  });
+  document.getElementById('dclose').addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeDrawer(); });
+
+  document.querySelectorAll('#sideSeg button').forEach(function(b){
+    b.addEventListener('click', function(){ applySidebar(b.getAttribute('data-sidebar')); });
+  });
+  document.querySelectorAll('#viewSeg button').forEach(function(b){
+    b.addEventListener('click', function(){ applyView(b.getAttribute('data-view')); });
+  });
+  document.querySelectorAll('.seg button[data-lang]').forEach(function(b){
+    b.addEventListener('click', function(){
+      lang = b.getAttribute('data-lang');
+      localStorage.setItem('proto-lang', lang);
+      applyLang(lang);
+    });
+  });
+  document.querySelectorAll('.switch').forEach(function(s){
+    s.addEventListener('click', function(){
+      theme = theme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('proto-theme', theme);
+      applyTheme(theme);
+    });
+  });
+
+  var collapsed = localStorage.getItem('proto-rail-collapsed') === '1';
+
+  /* wire every nav instance */
+  bindNav(document.getElementById('railNav'));
+  bindNav(document.getElementById('drawerNav'));
+  bindNav(document.getElementById('topnav'));
+  bindNav(document.getElementById('railCmd'));
+  bindNav(document.getElementById('wsNav'));
+
+  applyLang(lang); applyTheme(theme); setupTree(); applySidebar(sidebar); applyView(view);
+})();
+</script>
+</body>
+</html>
