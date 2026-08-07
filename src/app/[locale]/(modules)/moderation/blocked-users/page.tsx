@@ -1,12 +1,13 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import {
   useAdminListAllBlockedUsers,
   useAdminUnblockUser,
 } from "@/app/[locale]/(modules)/moderation/_services/blocked-users.hook";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { InlineError } from "@/components/ui/inline-error";
@@ -22,11 +23,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getErrorMessage } from "@/lib/utils";
+import { reasonVariant } from "../_components/report-status";
 
 export default function BlockedUsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
+  const t = useTranslations("moderation");
+  const locale = useLocale();
 
   const pageSize = 20;
   const blockedQuery = useAdminListAllBlockedUsers({ page, pageSize });
@@ -36,117 +40,129 @@ export default function BlockedUsersPage() {
   const total = blockedQuery.data?.total ?? 0;
   const totalPages = blockedQuery.data?.totalPages ?? 1;
 
-  const filtered = search.trim()
-    ? blockedUsers.filter((u) => u.blockedUserId.toLowerCase().includes(search.toLowerCase()))
+  const query = search.trim().toLowerCase();
+  const filtered = query
+    ? blockedUsers.filter((u) =>
+        [`${u.blockedUserFirstName} ${u.blockedUserLastName}`, u.blockedUserId]
+          .join(" ")
+          .toLowerCase()
+          .includes(query)
+      )
     : blockedUsers;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle>Blocked Users</CardTitle>
-          <CardDescription>Users blocked from threads across the community</CardDescription>
-        </CardHeader>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-xl font-semibold tracking-tight">{t("blockedUsers")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("blockedUsersDesc")}</p>
+        </div>
+      </div>
 
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="w-full sm:w-72">
-              <Input
-                placeholder="Search by name "
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-              />
-            </div>
-            {total > 0 && (
-              <span className="text-sm text-muted-foreground shrink-0">{total} total</span>
-            )}
-          </div>
-
-          {notice ? <p className="text-sm text-muted-foreground">{notice}</p> : null}
-
-          {blockedQuery.isLoading ? (
-            <TableSkeleton rows={10} columns={5} />
-          ) : blockedQuery.isError ? (
-            <InlineError error={blockedQuery.error} onRetry={() => blockedQuery.refetch()} />
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User FullName</TableHead>
-                    <TableHead>Thread Title</TableHead>
-                    <TableHead>Reason</TableHead>
-                    <TableHead>Blocked At</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5}>
-                        <EmptyState
-                          variant="moderation"
-                          title="No blocked users"
-                          description="No users are currently blocked."
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filtered.map((u) => (
-                      <TableRow key={`${u.threadId}-${u.blockedUserId}`}>
-                        <TableCell className="font-medium text-xs">
-                          {`${u.blockedUserFirstName} ${u.blockedUserLastName}`}
-                        </TableCell>
-                        <TableCell className="text-xs">{u.threadTitle}</TableCell>
-                        <TableCell className="text-xs">{u.reason ?? "—"}</TableCell>
-                        <TableCell className="text-xs">
-                          {new Date(u.createdAt).toLocaleString()}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <ConfirmDialog
-                            title="Unblock User"
-                            description={`Unblock user "${`${u.blockedUserFirstName} ${u.blockedUserLastName}`}" from this thread?`}
-                            confirmLabel="Unblock"
-                            onConfirm={() =>
-                              unblockMutation.mutate(
-                                { threadId: u.threadId, accountId: u.blockedUserId },
-                                {
-                                  onSuccess: () => setNotice("User unblocked"),
-                                  onError: (err) => setNotice(getErrorMessage(err)),
-                                }
-                              )
-                            }
-                          >
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={unblockMutation.isPending}
-                            >
-                              Unblock
-                            </Button>
-                          </ConfirmDialog>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-card">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-2.5">
+          <Input
+            className="w-full sm:w-64"
+            placeholder={t("searchName")}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+          {total > 0 && (
+            <span className="text-xs text-muted-foreground">{t("total", { count: total })}</span>
           )}
+        </div>
 
-          {totalPages > 1 && (
+        {notice ? (
+          <p className="border-b border-border px-4 py-2 text-xs text-muted-foreground">{notice}</p>
+        ) : null}
+
+        {blockedQuery.isLoading ? (
+          <TableSkeleton rows={10} columns={5} />
+        ) : blockedQuery.isError ? (
+          <div className="p-4">
+            <InlineError error={blockedQuery.error} onRetry={() => blockedQuery.refetch()} />
+          </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            variant="moderation"
+            title={t("noBlockedUsers")}
+            description={t("noBlockedUsersDesc")}
+          />
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("user")}</TableHead>
+                <TableHead>{t("thread")}</TableHead>
+                <TableHead>{t("reason")}</TableHead>
+                <TableHead>{t("blockedAt")}</TableHead>
+                <TableHead className="text-right">
+                  <span className="sr-only">{t("actions")}</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((u) => {
+                const name = `${u.blockedUserFirstName} ${u.blockedUserLastName}`;
+                return (
+                  <TableRow key={`${u.threadId}-${u.blockedUserId}`}>
+                    <TableCell className="max-w-[200px]">
+                      <div className="truncate text-sm font-medium">{name}</div>
+                      <div className="truncate font-mono text-xs text-muted-foreground">
+                        {u.blockedUserId}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-[220px] text-xs">
+                      <div className="truncate">{u.threadTitle}</div>
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      {u.reason ? <Badge variant={reasonVariant(u.reason)}>{u.reason}</Badge> : "—"}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {new Date(u.createdAt).toLocaleString(locale)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <ConfirmDialog
+                        title={t("unblockDialogTitle")}
+                        description={t("unblockDialogDesc", { name })}
+                        confirmLabel={t("unblock")}
+                        cancelLabel={t("cancel")}
+                        onConfirm={() =>
+                          unblockMutation.mutate(
+                            { threadId: u.threadId, accountId: u.blockedUserId },
+                            {
+                              onSuccess: () => setNotice(t("unblocked")),
+                              onError: (err) => setNotice(getErrorMessage(err)),
+                            }
+                          )
+                        }
+                      >
+                        <Button variant="outline" size="sm" disabled={unblockMutation.isPending}>
+                          {t("unblock")}
+                        </Button>
+                      </ConfirmDialog>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+
+        {totalPages > 1 && (
+          <div className="border-t border-border px-4 py-3">
             <PaginationBar
               page={page}
               totalPages={totalPages}
               isLoading={blockedQuery.isLoading}
               onPageChange={(p) => setPage(p)}
             />
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
