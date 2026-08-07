@@ -1,5 +1,8 @@
 {
   "sidebar": {
+    "brand": {
+      "subtitle": "አዲሱ ሥራተኛ · admin"
+    },
     "sections": {
       "main": "MAIN",
       "community": "COMMUNITY",
@@ -31,7 +34,70 @@
     },
     "footer": {
       "darkMode": "Dark Mode",
-      "language": "Language"
+      "language": "Language",
+      "collapse": "Collapse rail",
+      "expand": "Expand rail"
+    }
+  },
+  "common": {
+    "modules": "Modules",
+    "notifications": "Notifications",
+    "openMenu": "Open navigation",
+    "account": "Account",
+    "admin": "Admin",
+    "changePassword": "Change Password",
+    "logout": "Logout",
+    "loggingOut": "Logging out…"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of Adisu Serategna operations · {date}",
+    "stats": {
+      "users": "Total MSME Users",
+      "documents": "Documents Processed",
+      "sessions": "Active Sessions",
+      "flagged": "Flagged Content",
+      "dailyAvg": "Daily avg",
+      "fewer": "↓ fewer than last week"
+    },
+    "growth": {
+      "title": "User Growth by Tier",
+      "period": "12 months",
+      "free": "Free Tier",
+      "premium": "Premium Tier",
+      "empty": "No growth data available"
+    },
+    "stages": {
+      "title": "Documents by Pipeline Stage",
+      "total": "Total",
+      "empty": "No documents found"
+    },
+    "health": {
+      "title": "System Overview",
+      "uptime": "uptime · 24h",
+      "operational": "Operational",
+      "degraded": "Degraded",
+      "down": "Down",
+      "empty": "No system data"
+    },
+    "logs": {
+      "title": "Recent Admin Logs",
+      "admin": "Admin",
+      "action": "Action",
+      "target": "Target",
+      "time": "Time",
+      "empty": "No activity logs yet",
+      "justNow": "just now",
+      "minutesAgo": "{n}m ago",
+      "hoursAgo": "{n}h ago",
+      "daysAgo": "{n}d ago"
+    },
+    "pagume": {
+      "flag": "ጳጉሜን",
+      "soon": "Year-end filing window — Pagume, the 13th month, begins {date}. {done} of 13 months complete.",
+      "open": "The 13th month is here — the year-end filing window is open. {days} days remain.",
+      "openLast": "The 13th month is here — the year-end filing window is open. Today is the last day.",
+      "monthMeta": "Month {month} · {name}"
     }
   }
 }

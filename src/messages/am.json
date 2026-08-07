@@ -1,5 +1,8 @@
 {
   "sidebar": {
+    "brand": {
+      "subtitle": "አዲሱ ሥራተኛ · አስተዳደር"
+    },
     "sections": {
       "main": "ዋና",
       "community": "ማህበረሰብ",
@@ -31,7 +34,70 @@
     },
     "footer": {
       "darkMode": "ጨለማ ሁነታ",
-      "language": "ቋንቋ"
+      "language": "ቋንቋ",
+      "collapse": "የጎን አሞሌን ዝጋ",
+      "expand": "የጎን አሞሌን ክፈት"
+    }
+  },
+  "common": {
+    "modules": "ሞዱሎች",
+    "notifications": "ማሳወቂያዎች",
+    "openMenu": "ምናሌ ክፈት",
+    "account": "መለያ",
+    "admin": "አድሚን",
+    "changePassword": "የይለፍ ቃል ቀይር",
+    "logout": "ውጣ",
+    "loggingOut": "እየወጣ ነው…"
+  },
+  "dashboard": {
+    "title": "ዳሽቦርድ",
+    "subtitle": "የአዲሱ ሥራተኛ ሥራዎች አጠቃላይ እይታ · {date}",
+    "stats": {
+      "users": "ጠቅላላ ኤምኤስኤምኤ ተጠቃሚዎች",
+      "documents": "የተሰሩ ሰነዶች",
+      "sessions": "ንቁ ክፍለ-ጊዜዎች",
+      "flagged": "ሪፖርት የተደረገ ይዘት",
+      "dailyAvg": "ዕለታዊ አማካይ",
+      "fewer": "↓ ካለፈው ሳምንት ያነሰ"
+    },
+    "growth": {
+      "title": "የተጠቃሚዎች እድገት በደረጃ",
+      "period": "12 ወራት",
+      "free": "ነጻ ደረጃ",
+      "premium": "ፕሪሚየም ደረጃ",
+      "empty": "የእድገት መረጃ የለም"
+    },
+    "stages": {
+      "title": "ሰነዶች በሂደት ደረጃ",
+      "total": "ጠቅላላ",
+      "empty": "ሰነዶች አልተገኙም"
+    },
+    "health": {
+      "title": "የስርዓት አጠቃላይ እይታ",
+      "uptime": "የማገልገል ጊዜ · 24 ሰዓት",
+      "operational": "ሥራ ላይ",
+      "degraded": "ተዳክሟል",
+      "down": "ወርዷል",
+      "empty": "የስርዓት መረጃ የለም"
+    },
+    "logs": {
+      "title": "የቅርብ ጊዜ የአስተዳዳሪ ምዝግብ",
+      "admin": "አስተዳዳሪ",
+      "action": "እርምጃ",
+      "target": "ዒላማ",
+      "time": "ሰዓት",
+      "empty": "የእንቅስቃሴ ምዝግብ እስካሁን የለም",
+      "justNow": "አሁን",
+      "minutesAgo": "{n} ደቂቃ በፊት",
+      "hoursAgo": "{n} ሰዓት በፊት",
+      "daysAgo": "{n} ቀን በፊት"
+    },
+    "pagume": {
+      "flag": "ጳጉሜን",
+      "soon": "የዓመት መጨረሻ ማቅረቢያ ጊዜ — ጳጉሜን (13ኛው ወር) በ{date} ይጀምራል። ከ13 ወራት {done} ተጠናቀዋል።",
+      "open": "13ኛው ወር ደርሷል — የዓመት መጨረሻ ማቅረቢያ ጊዜ ተከፍቷል። {days} ቀን ቀርቷል።",
+      "openLast": "13ኛው ወር ደርሷል — የዓመት መጨረሻ ማቅረቢያ ጊዜ ተከፍቷል። ዛሬ የመጨረሻው ቀን ነው።",
+      "monthMeta": "ወር {month} · {name}"
     }
   }
 }
