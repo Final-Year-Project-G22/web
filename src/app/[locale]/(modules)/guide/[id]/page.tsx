@@ -3,6 +3,7 @@
 import { ListChecks } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useSectorList, useTagList } from "@/app/[locale]/(modules)/admin/_services/taxonomy.hook";
@@ -20,14 +21,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { InlineError } from "@/components/ui/inline-error";
@@ -49,6 +42,8 @@ import { useAdminLanguageStore } from "@/stores/admin-language.store";
 
 export default function GuideDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const t = useTranslations("surfaces.guide.detail");
+  const listT = useTranslations("surfaces.guide.list");
   const language = useAdminLanguageStore((s) => s.language);
 
   const guideQuery = useAdminGuideDetail(id, { locale: language });
@@ -76,7 +71,7 @@ export default function GuideDetailPage() {
 
   useEffect(() => {
     if (guide) {
-      const translation = guide.translations?.find((t) => t.language === language);
+      const translation = guide.translations?.find((tr) => tr.language === language);
       setEditName(translation?.name ?? "");
       setEditDescription(translation?.description ?? "");
       setEditSlug(guide.slug);
@@ -135,10 +130,11 @@ export default function GuideDetailPage() {
     );
   }
 
-  const guideTitle = guide?.translations?.find((t) => t.language === language)?.name ?? "Untitled";
+  const guideTitle =
+    guide?.translations?.find((tr) => tr.language === language)?.name ?? "Untitled";
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -146,7 +142,7 @@ export default function GuideDetailPage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/guide">Guides</BreadcrumbLink>
+            <BreadcrumbLink href="/guide">{listT("title")}</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -155,24 +151,32 @@ export default function GuideDetailPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle>{guideTitle}</CardTitle>
-          <CardDescription>Manage guide details and steps</CardDescription>
-          <CardAction className="flex gap-2">
-            <Button onClick={handleSaveGuide} disabled={updateGuide.isPending}>
-              {updateGuide.isPending ? "Saving..." : "Save"}
-            </Button>
-            <Button asChild variant="outline">
-              <Link href={`/guide/${id}/edit`}>Edit Steps</Link>
-            </Button>
-          </CardAction>
-        </CardHeader>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-[22px] font-semibold tracking-tight text-ink">
+            {guideTitle}
+          </h1>
+          <p className="mt-1 text-[13px] text-muted-foreground">{t("manageDesc")}</p>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleSaveGuide} disabled={updateGuide.isPending || !dirty}>
+            {updateGuide.isPending ? t("saving") : t("save")}
+          </Button>
+          <Button asChild variant="outline">
+            <Link href={`/guide/${id}/edit`}>{t("editSteps")}</Link>
+          </Button>
+        </div>
+      </div>
 
-        <CardContent className="space-y-4 pt-4">
-          <div className="grid gap-4 md:grid-cols-2">
+      <section className="overflow-hidden rounded-lg border border-line bg-panel shadow-card">
+        <div className="border-b border-line px-5 py-3.5">
+          <h2 className="font-display text-[13.5px] font-semibold text-ink">{guideTitle}</h2>
+        </div>
+
+        <div className="space-y-5 p-5">
+          <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="guide-name">Name ({language.toUpperCase()})</Label>
+              <Label htmlFor="guide-name">{t("name", { lang: language.toUpperCase() })}</Label>
               <Input
                 id="guide-name"
                 value={editName}
@@ -185,7 +189,7 @@ export default function GuideDetailPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="guide-slug">Slug</Label>
+              <Label htmlFor="guide-slug">{t("slug")}</Label>
               <Input
                 id="guide-slug"
                 value={editSlug}
@@ -198,10 +202,11 @@ export default function GuideDetailPage() {
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label>Cover Image</Label>
+              <Label>{t("coverImage")}</Label>
               <div className="flex items-start gap-4">
                 {editImageUrl ? (
-                  <div className="relative h-24 w-40 overflow-hidden rounded-lg border bg-slate-50">
+                  <div className="relative h-24 w-40 overflow-hidden rounded-lg border border-line bg-canvas-2">
+                    {/* biome-ignore lint/performance/noImgElement: external guide cover image */}
                     <img
                       src={editImageUrl}
                       alt="Guide cover"
@@ -209,8 +214,8 @@ export default function GuideDetailPage() {
                     />
                   </div>
                 ) : (
-                  <div className="flex h-24 w-40 items-center justify-center rounded-lg border border-dashed bg-muted/20 text-xs text-muted-foreground">
-                    No image
+                  <div className="flex h-24 w-40 items-center justify-center rounded-lg border border-dashed border-line bg-canvas-2 text-xs text-muted-foreground">
+                    {t("noImage")}
                   </div>
                 )}
                 <div className="space-y-2">
@@ -220,7 +225,7 @@ export default function GuideDetailPage() {
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    {editImageUrl ? "Replace" : "Upload"}
+                    {uploading ? "…" : editImageUrl ? t("replace") : t("upload")}
                   </Button>
                   {editImageUrl ? (
                     <Button
@@ -232,7 +237,7 @@ export default function GuideDetailPage() {
                         setDirty(true);
                       }}
                     >
-                      Remove
+                      {t("remove")}
                     </Button>
                   ) : null}
                   <input
@@ -247,7 +252,9 @@ export default function GuideDetailPage() {
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="guide-description">Description ({language.toUpperCase()})</Label>
+              <Label htmlFor="guide-description">
+                {t("description", { lang: language.toUpperCase() })}
+              </Label>
               <textarea
                 id="guide-description"
                 value={editDescription}
@@ -257,12 +264,12 @@ export default function GuideDetailPage() {
                 }}
                 placeholder="Short guide description"
                 rows={2}
-                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-none placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Sectors</Label>
+              <Label>{t("sectors")}</Label>
               {sectorsQuery.isLoading ? (
                 <p className="text-sm text-muted-foreground">Loading sectors&hellip;</p>
               ) : (
@@ -279,12 +286,12 @@ export default function GuideDetailPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Tags</Label>
+              <Label>{t("tags")}</Label>
               {tagsQuery.isLoading ? (
                 <p className="text-sm text-muted-foreground">Loading tags&hellip;</p>
               ) : (
                 <TagSelect
-                  options={tags.map((t) => ({ id: t.id, label: t.nameEn, group: t.group }))}
+                  options={tags.map((tg) => ({ id: tg.id, label: tg.nameEn, group: tg.group }))}
                   selected={editTagIds}
                   onChange={(ids) => {
                     setEditTagIds(ids);
@@ -295,68 +302,74 @@ export default function GuideDetailPage() {
               )}
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle>Steps</CardTitle>
-          <CardDescription>
-            {steps.length} step{steps.length !== 1 ? "s" : ""}
-          </CardDescription>
-          <CardAction>
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/guide/${id}/edit?step=new`}>Add Step</Link>
-            </Button>
-          </CardAction>
-        </CardHeader>
+      <section className="overflow-hidden rounded-lg border border-line bg-panel shadow-card">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3.5">
+          <div className="flex items-baseline gap-3">
+            <h2 className="font-display text-[13.5px] font-semibold text-ink">{t("steps")}</h2>
+            <span className="text-[11.5px] text-muted-foreground">
+              {t("stepsCount", { count: steps.length })}
+            </span>
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/guide/${id}/edit?step=new`}>{t("addStep")}</Link>
+          </Button>
+        </div>
 
-        <CardContent>
+        <div>
           {stepsQuery.isError ? (
-            <p className="py-4 text-sm text-destructive">
+            <p className="px-5 py-4 text-sm text-destructive">
               Failed to load steps: {getErrorMessage(stepsQuery.error)}
             </p>
           ) : steps.length === 0 ? (
             <EmptyState
               icon={ListChecks}
-              title="No steps yet"
-              description="Add the first step to this guide."
+              title={t("noStepsTitle")}
+              description={t("noStepsDesc")}
             />
           ) : (
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-16">#</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead className="w-32 text-right">Actions</TableHead>
+                    <TableHead className="w-14">{t("number")}</TableHead>
+                    <TableHead>{t("steps")}</TableHead>
+                    <TableHead className="w-40 text-right">{listT("actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {steps.map((step, idx) => {
                     const stepTitle =
-                      step.translations?.find((t) => t.language === language)?.title ??
+                      step.translations?.find((tr) => tr.language === language)?.title ??
                       `Step ${idx + 1}`;
                     return (
                       <TableRow key={step.id}>
-                        <TableCell className="text-muted-foreground">{step.sortOrder}</TableCell>
-                        <TableCell className="font-medium">{stepTitle}</TableCell>
+                        <TableCell>
+                          <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                            {String(step.sortOrder).padStart(2, "0")}
+                          </span>
+                        </TableCell>
+                        <TableCell className="font-medium text-ink">{stepTitle}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Button asChild size="sm" variant="outline">
-                              <Link href={`/guide/${id}/edit?step=${step.id}`}>Edit</Link>
+                              <Link href={`/guide/${id}/edit?step=${step.id}`}>
+                                {listT("edit")}
+                              </Link>
                             </Button>
                             <ConfirmDialog
-                              title="Delete Step"
+                              title={t("deleteStep")}
                               description="Are you sure you want to delete this step? This may trigger reordering of remaining steps."
-                              confirmLabel="Delete"
+                              confirmLabel={t("deleteStep")}
                               variant="destructive"
                               onConfirm={() =>
                                 deleteStepMutation.mutate({ id: step.id, guideId: id })
                               }
                             >
                               <Button size="sm" variant="outline">
-                                Delete
+                                {t("deleteStep")}
                               </Button>
                             </ConfirmDialog>
                           </div>
@@ -368,8 +381,8 @@ export default function GuideDetailPage() {
               </Table>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }
