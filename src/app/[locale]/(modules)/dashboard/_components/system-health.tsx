@@ -1,86 +1,62 @@
-import { AlertCircle, CheckCircle2, Clock, FileWarning } from "lucide-react";
+"use client";
+
+import { AlertCircle, CheckCircle2, FileWarning } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useSystemOverview } from "../_services/dashboard.hook";
 
-const iconMap: Record<string, typeof CheckCircle2> = {
-  success: CheckCircle2,
-  warning: AlertCircle,
-  danger: FileWarning,
-  info: Clock,
-};
+const typeMeta = {
+  success: { dot: "bg-success", badge: "success", icon: CheckCircle2, statusKey: "operational" },
+  warning: { dot: "bg-warning", badge: "warning", icon: AlertCircle, statusKey: "degraded" },
+  danger: { dot: "bg-destructive", badge: "destructive", icon: FileWarning, statusKey: "down" },
+} as const;
 
-const colorMap: Record<string, string> = {
-  success: "text-success bg-success/8 border-success/15",
-  warning: "text-warning bg-warning/8 border-warning/15",
-  danger: "text-destructive bg-destructive/8 border-destructive/15",
-  info: "text-chart-1 bg-chart-1/8 border-chart-1/15",
-};
-
-function StatusBadge({ label, variant }: { label: string; variant: "success" | "warning" }) {
-  return (
-    <span
-      className={cn(
-        "text-[10px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md border",
-        variant === "success"
-          ? "text-success bg-success/8 border-success/15"
-          : "text-warning bg-warning/8 border-warning/15"
-      )}
-    >
-      {label}
-    </span>
-  );
-}
+type HealthType = keyof typeof typeMeta;
 
 export function SystemHealth() {
+  const t = useTranslations("dashboard");
   const { data: overview } = useSystemOverview();
   const items = overview?.items ?? [];
 
   return (
-    <Card className="shadow-sm rounded-xl">
-      <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="size-5 text-success" />
-          <CardTitle className="text-base font-bold">System Overview</CardTitle>
-        </div>
+    <Card className="gap-0 py-0 shadow-card">
+      <CardHeader className="flex flex-row items-center justify-between gap-3 border-b border-line px-5 py-3">
+        <CardTitle>{t("health.title")}</CardTitle>
+        <span className="text-[11.5px] whitespace-nowrap text-muted">{t("health.uptime")}</span>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          {items.slice(0, 4).map((item) => {
-            const Icon = iconMap[item.type] ?? AlertCircle;
-            const color = colorMap[item.type] ?? colorMap.info;
-            return (
-              <div key={item.label} className={cn("p-4 rounded-xl border", color)}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+      <CardContent className="p-0">
+        {items.length === 0 ? (
+          <p className="py-10 text-center text-sm text-muted-foreground">{t("health.empty")}</p>
+        ) : (
+          <div className="flex flex-col">
+            {items.map((item) => {
+              const healthType: HealthType =
+                item.type === "success" || item.type === "danger" ? item.type : "warning";
+              const meta = typeMeta[healthType];
+              const Icon = meta.icon;
+              return (
+                <div
+                  key={item.label}
+                  className="flex items-center gap-3 border-b border-line px-5 py-3 transition-colors duration-fast last:border-b-0 hover:bg-panel-2"
+                >
+                  <span className={cn("size-2 flex-none rounded-full", meta.dot)} />
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
                     {item.label}
                   </span>
-                  <Icon className="size-4" />
+                  <span className="font-mono text-[11.5px] whitespace-nowrap text-muted tabular-nums">
+                    {item.value}
+                  </span>
+                  <Badge variant={meta.badge} className="gap-1">
+                    <Icon className="size-3" />
+                    {t(`health.${meta.statusKey}`)}
+                  </Badge>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <h4 className="text-2xl font-extrabold text-foreground">{item.value}</h4>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="size-4 text-success" />
-              <span className="text-sm font-medium">API Service</span>
-            </div>
-            <StatusBadge label="Operational" variant="success" />
+              );
+            })}
           </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="size-4 text-success" />
-              <span className="text-sm font-medium">Database</span>
-            </div>
-            <StatusBadge label="Connected" variant="success" />
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
