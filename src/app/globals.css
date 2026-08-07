@@ -5,98 +5,223 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ═══════════════════════════════════════════════════════════════════════
+   Design tokens — Adisu Serategna admin (አዲሱ ሥራተኛ)
+   Source of truth: docs/design/direction-spec.md §10 (LOCKED, #37).
+   Palette — product trio (mobile-aligned): slate-navy acts · emerald grows ·
+   amber warms; red flags · blue informs. Slate-50 light #F8FAFC ·
+   clean charcoal night #14171A. Light-first, dark mirrors roles.
+   Everything in this app consumes these tokens — no raw colors outside
+   this file (enforced by ticket #42).
+   ═══════════════════════════════════════════════════════════════════════ */
+
 :root {
-  --card: oklch(0.995 0.005 240);
-  --card-foreground: oklch(0.15 0.02 250);
-  --popover: oklch(0.995 0.005 240);
-  --popover-foreground: oklch(0.15 0.02 250);
-  --primary: oklch(0.45 0.16 45);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.95 0.015 240);
-  --secondary-foreground: oklch(0.2 0.02 250);
-  --muted: oklch(0.96 0.01 240);
-  --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.95 0.015 240);
-  --accent-foreground: oklch(0.2 0.02 250);
-  --destructive: oklch(0.55 0.22 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.9 0.012 240);
-  --input: oklch(0.9 0.012 240);
-  --ring: oklch(0.55 0.14 45);
-  --chart-1: oklch(0.55 0.2 250);
-  --chart-2: oklch(0.5 0.2 190);
-  --chart-3: oklch(0.5 0.2 310);
-  --chart-4: oklch(0.6 0.2 45);
-  --chart-5: oklch(0.5 0.2 350);
-  --radius: 0.625rem;
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.15 0.02 250);
-  --sidebar-primary: oklch(0.45 0.16 45);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.95 0.015 240);
-  --sidebar-accent-foreground: oklch(0.2 0.02 250);
-  --sidebar-border: oklch(0.9 0.012 240);
-  --sidebar-ring: oklch(0.55 0.14 45);
-  --background: oklch(0.985 0.008 240);
-  --foreground: oklch(0.15 0.02 250);
-  --auth-gradient-from: oklch(0.15 0.08 45);
-  --auth-gradient-to: oklch(0.2 0.06 40);
-  --layout-surface: oklch(0.97 0.008 240);
-  --editor-surface: oklch(0.955 0.01 240);
-  --success: oklch(0.55 0.18 155);
-  --warning: oklch(0.65 0.18 70);
-  --info: oklch(0.55 0.12 240);
-  --brand: oklch(0.45 0.16 45);
-  --brand-accent: oklch(0.7 0.2 80);
+  /* surfaces — canvas is the ground, panel sits on it, panel-2 tints */
+  --canvas: #f8fafc; /* slate-50 */
+  --canvas-2: #f1f5f9; /* rail / tint bands */
+  --panel: #ffffff;
+  --panel-2: #f1f5f9; /* tint hover */
+  --background: var(--canvas);
+  --foreground: #0f172a; /* slate-900 ink */
+  --card: var(--panel);
+  --card-foreground: var(--foreground);
+  --popover: var(--panel);
+  --popover-foreground: var(--foreground);
+  --layout-surface: var(--canvas);
+  --editor-surface: var(--canvas-2);
+
+  /* hairline ordering — the border system */
+  --line: #e2e8f0;
+  --line-2: #cbd5e1;
+  --border: var(--line);
+  --input: var(--line);
+
+  /* text */
+  --ink: #0f172a;
+  --ink-2: #475569;
+  --muted: #64748b;
+  --muted-foreground: var(--muted);
+
+  /* product trio — navy acts */
+  --navy: #1e293b; /* slate-800 */
+  --navy-strong: #0f172a;
+  --navy-tint: rgb(30 41 59 / 0.06);
+  --primary: var(--navy);
+  --primary-foreground: #ffffff;
+  --primary-strong: var(--navy-strong);
+
+  /* product trio — emerald grows */
+  --emerald: #10b981;
+  --emerald-strong: #047857;
+  --emerald-tint: rgb(16 185 129 / 0.12);
+
+  /* product trio — amber warms / pending */
+  --amber: #f59e0b;
+  --amber-strong: #92400e;
+  --amber-tint: rgb(245 158 11 / 0.14);
+
+  /* flags / destructive */
+  --red: #ef4444;
+  --red-strong: #dc2626;
+  --red-tint: rgb(239 68 68 / 0.1);
+
+  /* informs */
+  --blue: #3b82f6;
+  --blue-strong: #2563eb;
+  --blue-tint: rgb(59 130 246 / 0.1);
+
+  /* semantic roles — meaning, not decoration */
+  --success: var(--emerald);
+  --success-strong: var(--emerald-strong);
+  --success-tint: var(--emerald-tint);
+  --success-foreground: #ffffff;
+  --warning: var(--amber);
+  --warning-strong: var(--amber-strong);
+  --warning-tint: var(--amber-tint);
+  --warning-foreground: #0f172a; /* dark text reads on amber in both modes */
+  --info: var(--blue);
+  --info-strong: var(--blue-strong);
+  --info-tint: var(--blue-tint);
+  --info-foreground: #ffffff;
+  --destructive: var(--red);
+  --destructive-strong: var(--red-strong);
+  --destructive-tint: var(--red-tint);
+  --destructive-foreground: #ffffff;
+
+  /* charts — the trio, then info/flag as support */
+  --chart-1: #1e293b;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #3b82f6;
+  --chart-5: #ef4444;
+
+  /* radius — 8px discipline (§10) */
+  --radius: 0.5rem;
+
+  /* shadows — one quiet card shadow, one for floating layers */
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05);
+  --shadow-popover: 0 4px 12px -2px rgb(15 23 42 / 0.12);
+
+  /* shell — full rail width (consumed by the shell redesign) */
+  --rail: 236px;
+
+  /* sidebar (shadcn contract — remapped to the palette; rail itself is #39's) */
+  --sidebar: var(--canvas-2);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--navy);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--navy-tint);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--navy);
+
+  /* auth panel gradient — interim; the auth redesign (#41) replaces it */
+  --auth-gradient-from: #1e293b;
+  --auth-gradient-to: #0f172a;
 }
 
 .dark {
-  --background: oklch(0.13 0.015 250);
-  --foreground: oklch(0.95 0.008 250);
-  --card: oklch(0.17 0.015 250);
-  --card-foreground: oklch(0.95 0.008 250);
-  --popover: oklch(0.17 0.015 250);
-  --popover-foreground: oklch(0.95 0.008 250);
-  --primary: oklch(0.65 0.16 45);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.22 0.015 250);
-  --secondary-foreground: oklch(0.95 0.008 250);
-  --muted: oklch(0.22 0.015 250);
-  --muted-foreground: oklch(0.7 0.01 250);
-  --accent: oklch(0.22 0.015 250);
-  --accent-foreground: oklch(0.95 0.008 250);
-  --destructive: oklch(0.65 0.22 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.25 0.02 250);
-  --input: oklch(0.25 0.02 250);
-  --ring: oklch(0.6 0.14 45);
-  --chart-1: oklch(0.7 0.2 250);
-  --chart-2: oklch(0.65 0.2 190);
-  --chart-3: oklch(0.65 0.2 310);
-  --chart-4: oklch(0.75 0.2 45);
-  --chart-5: oklch(0.65 0.2 350);
-  --sidebar: oklch(0.15 0.015 250);
-  --sidebar-foreground: oklch(0.95 0.008 250);
-  --sidebar-primary: oklch(0.65 0.16 45);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.22 0.015 250);
-  --sidebar-accent-foreground: oklch(0.95 0.008 250);
-  --sidebar-border: oklch(0.25 0.02 250);
-  --sidebar-ring: oklch(0.6 0.14 45);
-  --auth-gradient-from: oklch(0.1 0.08 45);
-  --auth-gradient-to: oklch(0.15 0.06 40);
-  --layout-surface: oklch(0.12 0.01 250);
-  --editor-surface: oklch(0.1 0.01 250);
-  --success: oklch(0.65 0.18 155);
-  --warning: oklch(0.7 0.18 70);
-  --info: oklch(0.6 0.12 240);
-  --brand: oklch(0.65 0.16 45);
-  --brand-accent: oklch(0.75 0.2 80);
+  /* surfaces — clean charcoal night */
+  --canvas: #14171a;
+  --canvas-2: #171b1e;
+  --panel: #1b1e22;
+  --panel-2: #20242a;
+  --background: var(--canvas);
+  --foreground: #eceeea;
+  --card: var(--panel);
+  --card-foreground: var(--foreground);
+  --popover: var(--panel);
+  --popover-foreground: var(--foreground);
+  --layout-surface: var(--canvas);
+  --editor-surface: var(--canvas-2);
+
+  /* hairline ordering */
+  --line: #2a2e33;
+  --line-2: #373c45;
+  --border: var(--line);
+  --input: var(--line);
+
+  /* text */
+  --ink: #eceeea;
+  --ink-2: #b4bbc4;
+  --muted: #9aa0a6;
+  --muted-foreground: var(--muted);
+
+  /* product trio — the app's own dark-mode navy: slate-400 (a dark navy
+     disappears on charcoal night) */
+  --navy: #94a3b8;
+  --navy-strong: #cbd5e1;
+  --navy-tint: rgb(148 163 184 / 0.12);
+  --primary: var(--navy);
+  --primary-foreground: #0f172a;
+  --primary-strong: var(--navy-strong);
+
+  --emerald: #6ee7b7;
+  --emerald-strong: #34d399;
+  --emerald-tint: rgb(110 231 183 / 0.14);
+
+  --amber: #fcd34d;
+  --amber-strong: #fde68a;
+  --amber-tint: rgb(252 211 77 / 0.14);
+
+  --red: #fca5a5;
+  --red-strong: #f87171;
+  --red-tint: rgb(252 165 165 / 0.12);
+
+  --blue: #93c5fd;
+  --blue-strong: #7db4fa;
+  --blue-tint: rgb(147 197 253 / 0.12);
+
+  /* semantic roles — dark mirrors roles, meanings don't change (M3 lesson) */
+  --success: var(--emerald);
+  --success-strong: var(--emerald-strong);
+  --success-tint: var(--emerald-tint);
+  --success-foreground: #0f172a;
+  --warning: var(--amber);
+  --warning-strong: var(--amber-strong);
+  --warning-tint: var(--amber-tint);
+  --warning-foreground: #0f172a;
+  --info: var(--blue);
+  --info-strong: var(--blue-strong);
+  --info-tint: var(--blue-tint);
+  --info-foreground: #0f172a;
+  --destructive: var(--red);
+  --destructive-strong: var(--red-strong);
+  --destructive-tint: var(--red-tint);
+  --destructive-foreground: #0f172a;
+
+  /* charts */
+  --chart-1: #94a3b8;
+  --chart-2: #6ee7b7;
+  --chart-3: #fcd34d;
+  --chart-4: #93c5fd;
+  --chart-5: #fca5a5;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-popover: 0 4px 12px -2px rgb(0 0 0 / 0.5);
+
+  --sidebar: var(--canvas-2);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--navy);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--navy-tint);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--navy);
+
+  --auth-gradient-from: #1e293b;
+  --auth-gradient-to: #0f172a;
 }
 
 @theme inline {
-  --font-sans: var(--font-geist);
-  --font-mono: var(--font-jetbrains-mono);
+  /* typography — every stack ends in Noto Sans Ethiopic (locked §10.2);
+     Latin-only loading was the known gap, fixed in src/app/layout.tsx */
+  --font-sans: var(--font-inter), var(--font-noto-sans-ethiopic), system-ui, sans-serif;
+  --font-display: var(--font-sora), var(--font-noto-sans-ethiopic), system-ui, sans-serif;
+  --font-heading: var(--font-sora), var(--font-noto-sans-ethiopic), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), var(--font-noto-sans-ethiopic), ui-monospace, monospace;
+
+  /* shadcn semantic aliases */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -105,26 +230,25 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
+  --color-primary-strong: var(--primary-strong);
+  --color-secondary: var(--panel-2);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--panel-2);
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--panel-2);
+  --color-accent-foreground: var(--ink);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-strong: var(--destructive-strong);
+  --color-destructive-tint: var(--destructive-tint);
   --color-border: var(--border);
   --color-input: var(--input);
-  --color-ring: var(--ring);
+  --color-ring: var(--navy);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -133,20 +257,75 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* palette surface + text */
+  --color-canvas: var(--canvas);
+  --color-canvas-2: var(--canvas-2);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+
+  /* product trio */
+  --color-navy: var(--navy);
+  --color-navy-strong: var(--navy-strong);
+  --color-navy-tint: var(--navy-tint);
+  --color-emerald: var(--emerald);
+  --color-emerald-strong: var(--emerald-strong);
+  --color-emerald-tint: var(--emerald-tint);
+  --color-amber: var(--amber);
+  --color-amber-strong: var(--amber-strong);
+  --color-amber-tint: var(--amber-tint);
+  --color-red: var(--red);
+  --color-red-strong: var(--red-strong);
+  --color-red-tint: var(--red-tint);
+  --color-blue: var(--blue);
+  --color-blue-strong: var(--blue-strong);
+  --color-blue-tint: var(--blue-tint);
+
+  /* semantic */
+  --color-success: var(--success);
+  --color-success-strong: var(--success-strong);
+  --color-success-tint: var(--success-tint);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-strong: var(--warning-strong);
+  --color-warning-tint: var(--warning-tint);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-strong: var(--info-strong);
+  --color-info-tint: var(--info-tint);
+  --color-info-foreground: var(--info-foreground);
+
+  /* surface support tokens (kept for existing consumers) */
   --color-auth-gradient-from: var(--auth-gradient-from);
   --color-auth-gradient-to: var(--auth-gradient-to);
   --color-layout-surface: var(--layout-surface);
   --color-editor-surface: var(--editor-surface);
-  --color-success: var(--success);
-  --color-warning: var(--warning);
-  --color-info: var(--info);
-  --color-brand: var(--brand);
-  --color-brand-accent: var(--brand-accent);
-  --font-heading: var(--font-fraunces);
-  --font-display: var(--font-fraunces);
+
+  /* radius — 8px discipline */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* shadows */
+  --shadow-card: var(--shadow-card);
+  --shadow-popover: var(--shadow-popover);
+
+  /* motion — 120–150ms tint/color only (locked §7); no decorative animation.
+     v4 resolves duration-* utilities against this namespace. */
+  --transition-duration-fast: 120ms;
+  --transition-duration-base: 150ms;
+  --transition-duration-slow: 220ms;
+
+  /* shell rail */
+  --spacing-rail: var(--rail);
 }
 
 @layer base {
@@ -156,43 +335,13 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+  /* data rendering — mono is tabular (IDs, amounts, timestamps) */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 @layer utilities {
-  .glow-orb {
-    position: absolute;
-    border-radius: 9999px;
-    filter: blur(100px);
-    pointer-events: none;
-    opacity: 0.06;
-    mix-blend-mode: plus-lighter;
-    animation: float 25s ease-in-out infinite, pulse-slow 10s ease-in-out infinite;
-    will-change: transform, opacity;
-  }
-
-  :root:not(.dark) .glow-orb {
-    opacity: 0.03;
-    mix-blend-mode: multiply;
-  }
-
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0) scale(1);
-    }
-    50% {
-      transform: translateY(-15px) scale(1.08);
-    }
-  }
-
-  @keyframes pulse-slow {
-    0%, 100% {
-      opacity: 0.04;
-    }
-    50% {
-      opacity: 0.08;
-    }
-  }
-
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -201,6 +350,36 @@
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
   }
+}
+
+/* Amharic metrics — locked §10.2: fidel body text +1px size, +0.1
+   line-height over the 14px/1.5 baseline. `lang` is set per locale by
+   <HtmlLang />. For fidel-dense blocks whose base line-height differs,
+   apply `fidel` and override with a leading-* class. */
+@utility fidel {
+  font-size: calc(1em + 1px);
+  line-height: calc(1.6 * 1em);
+}
+
+/* the tibeb woven rule (ጥበብ) — the one approved repeating pattern (§4.1),
+   wearing the product trio. Closes the shell top; 3px band. */
+@utility tibeb {
+  height: 3px;
+  flex: 0 0 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--navy) 0 8px,
+    var(--emerald) 8px 15px,
+    var(--amber) 15px 22px,
+    var(--navy) 22px 30px
+  );
+  border-bottom: 1px solid var(--line);
+}
+
+/* Amharic metrics — base prose (body default 14px/1.5 → 15px/1.6) */
+html[lang="am"] body {
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 @media (prefers-reduced-motion: reduce) {

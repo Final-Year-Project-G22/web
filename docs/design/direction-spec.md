@@ -41,7 +41,7 @@ Dark mode mirrors roles — surfaces darken, meanings don't change (mobile's M3 
 |---|---|---|
 | Display | **Sora** 600/700 | Noto Sans Ethiopic 700 |
 | Body | **Inter** 400/500/600 | **Noto Sans Ethiopic** (same weights) |
-| Data/mono | **JetBrains Mono** | Noto Sans Ethiopic (Geez numerals ፩–፼) |
+| Data/mono | **JetBrains Mono** | Noto Sans Ethiopic (tabular-nums) |
 
 - **Every stack ends in Noto Sans Ethiopic**; Latin faces are chosen to pair with it (similar stroke contrast at 400). This fixes the current HIGH finding — the app loads latin-only subsets today.
 - **Amharic metrics rule** (from mobile/DESIGN.md, written into tokens): fidel body text +1px size, +0.1 line-height multiplier. `font-variant-numeric: tabular-nums` on all data.
@@ -55,7 +55,7 @@ Two devices, used with restraint:
 2. **The ማህተም rubber stamp** — decision states (approved / rejected) render as rotated, serrated, double-bordered stamps in seal-red or green. A registry artifact, used only for *decisions*; pending/sent stay as pills.
 3. **ጳጉሜን, the 13th month** — the Ethiopian year-end filing window is a real dashboard feature (a live callout, not decoration): calendar as product.
 4. **Black-and-gold buttons** — primary actions are ink-fill with gold text (paper) / gold-fill with dark text (night), inverting on hover.
-5. **Ethiopic numerals in the አማ locale** — IDs, amounts, timestamps, and stat values render in Geez numerals (፬፼፳፻፭፻፹፩ = 42,581), and dates on the Ethiopian calendar (ነሐሴ ፩ ፳፻፲፯ ዓ.ም.). Functional Ethiopian specificity — data rendering, not costume. (Locale formatter to be built properly in the tokens ticket; prototype demonstrates the pattern with hand-verified values.)
+5. **Arabic numerals in both locales** — IDs, amounts, timestamps, and stat values use standard Arabic numerals (0–9) in English **and** Amharic (user override, recorded on ticket #38; no Geez-numeral conversion). Dates may render on the Ethiopian calendar in አማ (ነሐሴ ፩ ፳፻፲፯ ዓ.ም.) — data rendering, not costume. Numeric columns stay tabular (mono + `font-variant-numeric: tabular-nums`).
 
 ## 5. Primitives contract
 
@@ -104,8 +104,8 @@ These were answered through the v4–v7 rounds and the labs; see section 10.
 Resolved through the prototype rounds; these are final and must not be re-litigated in later tickets:
 
 1. **Palette — product trio (mobile-aligned)**: slate navy #1E293B acts · emerald #10B981 grows · amber #F59E0B warms; red flags, blue informs. Slate-50 canvas #F8FAFC; clean charcoal night #14171A. M3 dropped — web discipline (hairlines, 8px radius, tint-only hovers).
-2. **Type**: Sora display / Inter body / JetBrains Mono data, all with Noto Sans Ethiopic fallback; +1px/+0.1 line-height Amharic metrics rule; Geez numerals + Ethiopian-calendar dates in አማ.
-3. **Devices kept**: tibeb weave (wearing the product trio), ማህተም stamps, ጳጉሜን 13th-month callout, Geez numerals, አማ toggle, light-first with dark mode.
+2. **Type**: Sora display / Inter body / JetBrains Mono data, all with Noto Sans Ethiopic fallback; +1px/+0.1 line-height Amharic metrics rule; **numerals stay standard Arabic in both locales** (user override, #38); Ethiopian-calendar dates in አማ are a surface concern (dashboard), not the tokens ticket.
+3. **Devices kept**: tibeb weave (wearing the product trio), ማህተም stamps, ጳጉሜን 13th-month callout, Arabic numerals both locales (user override, #38), አማ toggle, light-first with dark mode.
 4. **Rail treatment**: line icons · filled-row active (navy fill, white text; dark-mode text flips) · woven 18px tibeb section bars (ዋና / ማህበረሰብ / ስርዓት).
 5. **Sidebar architecture — Full, closable, responsive**: full labeled rail with sub-groups; chevron collapse to a 64px icon rail (persisted); below 760px the rail becomes an off-canvas drawer (hamburger → backdrop → Escape/✕/select closes, scroll-locked).
 6. **Reference artifacts**: prototype-v7.html (16 routed pages, the shell contract), sidebar-lab.html (architecture exploration), icon-lab.html (icon/ornament exploration).
