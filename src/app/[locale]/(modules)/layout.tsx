@@ -7,13 +7,11 @@ import { Sidebar } from "@/components/layout/sidebar";
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <ProtectedRoute target="/dashboard">
-      <div className="relative flex h-screen overflow-hidden bg-layout-surface">
-        {/* Muted background orbs to provide depth */}
-        <div className="glow-orb absolute -top-40 -right-40 size-96 bg-primary/8 rounded-full blur-[100px] pointer-events-none" />
-        <div className="glow-orb absolute -bottom-40 left-1/3 size-96 bg-info/5 rounded-full blur-[100px] pointer-events-none" />
-
+      <div className="flex h-screen overflow-hidden bg-layout-surface">
         <Sidebar />
-        <div className="relative flex-1 flex flex-col h-full overflow-hidden">
+        <div className="flex h-full min-w-0 flex-1 flex-col">
+          {/* the tibeb woven rule — the stage's crown (locked §4.1 / §10.3) */}
+          <div className="tibeb" aria-hidden="true" />
           <Header />
           <AnimatedMain>
             <PermissionGuard>{children}</PermissionGuard>

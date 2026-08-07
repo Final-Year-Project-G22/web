@@ -20,15 +20,7 @@ export interface SidebarCollapsible {
   children: { href: string; labelKey: string }[];
 }
 
-export interface SidebarDropdown {
-  kind: "dropdown";
-  labelKey: string;
-  iconName: string;
-  permissionCode?: string;
-  children: { href: string; labelKey: string; iconName: string }[];
-}
-
-export type SidebarItem = SidebarLink | SidebarCollapsible | SidebarDropdown;
+export type SidebarItem = SidebarLink | SidebarCollapsible;
 
 export const sidebarConfig: SidebarSection[] = [
   {
@@ -93,26 +85,14 @@ export const sidebarConfig: SidebarSection[] = [
     labelKey: "sections.community",
     items: [
       {
-        kind: "dropdown",
+        kind: "collapsible",
         labelKey: "links.moderation",
         iconName: "TriangleAlert",
         permissionCode: "community.read",
         children: [
-          {
-            href: "/moderation/blocked-users",
-            labelKey: "links.blocked_users",
-            iconName: "ShieldAlert",
-          },
-          {
-            href: "/moderation/reported-content",
-            labelKey: "links.reported_content",
-            iconName: "TriangleAlert",
-          },
-          {
-            href: "/moderation/reported-users",
-            labelKey: "links.reported_users",
-            iconName: "TriangleAlert",
-          },
+          { href: "/moderation/blocked-users", labelKey: "links.blocked_users" },
+          { href: "/moderation/reported-content", labelKey: "links.reported_content" },
+          { href: "/moderation/reported-users", labelKey: "links.reported_users" },
         ],
       },
     ],

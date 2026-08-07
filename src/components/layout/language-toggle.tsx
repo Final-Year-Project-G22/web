@@ -1,28 +1,34 @@
 "use client";
 
 import { Languages } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useAdminLanguageStore } from "@/stores/admin-language.store";
 
-export function LanguageToggle() {
+export function LanguageToggle({ compact = false }: { compact?: boolean }) {
   const language = useAdminLanguageStore((s) => s.language);
   const setLanguage = useAdminLanguageStore((s) => s.setLanguage);
+  const t = useTranslations("sidebar");
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Languages className="w-4 h-4" />
-        <span>Language</span>
-      </div>
-      <div className="flex items-center rounded-md border">
+    <div className={cn("flex items-center gap-2", compact && "justify-center")}>
+      {!compact && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Languages className="size-4" />
+          <span>{t("footer.language")}</span>
+        </div>
+      )}
+      <fieldset className="flex items-center rounded-md border border-line">
+        <legend className="sr-only">{t("footer.language")}</legend>
         <button
           type="button"
           onClick={() => setLanguage("en")}
           className={cn(
-            "px-2 py-0.5 text-xs rounded-l-md transition-colors",
+            "rounded-l-md px-2.5 py-0.5 text-xs transition-colors duration-fast",
+            compact && "px-1.5 text-[10px]",
             language === "en"
-              ? "bg-primary text-primary-foreground font-medium"
-              : "text-muted-foreground hover:bg-accent"
+              ? "bg-primary font-semibold text-primary-foreground"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground"
           )}
         >
           EN
@@ -31,15 +37,16 @@ export function LanguageToggle() {
           type="button"
           onClick={() => setLanguage("am")}
           className={cn(
-            "px-2 py-0.5 text-xs rounded-r-md transition-colors",
+            "rounded-r-md px-2.5 py-0.5 text-xs transition-colors duration-fast",
+            compact && "px-1.5 text-[10px]",
             language === "am"
-              ? "bg-primary text-primary-foreground font-medium"
-              : "text-muted-foreground hover:bg-accent"
+              ? "bg-primary font-semibold text-primary-foreground"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground"
           )}
         >
-          AM
+          አማ
         </button>
-      </div>
+      </fieldset>
     </div>
   );
 }
