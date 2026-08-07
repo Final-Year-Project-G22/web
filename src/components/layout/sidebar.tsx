@@ -2,15 +2,14 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Bell,
   BookOpen,
   BrainCircuit,
+  ChevronLeft,
   ChevronRight,
   Folders,
   LayoutDashboard,
   Moon,
   Shield,
-  ShieldAlert,
   Sun,
   Tags,
   TriangleAlert,
@@ -22,37 +21,39 @@ import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { APP_NAME } from "@/lib/constants";
 import { hasPermission } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/store/auth.store";
 import { LanguageToggle } from "./language-toggle";
 import {
   type SidebarCollapsible,
-  type SidebarDropdown,
   type SidebarItem,
   type SidebarLink,
   sidebarConfig,
 } from "./sidebar-config";
 
 const iconMap: Record<string, ReactNode> = {
-  LayoutDashboard: <LayoutDashboard className="size-4" />,
-  BookOpen: <BookOpen className="size-4" />,
-  BrainCircuit: <BrainCircuit className="size-4" />,
-  Shield: <Shield className="size-4" />,
-  Tags: <Tags className="size-4" />,
-  Folders: <Folders className="size-4" />,
-  Bell: <Bell className="size-4" />,
-  TriangleAlert: <TriangleAlert className="size-4" />,
-  ShieldAlert: <ShieldAlert className="size-4" />,
+  LayoutDashboard: <LayoutDashboard className="size-4" strokeWidth={1.5} />,
+  BookOpen: <BookOpen className="size-4" strokeWidth={1.5} />,
+  BrainCircuit: <BrainCircuit className="size-4" strokeWidth={1.5} />,
+  Shield: <Shield className="size-4" strokeWidth={1.5} />,
+  Tags: <Tags className="size-4" strokeWidth={1.5} />,
+  Folders: <Folders className="size-4" strokeWidth={1.5} />,
+  TriangleAlert: <TriangleAlert className="size-4" strokeWidth={1.5} />,
 };
+
+/* woven section bar — the tibeb weave at 18px (locked §10.4) */
+const WEAVE =
+  "repeating-linear-gradient(90deg, var(--navy) 0 4px, var(--emerald) 4px 8px, var(--amber) 8px 11px, var(--navy) 11px 15px)";
+
+const COLLAPSE_KEY = "admin-rail-collapsed";
+
+/* The proxy serves AM routes under /am, EN under / (as-needed prefix).
+   Strip the locale segment so active-state matching is locale-agnostic. */
+function useShellPathname(): string {
+  const pathname = usePathname();
+  return pathname.replace(/^\/(en|am)(?=\/|$)/, "") || "/";
+}
 
 function DarkModeSwitch() {
   const { theme, setTheme } = useTheme();
@@ -70,13 +71,13 @@ function DarkModeSwitch() {
       aria-label="Toggle dark mode"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={cn(
-        "relative inline-flex h-6 w-10 items-center rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "relative inline-flex h-6 w-10 flex-none items-center rounded-full transition-colors duration-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         isDark ? "bg-primary" : "bg-input"
       )}
     >
       <span
         className={cn(
-          "inline-flex size-4 items-center justify-center rounded-full bg-background shadow-xs transition-transform duration-200",
+          "inline-flex size-4 items-center justify-center rounded-full bg-background shadow-xs transition-transform duration-base",
           isDark ? "translate-x-5" : "translate-x-0.5"
         )}
       >
@@ -90,37 +91,48 @@ function NavLink({
   href,
   icon,
   label,
-  excludePaths,
+  collapsed,
+  onNavigate,
 }: {
   href: string;
   icon?: ReactNode;
   label: string;
-  excludePaths?: string[];
+  collapsed?: boolean;
+  onNavigate?: () => void;
 }) {
-  const pathname = usePathname();
+  const pathname = useShellPathname();
   const isSubPath = href !== "/dashboard" && pathname.startsWith(`${href}/`);
-  const isExcluded = excludePaths?.some((p) => pathname.startsWith(p));
-  const isActive = (pathname === href || isSubPath) && !isExcluded;
+  const isActive = pathname === href || isSubPath;
 
   return (
     <Link
       href={href}
+      onClick={onNavigate}
+      aria-current={isActive ? "page" : undefined}
       className={cn(
-        "relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 border border-transparent",
+        "flex items-center gap-3 rounded-md border border-transparent px-3 py-[7px] text-[13px] font-medium transition-colors duration-fast",
+        collapsed && "justify-center px-0 py-2",
         isActive
-          ? "bg-primary/8 text-primary font-semibold border-primary/10 shadow-xs before:absolute before:left-0 before:top-2.5 before:bottom-2.5 before:w-1 before:bg-primary before:rounded-r-md"
-          : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
+          ? "bg-primary text-primary-foreground"
+          : "text-ink-2 hover:bg-panel hover:border-line hover:text-ink"
       )}
     >
       {icon}
-      <span className="text-sm tracking-wide">{label}</span>
+      {!collapsed && <span className="truncate">{label}</span>}
     </Link>
   );
 }
 
-function SubNavLink({ href, label }: { href: string; label: string }) {
-  const pathname = usePathname();
-
+function SubNavLink({
+  href,
+  label,
+  onNavigate,
+}: {
+  href: string;
+  label: string;
+  onNavigate?: () => void;
+}) {
+  const pathname = useShellPathname();
   const active =
     href === "/library/template-groups"
       ? pathname === href || pathname.startsWith(`${href}/`)
@@ -129,11 +141,13 @@ function SubNavLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
+      onClick={onNavigate}
+      aria-current={active ? "page" : undefined}
       className={cn(
-        "flex items-center rounded-lg px-3 py-2 text-sm transition-all duration-200 border border-transparent",
+        "flex items-center rounded-md border border-transparent px-3 py-[5px] text-[12.5px] font-medium transition-colors duration-fast",
         active
-          ? "bg-primary/5 font-semibold text-primary border-primary/5 shadow-xs"
-          : "text-muted-foreground hover:bg-sidebar-accent/30 hover:text-foreground"
+          ? "bg-primary text-primary-foreground"
+          : "text-ink-2 hover:bg-panel hover:border-line hover:text-ink"
       )}
     >
       {label}
@@ -147,6 +161,7 @@ function CollapsibleSection({
   open,
   onToggle,
   isActive,
+  collapsed,
   children,
 }: {
   icon: ReactNode;
@@ -154,25 +169,42 @@ function CollapsibleSection({
   open: boolean;
   onToggle: () => void;
   isActive: boolean;
+  collapsed: boolean;
   children: ReactNode;
 }) {
+  /* collapsed rail: sub-groups are hidden (the reference icon rail), the
+     parent keeps its filled-row active state only */
+  if (collapsed) {
+    return (
+      <div
+        className={cn(
+          "flex items-center justify-center rounded-md border border-transparent px-0 py-2",
+          isActive ? "bg-primary text-primary-foreground" : "text-ink-2"
+        )}
+        title={label}
+      >
+        {icon}
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-1">
+    <div className="space-y-0.5">
       <button
         type="button"
         onClick={onToggle}
-        className={cn(
-          "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition-all duration-200 border border-transparent",
-          isActive
-            ? "bg-primary/8 text-primary font-semibold border-primary/10 shadow-xs"
-            : "hover:bg-sidebar-accent/50 hover:text-foreground"
-        )}
         aria-expanded={open}
+        className={cn(
+          "flex w-full items-center gap-3 rounded-md border border-transparent px-3 py-[7px] text-[13px] font-medium transition-colors duration-fast",
+          isActive
+            ? "bg-primary text-primary-foreground"
+            : "text-ink-2 hover:bg-panel hover:border-line hover:text-ink"
+        )}
       >
         {icon}
-        <span className="text-sm flex-1 text-left">{label}</span>
+        <span className="min-w-0 flex-1 truncate text-left">{label}</span>
         <ChevronRight
-          className={cn("size-3 transition-transform duration-200", open ? "rotate-90" : "")}
+          className={cn("size-3 flex-none transition-transform duration-base", open && "rotate-90")}
         />
       </button>
 
@@ -182,10 +214,12 @@ function CollapsibleSection({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
             className="overflow-hidden"
           >
-            <div className="ml-6 space-y-1 border-l pl-3">{children}</div>
+            <div className="ml-6 space-y-0.5 border-l border-line-2 pl-3 pt-1 pb-0.5">
+              {children}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -193,11 +227,19 @@ function CollapsibleSection({
   );
 }
 
-function SidebarContent() {
+function SidebarContent({
+  collapsed = false,
+  inDrawer = false,
+  onToggleCollapse,
+  onNavigate,
+}: {
+  collapsed?: boolean;
+  inDrawer?: boolean;
+  onToggleCollapse?: () => void;
+  onNavigate?: () => void;
+}) {
   const t = useTranslations("sidebar");
-  const pathname = usePathname();
-  const _permissions = useAuthStore((s) => s.permissions);
-  const _roles = useAuthStore((s) => s.roles);
+  const pathname = useShellPathname();
 
   const [openSections, setOpenSections] = useState<Set<string>>(() => {
     const initial = new Set<string>();
@@ -251,38 +293,87 @@ function SidebarContent() {
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="p-6 pb-2">
-        <div className="flex items-center gap-3">
-          <Image src="/logo.svg" alt={APP_NAME} width={64} height={64} className="rounded-lg" />
-          <span className="font-bold text-xl">{APP_NAME}</span>
-        </div>
+    <div className="flex h-full flex-col overflow-hidden">
+      <div
+        className={cn(
+          "flex items-center gap-3 px-4 pt-4 pb-2",
+          collapsed && "justify-center px-0 pt-5"
+        )}
+      >
+        <Image
+          src="/logo.svg"
+          alt={APP_NAME}
+          width={32}
+          height={32}
+          className="flex-none rounded-md"
+        />
+        {!collapsed && (
+          <div className={cn("min-w-0 leading-tight", inDrawer && "pr-10")}>
+            <p className="truncate font-display text-sm font-semibold tracking-[0.01em]">
+              {APP_NAME}
+            </p>
+            <p className="truncate text-[11px] font-medium text-muted">{t("brand.subtitle")}</p>
+          </div>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6 no-scrollbar">
+      <nav className="flex-1 overflow-y-auto px-3 py-4 no-scrollbar" aria-label="Main">
         {visibleSections.map((section) => (
           <div key={section.id}>
-            <h4 className="text-xs font-semibold text-muted-foreground mb-3 px-2 tracking-wider">
-              {t(section.labelKey)}
-            </h4>
-            <nav className="space-y-1">
+            {collapsed ? (
+              <div className="mx-3 my-2.5 h-px bg-line" />
+            ) : (
+              <div className="mt-5 mb-1.5 flex items-center gap-2 px-2">
+                <span
+                  aria-hidden="true"
+                  className="h-[3px] w-[18px] flex-none rounded-sm"
+                  style={{ background: WEAVE }}
+                />
+                <h4 className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
+                  {t(section.labelKey)}
+                </h4>
+              </div>
+            )}
+            <div className="space-y-0.5">
               {section.items.map((item) =>
-                renderItem(item, t, pathname, toggleSection, openSections)
+                renderItem(item, t, pathname, toggleSection, openSections, collapsed, onNavigate)
               )}
-            </nav>
+            </div>
           </div>
         ))}
-      </div>
+      </nav>
 
-      <div className="p-6 mt-auto border-t">
-        <div className="mb-4">
-          <LanguageToggle />
-        </div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Moon className="size-4" />
-            <span>{t("footer.darkMode")}</span>
-          </div>
+      <div
+        className={cn(
+          "mt-auto flex flex-col gap-3 border-t border-line px-4 py-3",
+          collapsed && "items-center px-2"
+        )}
+      >
+        {onToggleCollapse && (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            className={cn(
+              "flex h-[26px] w-[26px] flex-none items-center justify-center rounded-md border border-line bg-panel text-ink-2 transition-colors duration-fast hover:border-line-2 hover:text-ink",
+              collapsed && "self-center"
+            )}
+            aria-label={collapsed ? t("footer.expand") : t("footer.collapse")}
+          >
+            {collapsed ? (
+              <ChevronRight className="size-3.5" />
+            ) : (
+              <ChevronLeft className="size-3.5" />
+            )}
+          </button>
+        )}
+        <LanguageToggle compact={collapsed} />
+        <div
+          className={cn(
+            "flex items-center justify-between gap-2 text-xs text-muted",
+            collapsed && "justify-center"
+          )}
+        >
+          {!collapsed && <span>{t("footer.darkMode")}</span>}
           <DarkModeSwitch />
         </div>
       </div>
@@ -293,29 +384,17 @@ function SidebarContent() {
 function renderLinkItem(
   item: SidebarLink,
   t: ReturnType<typeof useTranslations>,
-  _pathname: string
+  collapsed: boolean,
+  onNavigate?: () => void
 ) {
-  if (item.href === "#") {
-    return (
-      <Link
-        key={item.labelKey}
-        href="#"
-        className="flex items-center justify-between px-2 py-2 text-muted-foreground hover:bg-accent rounded-md transition-colors"
-      >
-        <div className="flex items-center gap-3">
-          {iconMap[item.iconName]}
-          <span className="text-sm">{t(item.labelKey)}</span>
-        </div>
-      </Link>
-    );
-  }
-
   return (
     <NavLink
       key={item.labelKey}
       href={item.href}
       icon={iconMap[item.iconName]}
       label={t(item.labelKey)}
+      collapsed={collapsed}
+      onNavigate={onNavigate}
     />
   );
 }
@@ -325,7 +404,9 @@ function renderCollapsibleItem(
   t: ReturnType<typeof useTranslations>,
   pathname: string,
   toggleSection: (key: string) => void,
-  openSections: Set<string>
+  openSections: Set<string>,
+  collapsed: boolean,
+  onNavigate?: () => void
 ) {
   const isActive = item.children.some(
     (child) => pathname.startsWith(`${child.href}/`) || pathname === child.href
@@ -339,49 +420,17 @@ function renderCollapsibleItem(
       open={openSections.has(item.labelKey)}
       onToggle={() => toggleSection(item.labelKey)}
       isActive={isActive}
+      collapsed={collapsed}
     >
       {item.children.map((child) => (
-        <SubNavLink key={child.href} href={child.href} label={t(child.labelKey)} />
+        <SubNavLink
+          key={child.href}
+          href={child.href}
+          label={t(child.labelKey)}
+          onNavigate={onNavigate}
+        />
       ))}
     </CollapsibleSection>
-  );
-}
-
-function renderDropdownItem(
-  item: SidebarDropdown,
-  t: ReturnType<typeof useTranslations>,
-  pathname: string
-) {
-  const isActive = item.children.some(
-    (child) => pathname.startsWith(`${child.href}/`) || pathname === child.href
-  );
-
-  return (
-    <DropdownMenu key={item.labelKey}>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "flex w-full items-center gap-3 px-2 py-2 rounded-md transition-colors text-muted-foreground hover:bg-accent",
-            isActive ? "bg-primary/5 text-primary font-medium" : ""
-          )}
-        >
-          {iconMap[item.iconName]}
-          <span className="text-sm flex-1 text-left">{t(item.labelKey)}</span>
-          <ChevronRight className="size-3" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent sideOffset={4} className="w-48">
-        {item.children.map((child, idx) => (
-          <div key={child.href}>
-            {idx > 0 && <DropdownMenuSeparator />}
-            <DropdownMenuItem asChild>
-              <NavLink href={child.href} icon={iconMap[child.iconName]} label={t(child.labelKey)} />
-            </DropdownMenuItem>
-          </div>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }
 
@@ -390,22 +439,50 @@ function renderItem(
   t: ReturnType<typeof useTranslations>,
   pathname: string,
   toggleSection: (key: string) => void,
-  openSections: Set<string>
+  openSections: Set<string>,
+  collapsed: boolean,
+  onNavigate?: () => void
 ) {
   switch (item.kind) {
     case "link":
-      return renderLinkItem(item, t, pathname);
+      return renderLinkItem(item, t, collapsed, onNavigate);
     case "collapsible":
-      return renderCollapsibleItem(item, t, pathname, toggleSection, openSections);
-    case "dropdown":
-      return renderDropdownItem(item, t, pathname);
+      return renderCollapsibleItem(
+        item,
+        t,
+        pathname,
+        toggleSection,
+        openSections,
+        collapsed,
+        onNavigate
+      );
   }
 }
 
 export function Sidebar() {
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(COLLAPSE_KEY);
+    if (stored === "1") setCollapsed(true);
+  }, []);
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      window.localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0");
+      return next;
+    });
+  };
+
   return (
-    <aside className="w-64 border-r border-sidebar-border bg-sidebar/85 backdrop-blur-md h-screen flex-col hidden md:flex sticky top-0 z-20">
-      <SidebarContent />
+    <aside
+      className={cn(
+        "hidden h-full flex-none flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-base min-[760px]:flex",
+        collapsed ? "w-16" : "w-rail"
+      )}
+    >
+      <SidebarContent collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
     </aside>
   );
 }
