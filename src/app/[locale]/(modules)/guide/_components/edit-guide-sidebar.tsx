@@ -43,6 +43,7 @@ function SortableStepItem({
   onSelect: (id: string) => void;
   onRemove: (id: string) => void;
 }) {
+  const t = useTranslations("surfaces.guide.editor");
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: step.clientId,
   });
@@ -103,7 +104,7 @@ function SortableStepItem({
           className={`h-1.5 w-1.5 shrink-0 rounded-full ${
             isActive ? "bg-primary-foreground/80" : "bg-amber"
           }`}
-          title="New step"
+          title={t("newStep")}
         />
       ) : null}
       <Button

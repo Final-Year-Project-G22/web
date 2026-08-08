@@ -166,12 +166,12 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
         <div className="flex items-center gap-2">
           {activeStep.isOptional ? (
             <span className="rounded-full border border-warning/30 bg-warning-tint px-2.5 py-0.5 text-[11px] font-medium text-warning-strong">
-              Optional
+              {t("optional")}
             </span>
           ) : null}
           {activeStep.estimatedTime ? (
             <span className="rounded-full border border-line bg-panel-2 px-2.5 py-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">
-              {activeStep.estimatedTime} min
+              {activeStep.estimatedTime} {t("minSuffix")}
             </span>
           ) : null}
         </div>

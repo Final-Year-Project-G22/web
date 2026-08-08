@@ -89,6 +89,7 @@
         "steps": "Steps",
         "journeyHint": "Numbered in order — drag to reorder",
         "addStep": "Add Step",
+        "newStep": "New step",
         "saveOrder": "Save Order",
         "livePreview": "Live preview",
         "noStep": "No step selected",
@@ -101,6 +102,7 @@
         "stepType": "Step Type",
         "compliance": "Compliance Type",
         "readingTime": "Reading Time",
+        "minSuffix": "min",
         "stepTitle": "Step Title ({lang})",
         "stepDescription": "Step Description",
         "proTipLabel": "Pro Tip ({lang})",
@@ -120,6 +122,7 @@
       }
     },
     "ai": {
+      "moduleLabel": "AI module",
       "tabs": {
         "knowledgeBase": "Knowledge Base",
         "ask": "Ask AI",
@@ -194,6 +197,7 @@
         "usedTools": "Used {count} tools",
         "thinking": "Thinking…",
         "archive": "Archive conversation",
+        "close": "Close",
         "noSources": "No sources yet."
       },
       "debug": {

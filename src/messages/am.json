@@ -89,6 +89,7 @@
         "steps": "እርምጃዎች",
         "journeyHint": "በቅደም ተከተል የተቆጠሩ — ለማስተካከል ይጎትቱ",
         "addStep": "እርምጃ ጨምር",
+        "newStep": "አዲስ እርምጃ",
         "saveOrder": "ቅደም ተከተል አስቀምጥ",
         "livePreview": "የቀጥታ ቅድመ እይታ",
         "noStep": "ምንም እርምጃ አልተመረጠም",
@@ -101,6 +102,7 @@
         "stepType": "የእርምጃ ዓይነት",
         "compliance": "የተገዢነት ዓይነት",
         "readingTime": "የንባብ ጊዜ",
+        "minSuffix": "ደቂቃ",
         "stepTitle": "የእርምጃ ርዕስ ({lang})",
         "stepDescription": "የእርምጃ መግለጫ",
         "proTipLabel": "ጠቃሚ ምክር ({lang})",
@@ -120,6 +122,7 @@
       }
     },
     "ai": {
+      "moduleLabel": "የኤአይ ሞዱል",
       "tabs": {
         "knowledgeBase": "የዕውቀት ቋት",
         "ask": "ኤአይን ጠይቅ",
@@ -194,6 +197,7 @@
         "usedTools": "{count} መሳሪያዎች ተጠቅሟል",
         "thinking": "በማሰብ ላይ…",
         "archive": "ውይይት አርክብድ",
+        "close": "ዝጋ",
         "noSources": "እስካሁን ምንም ምንጭ የለም።"
       },
       "debug": {

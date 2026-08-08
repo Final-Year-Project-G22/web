@@ -15,7 +15,8 @@ const tabHrefs: Record<(typeof tabKeys)[number], string> = {
 
 export default function AILayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const t = useTranslations("surfaces.ai.tabs");
+  const t = useTranslations("surfaces.ai");
+  const tabs = useTranslations("surfaces.ai.tabs");
 
   const isActive = (key: (typeof tabKeys)[number]) => {
     const href = tabHrefs[key];
@@ -31,7 +32,7 @@ export default function AILayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5">
       <nav
-        aria-label="AI module"
+        aria-label={t("moduleLabel")}
         className="inline-flex h-8 w-fit items-center rounded-md border border-input bg-panel p-0.5"
       >
         {tabKeys.map((key) => (
@@ -45,7 +46,7 @@ export default function AILayout({ children }: { children: React.ReactNode }) {
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {t(key)}
+            {tabs(key)}
           </Link>
         ))}
       </nav>
