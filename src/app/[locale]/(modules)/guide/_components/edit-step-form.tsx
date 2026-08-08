@@ -14,6 +14,7 @@ import {
   Underline,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo } from "react";
 import { useComplianceTypes } from "@/app/[locale]/(modules)/guide/_services/guide.hook";
 import {
@@ -53,12 +54,12 @@ function upsertStepTranslation(
 
   const currentTranslations = step.translations ?? [];
   const nextTranslations = [...currentTranslations];
-  const index = nextTranslations.findIndex((t) => t.language === lang);
+  const index = nextTranslations.findIndex((tr) => tr.language === lang);
 
   if (index >= 0) {
     nextTranslations[index] = { ...nextTranslations[index], ...updates };
   } else {
-    const activeTranslation = currentTranslations.find((t) => t.language === lang);
+    const activeTranslation = currentTranslations.find((tr) => tr.language === lang);
     nextTranslations.push({
       language: lang,
       title: updates.title ?? activeTranslation?.title ?? "Untitled Step",
@@ -85,6 +86,7 @@ interface EditStepFormProps {
 }
 
 export function EditStepForm({ onSave }: EditStepFormProps) {
+  const t = useTranslations("surfaces.guide.editor");
   const language = useAdminLanguageStore((s) => s.language);
   const setLanguage = useAdminLanguageStore((s) => s.setLanguage);
   const persistedSteps = useEditGuide((s) => s.persistedSteps);
@@ -100,8 +102,13 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
     [steps, activeStepId]
   );
 
+  const activeIndex = useMemo(
+    () => (activeStep ? steps.findIndex((s) => s.clientId === activeStep.clientId) : -1),
+    [steps, activeStep]
+  );
+
   const activeTranslation = useMemo(
-    () => activeStep?.translations?.find((t) => t.language === language),
+    () => activeStep?.translations?.find((tr) => tr.language === language),
     [activeStep, language]
   );
 
@@ -112,7 +119,7 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
     editorProps: {
       attributes: {
         class:
-          "prose prose-zinc min-h-[240px] max-w-none rounded-lg border bg-white p-6 text-sm leading-7 shadow-sm focus:outline-none",
+          "prose prose-sm min-h-[240px] max-w-none rounded-lg border border-line bg-panel p-5 text-sm leading-7 focus:outline-none dark:prose-invert",
       },
     },
     onUpdate: ({ editor: tiptapEditor }) => {
@@ -132,30 +139,65 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
   }, [activeStep, activeTranslation, editor]);
 
   if (!activeStep) {
-    return <div className="p-6 text-sm text-muted-foreground">No step selected.</div>;
+    return (
+      <div className="flex h-full items-center justify-center p-6 text-sm text-muted-foreground">
+        {t("noStep")}
+      </div>
+    );
   }
 
   const checklist = activeStep.ui.checklist ?? [];
 
   return (
-    <section className="space-y-6 p-6">
-      {/* --- Language + Step Type + Reading Time --- */}
-      <div className="grid gap-3 md:grid-cols-3">
+    <section className="space-y-7 p-6">
+      {/* spine header — the step identity: numbering is order data, not decoration */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-5">
+        <div className="min-w-0">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground tabular-nums">
+            {t("stepOf", {
+              current: String(activeIndex + 1).padStart(2, "0"),
+              total: String(steps.length).padStart(2, "0"),
+            })}
+          </p>
+          <h2 className="mt-1 truncate font-display text-[17px] font-semibold tracking-tight text-ink">
+            {activeTranslation?.title ?? "Untitled Step"}
+          </h2>
+        </div>
+        <div className="flex items-center gap-2">
+          {activeStep.isOptional ? (
+            <span className="rounded-full border border-warning/30 bg-warning-tint px-2.5 py-0.5 text-[11px] font-medium text-warning-strong">
+              {t("optional")}
+            </span>
+          ) : null}
+          {activeStep.estimatedTime ? (
+            <span className="rounded-full border border-line bg-panel-2 px-2.5 py-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">
+              {activeStep.estimatedTime} {t("minSuffix")}
+            </span>
+          ) : null}
+        </div>
+      </div>
+
+      {/* --- Language + Step Type + Compliance + Reading Time --- */}
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">Language</p>
+          <p className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-muted-foreground">
+            {t("language")}
+          </p>
           <Select value={language} onValueChange={setLanguage}>
             <SelectTrigger>
               <SelectValue placeholder="Select language" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="en">English</SelectItem>
-              <SelectItem value="am">Amharic</SelectItem>
+              <SelectItem value="am">አማርኛ</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">Step Type</p>
+          <p className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-muted-foreground">
+            {t("stepType")}
+          </p>
           <Select
             value={activeStep.stepType}
             onValueChange={(value) => {
@@ -173,34 +215,38 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
               ))}
             </SelectContent>
           </Select>
-
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">Compliance Type</p>
-            <Select
-              value={activeStep.complianceType ?? ""}
-              onValueChange={(value) => {
-                updateStep(activeStep.clientId, {
-                  complianceType: value === "none" ? undefined : value,
-                });
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="None" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {complianceTypes?.data?.map((t) => (
-                  <SelectItem key={t.slug} value={t.slug}>
-                    {t.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">Reading Time</p>
+          <p className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-muted-foreground">
+            {t("compliance")}
+          </p>
+          <Select
+            value={activeStep.complianceType ?? ""}
+            onValueChange={(value) => {
+              updateStep(activeStep.clientId, {
+                complianceType: value === "none" ? undefined : value,
+              });
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="None" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None</SelectItem>
+              {complianceTypes?.data?.map((ct) => (
+                <SelectItem key={ct.slug} value={ct.slug}>
+                  {ct.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-muted-foreground">
+            {t("readingTime")}
+          </p>
           <Select
             value={String(activeStep.estimatedTime ?? 15)}
             onValueChange={(value) => {
@@ -222,8 +268,8 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
 
       {/* --- Step Title --- */}
       <div className="space-y-2">
-        <p className="text-xs font-medium text-muted-foreground">
-          Step Title ({language.toUpperCase()})
+        <p className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-muted-foreground">
+          {t("stepTitle", { lang: language.toUpperCase() })}
         </p>
         <Input
           value={activeTranslation?.title ?? ""}
@@ -231,13 +277,16 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
             upsertStepTranslation(language, { title: e.target.value });
           }}
           placeholder="Enter step title"
+          className="h-9 text-[15px]"
         />
       </div>
 
       {/* --- Tiptap Toolbar --- */}
       <div className="space-y-2">
-        <p className="text-xs font-medium text-muted-foreground">Step Description</p>
-        <div className="flex flex-wrap items-center gap-1 rounded-lg border bg-white p-2">
+        <p className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-muted-foreground">
+          {t("stepDescription")}
+        </p>
+        <div className="flex flex-wrap items-center gap-1 rounded-t-lg border border-line border-b-0 bg-panel p-2">
           <Toggle
             pressed={editor?.isActive("bold")}
             onPressedChange={() => editor?.chain().focus().toggleBold().run()}
@@ -289,8 +338,8 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
 
       {/* --- Pro Tip --- */}
       <div className="space-y-2">
-        <p className="text-xs font-medium text-muted-foreground">
-          Pro Tip ({language.toUpperCase()})
+        <p className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-muted-foreground">
+          {t("proTipLabel", { lang: language.toUpperCase() })}
         </p>
         <Input
           value={activeStep.ui.proTip ?? ""}
@@ -304,16 +353,18 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
       {/* --- Image URL --- */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-medium text-muted-foreground">Step Image URL</p>
+          <p className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-muted-foreground">
+            {t("imageUrl")}
+          </p>
           {activeStep.ui.imageUrl && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 text-xs text-red-500 hover:text-red-600"
+              className="h-6 text-xs text-destructive-strong hover:text-destructive"
               onClick={() => syncStepUi({ imageUrl: "" })}
             >
               <X className="mr-1 h-3 w-3" />
-              Remove image
+              {t("removeImage")}
             </Button>
           )}
         </div>
@@ -325,7 +376,7 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
           placeholder="https://example.com/image.jpg"
         />
         {activeStep.ui.imageUrl && (
-          <div className="relative mt-2 h-32 w-full overflow-hidden rounded-lg border bg-slate-50">
+          <div className="relative mt-2 h-32 w-full overflow-hidden rounded-lg border border-line bg-canvas-2">
             {/* biome-ignore lint/performance/noImgElement: external image preview */}
             <img
               src={activeStep.ui.imageUrl}
@@ -339,8 +390,8 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
       {/* --- Required Documents --- */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-medium text-muted-foreground">
-            Required Documents ({language.toUpperCase()})
+          <p className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-muted-foreground">
+            {t("requiredDocs", { lang: language.toUpperCase() })}
           </p>
           <Button
             variant="outline"
@@ -353,16 +404,19 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
             }}
           >
             <Plus className="mr-1 h-3 w-3" />
-            Add Document
+            {t("addDocument")}
           </Button>
         </div>
 
         {(activeStep.ui.requiredDocuments ?? []).length === 0 ? (
-          <p className="text-sm text-muted-foreground">No required documents defined.</p>
+          <p className="text-sm text-muted-foreground">{t("noDocuments")}</p>
         ) : (
           <div className="space-y-2">
             {(activeStep.ui.requiredDocuments ?? []).map((doc, idx) => (
-              <div key={doc.clientId} className="flex items-start gap-2 rounded-md border p-2">
+              <div
+                key={doc.clientId}
+                className="flex items-start gap-2 rounded-lg border border-line bg-panel p-2.5"
+              >
                 <div className="flex-1 space-y-2">
                   <Input
                     value={doc.name}
@@ -386,6 +440,7 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="text-muted-foreground hover:text-destructive-strong"
                   onClick={() => {
                     const docs = (activeStep.ui.requiredDocuments ?? []).filter(
                       (_, i) => i !== idx
@@ -404,7 +459,9 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
       {/* --- Checklist Editor --- */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-medium text-muted-foreground">Checklist</p>
+          <p className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-muted-foreground">
+            {t("checklist")}
+          </p>
           <Button
             variant="outline"
             size="sm"
@@ -419,21 +476,24 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
             }}
           >
             <Plus className="h-3 w-3" />
-            Add item
+            {t("addItem")}
           </Button>
         </div>
 
         {checklist.length === 0 && (
-          <p className="text-xs text-muted-foreground">
-            No checklist items. Click "Add item" to create one.
-          </p>
+          <p className="text-xs text-muted-foreground">{t("noChecklist")}</p>
         )}
 
         <div className="space-y-2">
           {checklist.map((item, idx) => (
-            <div key={item.id} className="flex items-center gap-2 rounded-lg border bg-white p-2">
+            <div
+              key={item.id}
+              className="flex items-center gap-2 rounded-lg border border-line bg-panel p-2"
+            >
               <CheckSquare className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground w-5">{idx + 1}.</span>
+              <span className="w-5 font-mono text-xs tabular-nums text-muted-foreground">
+                {idx + 1}.
+              </span>
               <Input
                 value={item.label}
                 onChange={(e) => {
@@ -442,7 +502,7 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
                   );
                   syncStepUi({ checklist: next });
                 }}
-                placeholder="Item label"
+                placeholder={t("itemLabel")}
                 className="h-8 flex-1 text-sm"
               />
               <Toggle
@@ -456,12 +516,12 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
                 aria-label="Required"
                 className="h-8 text-xs"
               >
-                {item.isRequired ? "Required" : "Optional"}
+                {item.isRequired ? t("required") : t("optional")}
               </Toggle>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive-strong"
                 onClick={() => {
                   const next = checklist.filter((c) => c.id !== item.id);
                   syncStepUi({ checklist: next });
@@ -474,13 +534,10 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="border-t" />
-
       {/* --- Checklist Title --- */}
       <div className="space-y-2">
-        <p className="text-xs font-medium text-muted-foreground">
-          Checklist Section Title ({language.toUpperCase()})
+        <p className="text-[10.5px] font-semibold uppercase tracking-[0.09em] text-muted-foreground">
+          {t("checklistTitle", { lang: language.toUpperCase() })}
         </p>
         <Input
           value={activeStep.ui.checklistTitle ?? ""}
@@ -492,9 +549,9 @@ export function EditStepForm({ onSave }: EditStepFormProps) {
       </div>
 
       {/* --- Save --- */}
-      <div className="border-t pt-4">
-        <Button onClick={onSave} className="w-full">
-          Save
+      <div className="flex justify-end border-t border-line pt-5">
+        <Button onClick={onSave} className="min-w-36">
+          {t("save")}
         </Button>
       </div>
     </section>

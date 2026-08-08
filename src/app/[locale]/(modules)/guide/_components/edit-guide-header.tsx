@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,39 +18,39 @@ interface EditGuideHeaderProps {
 
 export function EditGuideHeader({ guideName }: EditGuideHeaderProps) {
   const { id } = useParams<{ id: string }>();
+  const t = useTranslations("surfaces.guide.editor");
+  const listT = useTranslations("surfaces.guide.list");
 
   return (
-    <header className="border-b bg-white/90 px-6 py-4 backdrop-blur">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-2">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard">Admin</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/guide">Guides</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href={`/guide/${id}`}>{guideName}</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <span className="text-foreground">Edit Steps</span>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <h1 className="text-xl font-semibold tracking-tight font-display">{guideName}</h1>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Button asChild variant="outline">
-            <Link href={`/guide/${id}`}>Back to Guide</Link>
-          </Button>
-        </div>
+    <header className="flex shrink-0 items-center justify-between gap-4 border-b border-line bg-panel px-6 py-3.5">
+      <div className="min-w-0">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard">Admin</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/guide">{listT("title")}</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href={`/guide/${id}`}>{guideName}</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <span className="text-foreground">{t("steps")}</span>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <h1 className="mt-1 truncate font-display text-[17px] font-semibold tracking-tight text-ink">
+          {guideName}
+        </h1>
       </div>
+
+      <Button asChild variant="outline" className="shrink-0">
+        <Link href={`/guide/${id}`}>{t("backToGuide")}</Link>
+      </Button>
     </header>
   );
 }
