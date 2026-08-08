@@ -2,7 +2,7 @@
 
 **Status:** locked · **Source of truth:** [docs/design/direction-spec.md §10](./design/direction-spec.md) (FINAL — never re-litigate) · **Visual reference:** [docs/design/prototype-v7.html](./design/prototype-v7.html) (16 routed pages), [sidebar-lab.html](./design/sidebar-lab.html), [icon-lab.html](./design/icon-lab.html)
 
-This is the **committed agent-facing contract** for all UI work in this repo. Any agent touching UI — a new page, a redesigned surface, a new component — must read this document (and §10 of the direction spec) before writing code. The automated guardrails in §12 enforce the mechanical parts; this document carries the judgment parts.
+This is the **committed agent-facing contract** for all UI work in this repo. Any agent touching UI — a new page, a redesigned surface, a new component — must read this document (and §10 of the direction spec) before writing code. The automated guardrails in §11 enforce the mechanical parts; this document carries the judgment parts.
 
 ---
 
@@ -22,7 +22,7 @@ Adisu Serategna is the night ledger of Ethiopian MSME formalization — a dense,
 
 ## 2. Tokens — the only colors in the app
 
-**Raw colors live in exactly one file: `src/app/globals.css`.** Everything else consumes the semantic utilities that file exposes (via `@theme inline`). No raw hex, no `rgb()/oklch()` literals, no arbitrary-value color utilities (`bg-[#…]`, `text-[#…]`, `border-[#…]`, `style="…#…"`) in components — enforced by `pnpm check:design` (§12).
+**Raw colors live in exactly one file: `src/app/globals.css`.** Everything else consumes the semantic utilities that file exposes (via `@theme inline`). No raw hex, no `rgb()/oklch()` literals, no arbitrary-value color utilities (`bg-[#…]`, `text-[#…]`, `border-[#…]`, `style="…#…"`) in components, and no Tailwind default-palette color utilities (`text-red-500`, `bg-green-50`, `border-blue-200`, …) — enforced by `pnpm check:design` (§11). Pre-existing palette utilities on surfaces outside this rollout's scope are grandfathered under the §11 PALETTE_FIXME policy and must be pruned as each surface is redesigned.
 
 ### Roles (summary — the CSS file is the authoritative definition)
 
@@ -134,10 +134,12 @@ Any new user-facing string goes into **both** `src/messages/en.json` and `src/me
 
 ## 9. Anti-pattern list (enforced + judgment)
 
-**Banned in code (enforced by `pnpm check:design`, §12):**
+**Banned in code (enforced by `pnpm check:design`, §11):**
 
-- Raw color hexes outside `src/app/globals.css` (+ the two documented exceptions: `src/app/icon.svg` brand asset, `src/components/ui/chart.tsx` recharts internals)
+- Raw color hexes (3/4/6/8-digit) outside `src/app/globals.css` (+ the documented exceptions: `src/app/icon.svg` brand asset, `src/components/ui/chart.tsx` recharts internals)
+- `rgb()/oklch()` color literals (numeric forms — `rgb(var(--…))` stays fine)
 - Arbitrary-value **color** utilities: `bg-[#…]`, `text-[#…]`, `border-[#…]`, `from-[#…]`, `to-[#…]`, `via-[#…]`, `ring-[#…]`, `fill-[#…]`, `stroke-[#…]`, `shadow-[#…]`, … (non-color arbitrary values like `w-[4px]` stay fine)
+- Tailwind **default-palette** color utilities: `text-red-500`, `bg-green-50`, `border-blue-200`, `ring-emerald-400`, … (any `(bg|text|border|…)` prefix on a named color with a shade — pre-existing ones are grandfathered per §11's PALETTE_FIXME policy)
 - Inline `style` attributes carrying raw colors
 - Module-local files named after a `ui/` primitive (fork-in-progress)
 
@@ -164,10 +166,12 @@ A surface "passes" when:
 
 `pnpm check:design` runs `node scripts/check-design-contract.js` and scans `src/` for:
 
-1. **Raw color hexes** (3/6/8-digit) outside the allowlist.
-2. **Arbitrary-value color utilities** and **inline-style hex colors** on `src/**/*.tsx` and all scanned extensions.
-3. **Component ownership:** module-local files named like a `ui/` primitive.
-4. Comments and URL-bearing lines are ignored (hex-looking URL fragments aren't colors).
+1. **Raw color hexes** (3/4/6/8-digit) outside the allowlist.
+2. **`rgb()/oklch()` color literals** (numeric forms).
+3. **Arbitrary-value color utilities** and **inline-style hex colors** on all scanned extensions.
+4. **Tailwind default-palette color utilities** (`text-red-500`, `bg-green-50`, …) outside the PALETTE_FIXME list below.
+5. **Component ownership:** module-local files named like a `ui/` primitive.
+6. **Comment/URL precision:** full-line comments, trailing `//` and `/* … */` (incl. JSX `{/* … */}`) are stripped, and URL substrings are removed — hex-looking URL fragments aren't colors, but a line carrying a URL *and* a real color still flags the color.
 
 **Allowlist (deliberate exceptions, with reasons, inside the script):**
 
@@ -178,6 +182,12 @@ A surface "passes" when:
 **FIXME allowlist (pre-existing violations on surfaces being redesigned in parallel — must be removed when those lanes land, never extended):**
 
 - `src/app/(auth)/auth/_components/login-form.tsx` — Google sign-in brand SVG fills; auth redesign (#41) owns the call.
+
+**PALETTE_FIXME (pre-existing Tailwind default-palette utilities, file-level):**
+
+- Enumerated at the #46 fix-up commit: 124 utilities across 22 module files (`admin/register`, `ai/*`, `guide/*`, `library/*`, `notifications/*`, `settings/password`, `taxonomy/*`) — pre-existing on dev, surfaces not in this rollout's scope.
+- The file-level entry exempts **only the palette rule**; hex, `rgb()/oklch()`, arbitrary-value and inline-style checks still run on those files.
+- Policy: **pre-existing only**. Prune a file's entry when its surface is redesigned; never add files or new palette utilities to in-scope work.
 
 Exit 0 = clean (baseline is clean today). Exit 1 = violations, with the offending file:line and the token-map hint.
 
