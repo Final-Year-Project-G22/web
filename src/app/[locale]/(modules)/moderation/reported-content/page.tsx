@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Suspense, useState } from "react";
+import { toast } from "sonner";
 import {
   useAdminListPostReports,
   useAdminUpdatePostReportStatus,
@@ -18,12 +19,15 @@ import { Input } from "@/components/ui/input";
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ReportWithContentDTO } from "@/lib/api/types";
+import { getErrorMessage } from "@/lib/utils";
+import {
+  REPORT_STATUS_KEYS,
+  REPORT_STATUS_TRANSLATION_KEYS,
+  type ReportStatusKey,
+} from "../_components/report-status";
 import { TriageQueueSkeleton, TriageRow } from "../_components/triage-row";
 
 type Tab = "thread" | "post";
-type StatusKey = "all" | "pending" | "under_review" | "resolved" | "dismissed";
-
-const STATUS_KEYS: StatusKey[] = ["all", "pending", "under_review", "resolved", "dismissed"];
 
 export default function ReportedContentPage() {
   return (
@@ -39,14 +43,15 @@ function ReportedContentContent() {
   const t = useTranslations("moderation");
 
   const initialTab = (searchParams.get("tab") as Tab) ?? "thread";
-  const initialStatus = (searchParams.get("status") as StatusKey) ?? "all";
+  const initialStatus = (searchParams.get("status") as ReportStatusKey) ?? "all";
   const initialPage = Number(searchParams.get("page") ?? "1");
   const initialSearch = searchParams.get("search") ?? "";
 
   const [tab, setTab] = useState<Tab>(initialTab);
-  const [status, setStatus] = useState<StatusKey>(initialStatus);
+  const [status, setStatus] = useState<ReportStatusKey>(initialStatus);
   const [page, setPage] = useState(initialPage);
   const [search, setSearch] = useState(initialSearch);
+  const [pendingSkipId, setPendingSkipId] = useState<string | null>(null);
 
   const pageSize = 20;
   const baseParams = { page, pageSize };
@@ -69,7 +74,7 @@ function ReportedContentContent() {
 
   const statusMutation = tab === "thread" ? threadStatus : postStatus;
 
-  function navigate(newTab: Tab, newStatus: StatusKey, newPage: number, newSearch: string) {
+  function navigate(newTab: Tab, newStatus: ReportStatusKey, newPage: number, newSearch: string) {
     const sp = new URLSearchParams();
     if (newTab !== "thread") sp.set("tab", newTab);
     if (newStatus !== "all") sp.set("status", newStatus);
@@ -83,7 +88,15 @@ function ReportedContentContent() {
   }
 
   function skip(item: ReportWithContentDTO) {
-    statusMutation.mutate({ id: item.report.id, status: "under_review" });
+    const id = item.report.id;
+    setPendingSkipId(id);
+    statusMutation.mutate(
+      { id, status: "under_review" },
+      {
+        onSettled: () => setPendingSkipId((current) => (current === id ? null : current)),
+        onError: (error) => toast.error(getErrorMessage(error)),
+      }
+    );
   }
 
   function rowProps(item: ReportWithContentDTO) {
@@ -109,7 +122,7 @@ function ReportedContentContent() {
       status: r.status,
       onDecide: () => decideOn(item),
       onSkip: () => skip(item),
-      skipDisabled: statusMutation.isPending,
+      skipDisabled: pendingSkipId === item.report.id,
     };
   }
 
@@ -144,7 +157,7 @@ function ReportedContentContent() {
           </Tabs>
 
           <div className="flex flex-wrap items-center gap-1">
-            {STATUS_KEYS.map((key) => (
+            {REPORT_STATUS_KEYS.map((key) => (
               <Button
                 key={key}
                 size="sm"
@@ -155,17 +168,7 @@ function ReportedContentContent() {
                   navigate(tab, key, 1, search);
                 }}
               >
-                {t(
-                  key === "all"
-                    ? "statusAll"
-                    : key === "pending"
-                      ? "statusPending"
-                      : key === "under_review"
-                        ? "statusUnderReview"
-                        : key === "resolved"
-                          ? "statusResolved"
-                          : "statusDismissed"
-                )}
+                {t(REPORT_STATUS_TRANSLATION_KEYS[key])}
               </Button>
             ))}
           </div>

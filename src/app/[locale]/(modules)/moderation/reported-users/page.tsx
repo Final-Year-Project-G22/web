@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Suspense, useState } from "react";
+import { toast } from "sonner";
 import {
   useAdminListUserReports,
   useAdminUpdateUserReportStatus,
@@ -13,11 +14,13 @@ import { InlineError } from "@/components/ui/inline-error";
 import { Input } from "@/components/ui/input";
 import { PaginationBar } from "@/components/ui/pagination-bar";
 import type { ReportWithContentDTO } from "@/lib/api/types";
+import { getErrorMessage } from "@/lib/utils";
+import {
+  REPORT_STATUS_KEYS,
+  REPORT_STATUS_TRANSLATION_KEYS,
+  type ReportStatusKey,
+} from "../_components/report-status";
 import { TriageQueueSkeleton, TriageRow } from "../_components/triage-row";
-
-type StatusKey = "all" | "pending" | "under_review" | "resolved" | "dismissed";
-
-const STATUS_KEYS: StatusKey[] = ["all", "pending", "under_review", "resolved", "dismissed"];
 
 export default function ReportedUsersPage() {
   return (
@@ -32,13 +35,14 @@ function ReportedUsersContent() {
   const searchParams = useSearchParams();
   const t = useTranslations("moderation");
 
-  const initialStatus = (searchParams.get("status") as StatusKey) ?? "all";
+  const initialStatus = (searchParams.get("status") as ReportStatusKey) ?? "all";
   const initialPage = Number(searchParams.get("page") ?? "1");
   const initialSearch = searchParams.get("search") ?? "";
 
-  const [status, setStatus] = useState<StatusKey>(initialStatus);
+  const [status, setStatus] = useState<ReportStatusKey>(initialStatus);
   const [page, setPage] = useState(initialPage);
   const [search, setSearch] = useState(initialSearch);
+  const [pendingSkipId, setPendingSkipId] = useState<string | null>(null);
 
   const pageSize = 20;
   const baseParams = { page, pageSize };
@@ -56,7 +60,7 @@ function ReportedUsersContent() {
   const total = reportsQuery.data?.total ?? 0;
   const totalPages = reportsQuery.data?.totalPages ?? 1;
 
-  function navigate(newStatus: StatusKey, newPage: number, newSearch: string) {
+  function navigate(newStatus: ReportStatusKey, newPage: number, newSearch: string) {
     const sp = new URLSearchParams();
     if (newStatus !== "all") sp.set("status", newStatus);
     if (newSearch.trim()) sp.set("search", newSearch.trim());
@@ -69,7 +73,15 @@ function ReportedUsersContent() {
   }
 
   function skip(item: ReportWithContentDTO) {
-    statusMutation.mutate({ id: item.report.id, status: "under_review" });
+    const id = item.report.id;
+    setPendingSkipId(id);
+    statusMutation.mutate(
+      { id, status: "under_review" },
+      {
+        onSettled: () => setPendingSkipId((current) => (current === id ? null : current)),
+        onError: (error) => toast.error(getErrorMessage(error)),
+      }
+    );
   }
 
   function rowProps(item: ReportWithContentDTO) {
@@ -86,7 +98,7 @@ function ReportedUsersContent() {
       status: r.status,
       onDecide: () => decideOn(item),
       onSkip: () => skip(item),
-      skipDisabled: statusMutation.isPending,
+      skipDisabled: pendingSkipId === item.report.id,
     };
   }
 
@@ -105,7 +117,7 @@ function ReportedUsersContent() {
 
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-1">
-          {STATUS_KEYS.map((key) => (
+          {REPORT_STATUS_KEYS.map((key) => (
             <Button
               key={key}
               size="sm"
@@ -116,17 +128,7 @@ function ReportedUsersContent() {
                 navigate(key, 1, search);
               }}
             >
-              {t(
-                key === "all"
-                  ? "statusAll"
-                  : key === "pending"
-                    ? "statusPending"
-                    : key === "under_review"
-                      ? "statusUnderReview"
-                      : key === "resolved"
-                        ? "statusResolved"
-                        : "statusDismissed"
-              )}
+              {t(REPORT_STATUS_TRANSLATION_KEYS[key])}
             </Button>
           ))}
         </div>
