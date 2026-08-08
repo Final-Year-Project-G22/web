@@ -1,46 +1,30 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Suspense, useState } from "react";
-import { useAdminListUserReports } from "@/app/[locale]/(modules)/moderation/_services/user-reports.hook";
-import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import {
+  useAdminListUserReports,
+  useAdminUpdateUserReportStatus,
+} from "@/app/[locale]/(modules)/moderation/_services/user-reports.hook";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { InlineError } from "@/components/ui/inline-error";
 import { Input } from "@/components/ui/input";
 import { PaginationBar } from "@/components/ui/pagination-bar";
-import { TableSkeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import type { ReportWithContentDTO } from "@/lib/api/types";
 import { getErrorMessage } from "@/lib/utils";
-
-type Status = "all" | "pending" | "under_review" | "resolved" | "dismissed";
-
-const STATUS_LABELS: Record<Status, string> = {
-  all: "All",
-  pending: "Pending",
-  under_review: "Under Review",
-  resolved: "Resolved",
-  dismissed: "Dismissed",
-};
-
-const STATUS_VARIANTS: Record<string, "secondary" | "default" | "outline"> = {
-  pending: "secondary",
-  under_review: "outline",
-  resolved: "default",
-  dismissed: "outline",
-};
+import {
+  REPORT_STATUS_KEYS,
+  REPORT_STATUS_TRANSLATION_KEYS,
+  type ReportStatusKey,
+} from "../_components/report-status";
+import { TriageQueueSkeleton, TriageRow } from "../_components/triage-row";
 
 export default function ReportedUsersPage() {
   return (
-    <Suspense fallback={<TableSkeleton rows={10} columns={6} />}>
+    <Suspense fallback={<TriageQueueSkeleton />}>
       <ReportedUsersContent />
     </Suspense>
   );
@@ -49,14 +33,16 @@ export default function ReportedUsersPage() {
 function ReportedUsersContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations("moderation");
 
-  const initialStatus = (searchParams.get("status") as Status) ?? "all";
+  const initialStatus = (searchParams.get("status") as ReportStatusKey) ?? "all";
   const initialPage = Number(searchParams.get("page") ?? "1");
   const initialSearch = searchParams.get("search") ?? "";
 
-  const [status, setStatus] = useState<Status>(initialStatus);
+  const [status, setStatus] = useState<ReportStatusKey>(initialStatus);
   const [page, setPage] = useState(initialPage);
   const [search, setSearch] = useState(initialSearch);
+  const [pendingSkipId, setPendingSkipId] = useState<string | null>(null);
 
   const pageSize = 20;
   const baseParams = { page, pageSize };
@@ -68,12 +54,13 @@ function ReportedUsersContent() {
     ...statusParam,
     ...searchParam,
   });
+  const statusMutation = useAdminUpdateUserReportStatus();
 
   const items = reportsQuery.data?.reports ?? [];
   const total = reportsQuery.data?.total ?? 0;
   const totalPages = reportsQuery.data?.totalPages ?? 1;
 
-  function navigate(newStatus: Status, newPage: number, newSearch: string) {
+  function navigate(newStatus: ReportStatusKey, newPage: number, newSearch: string) {
     const sp = new URLSearchParams();
     if (newStatus !== "all") sp.set("status", newStatus);
     if (newSearch.trim()) sp.set("search", newSearch.trim());
@@ -81,135 +68,124 @@ function ReportedUsersContent() {
     router.replace(`/moderation/reported-users${sp.toString() ? `?${sp}` : ""}`);
   }
 
+  function decideOn(item: ReportWithContentDTO) {
+    router.push(`/moderation/reported-users/${item.report.id}`);
+  }
+
+  function skip(item: ReportWithContentDTO) {
+    const id = item.report.id;
+    setPendingSkipId(id);
+    statusMutation.mutate(
+      { id, status: "under_review" },
+      {
+        onSettled: () => setPendingSkipId((current) => (current === id ? null : current)),
+        onError: (error) => toast.error(getErrorMessage(error)),
+      }
+    );
+  }
+
+  function rowProps(item: ReportWithContentDTO) {
+    const r = item.report;
+    const user = item.content?.user;
+    const userName =
+      user && (user.firstName || user.lastName) ? `${user.firstName} ${user.lastName}`.trim() : "—";
+    return {
+      title: userName,
+      snippet: user?.email,
+      reporter: `${r.reporterFirstName} ${r.reporterLastName}`,
+      reason: r.reason,
+      createdAt: r.createdAt,
+      status: r.status,
+      onDecide: () => decideOn(item),
+      onSkip: () => skip(item),
+      skipDisabled: pendingSkipId === item.report.id,
+    };
+  }
+
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle>Reported Users</CardTitle>
-          <CardDescription>Users reported for policy violations</CardDescription>
-        </CardHeader>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-xl font-semibold tracking-tight">
+            {t("reportedUsers")}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t("reportedUsersDesc", { count: total })}
+          </p>
+        </div>
+      </div>
 
-        <CardContent className="space-y-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-1 flex-wrap">
-              {(Object.keys(STATUS_LABELS) as Status[]).map((s) => (
-                <Button
-                  key={s}
-                  variant={status === s ? "secondary" : "ghost"}
-                  size="sm"
-                  onClick={() => {
-                    setStatus(s);
-                    setPage(1);
-                    navigate(s, 1, search);
-                  }}
-                >
-                  {STATUS_LABELS[s]}
-                </Button>
-              ))}
-            </div>
-
-            <div className="w-full sm:w-72">
-              <Input
-                placeholder="Search reporter name or email..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    navigate(status, 1, search);
-                  }
-                }}
-              />
-            </div>
-          </div>
-
-          {total > 0 && (
-            <div className="text-sm text-muted-foreground">
-              {total} report{total !== 1 ? "s" : ""} found
-            </div>
-          )}
-
-          {reportsQuery.isLoading ? (
-            <TableSkeleton rows={10} columns={6} />
-          ) : reportsQuery.isError ? (
-            <InlineError error={reportsQuery.error} onRetry={() => reportsQuery.refetch()} />
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Reason</TableHead>
-                    <TableHead>Reporter</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6}>
-                        <EmptyState variant="moderation" />
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    items.map((item) => {
-                      const r = item.report;
-                      return (
-                        <TableRow key={r.id}>
-                          <TableCell className="font-medium">
-                            {item.content?.user
-                              ? `${item.content.user.firstName} ${item.content.user.lastName}`
-                              : "—"}
-                          </TableCell>
-                          <TableCell className="text-xs max-w-[200px]">
-                            <div className="truncate">{r.reason}</div>
-                          </TableCell>
-                          <TableCell className="text-sm">
-                            {r.reporterFirstName} {r.reporterLastName}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={STATUS_VARIANTS[r.status] ?? "outline"}>
-                              {r.status.replace("_", " ")}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            {new Date(r.createdAt).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => router.push(`/moderation/reported-users/${r.id}`)}
-                            >
-                              View Details
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <PaginationBar
-              page={page}
-              totalPages={totalPages}
-              isLoading={reportsQuery.isLoading}
-              onPageChange={(p) => {
-                setPage(p);
-                navigate(status, p, search);
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-1">
+          {REPORT_STATUS_KEYS.map((key) => (
+            <Button
+              key={key}
+              size="sm"
+              variant={status === key ? "default" : "ghost"}
+              onClick={() => {
+                setStatus(key);
+                setPage(1);
+                navigate(key, 1, search);
               }}
-            />
-          )}
-        </CardContent>
-      </Card>
+            >
+              {t(REPORT_STATUS_TRANSLATION_KEYS[key])}
+            </Button>
+          ))}
+        </div>
+
+        <Input
+          className="w-full sm:w-72"
+          placeholder={t("searchReporter")}
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              navigate(status, 1, search);
+            }
+          }}
+        />
+      </div>
+
+      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-card">
+        <div className="border-b border-border px-4 py-2.5">
+          <h2 className="text-sm font-medium">{t("reportQueue")}</h2>
+        </div>
+
+        {reportsQuery.isLoading ? (
+          <TriageQueueSkeleton />
+        ) : reportsQuery.isError ? (
+          <div className="p-4">
+            <InlineError error={reportsQuery.error} onRetry={() => reportsQuery.refetch()} />
+          </div>
+        ) : items.length === 0 ? (
+          <EmptyState
+            variant="moderation"
+            title={t("noReports")}
+            description={t("noReportsDesc")}
+          />
+        ) : (
+          <div className="divide-y divide-border">
+            {items.map((item) => (
+              <TriageRow key={item.report.id} {...rowProps(item)} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {totalPages > 1 && (
+        <PaginationBar
+          page={page}
+          totalPages={totalPages}
+          isLoading={reportsQuery.isLoading}
+          onPageChange={(p) => {
+            setPage(p);
+            navigate(status, p, search);
+          }}
+        />
+      )}
     </div>
   );
 }

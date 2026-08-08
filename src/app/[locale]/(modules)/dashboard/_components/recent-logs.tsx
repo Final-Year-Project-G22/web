@@ -1,4 +1,7 @@
-import { History, ListFilter } from "lucide-react";
+"use client";
+
+import { History } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,56 +14,47 @@ import {
 } from "@/components/ui/table";
 import { useActivityLogs } from "../_services/dashboard.hook";
 
-function timeAgo(timestamp: string): string {
-  const now = Date.now();
-  const then = new Date(timestamp).getTime();
-  const diffMs = now - then;
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
+function timeAgo(timestamp: string, t: ReturnType<typeof useTranslations>): string {
+  const diffMin = Math.floor((Date.now() - new Date(timestamp).getTime()) / 60000);
+  if (diffMin < 1) return t("logs.justNow");
+  if (diffMin < 60) return t("logs.minutesAgo", { n: diffMin });
   const diffHrs = Math.floor(diffMin / 60);
-  if (diffHrs < 24) return `${diffHrs}h ago`;
-  const diffDays = Math.floor(diffHrs / 24);
-  return `${diffDays}d ago`;
+  if (diffHrs < 24) return t("logs.hoursAgo", { n: diffHrs });
+  return t("logs.daysAgo", { n: Math.floor(diffHrs / 24) });
 }
 
 function TargetBadge({ label }: { label: string }) {
   return (
-    <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold tracking-wide border uppercase text-chart-1 bg-chart-1/8 border-chart-1/15">
+    <span className="inline-block rounded-md border border-line bg-panel-2 px-2 py-0.5 font-mono text-[11px] whitespace-nowrap text-ink-2">
       {label}
     </span>
   );
 }
 
 export function RecentLogs() {
+  const t = useTranslations("dashboard");
   const { data: logsData } = useActivityLogs({ limit: 10 });
   const logs = logsData?.data ?? [];
 
   return (
-    <Card className="shadow-sm rounded-xl">
-      <CardHeader className="flex flex-row items-center justify-between pb-4">
+    <Card className="gap-0 py-0 shadow-card">
+      <CardHeader className="flex flex-row items-center justify-between border-b border-line px-5 py-3">
         <div className="flex items-center gap-2">
-          <History className="size-5 text-primary" />
-          <CardTitle className="text-base font-bold">Recent Admin Logs</CardTitle>
+          <History className="size-4 text-primary" strokeWidth={1.5} />
+          <CardTitle>{t("logs.title")}</CardTitle>
         </div>
-        <button
-          type="button"
-          className="p-1 hover:bg-accent rounded-md transition-colors text-muted-foreground"
-        >
-          <ListFilter className="size-4" />
-        </button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         {logs.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">No activity logs yet</p>
+          <p className="py-10 text-center text-sm text-muted-foreground">{t("logs.empty")}</p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Admin</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead>Target</TableHead>
-                <TableHead className="text-right">Time</TableHead>
+                <TableHead>{t("logs.admin")}</TableHead>
+                <TableHead>{t("logs.action")}</TableHead>
+                <TableHead>{t("logs.target")}</TableHead>
+                <TableHead className="text-right">{t("logs.time")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -68,8 +62,8 @@ export function RecentLogs() {
                 <TableRow key={`${log.timestamp}-${i}`}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <Avatar className="size-8 border">
-                        <AvatarFallback className="text-xs font-medium">
+                      <Avatar className="size-8 border border-line">
+                        <AvatarFallback className="bg-panel-2 text-xs font-medium text-ink-2">
                           {log.adminName
                             ?.split(" ")
                             .map((n) => n[0])
@@ -85,8 +79,8 @@ export function RecentLogs() {
                   <TableCell>
                     <TargetBadge label={log.target} />
                   </TableCell>
-                  <TableCell className="text-right text-muted-foreground text-xs">
-                    {timeAgo(log.timestamp)}
+                  <TableCell className="text-right font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums">
+                    {timeAgo(log.timestamp, t)}
                   </TableCell>
                 </TableRow>
               ))}

@@ -1,127 +1,60 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Activity, AlertCircle, BrainCircuit, FileText, Users } from "lucide-react";
-import { Suspense } from "react";
-import { AIUsageChart } from "@/app/[locale]/(modules)/dashboard/_components/ai-usage-chart";
-import { RecentLogs } from "@/app/[locale]/(modules)/dashboard/_components/recent-logs";
-import { StatCard } from "@/app/[locale]/(modules)/dashboard/_components/stat-card";
-import { SystemHealth } from "@/app/[locale]/(modules)/dashboard/_components/system-health";
-import { UserGrowthChart } from "@/app/[locale]/(modules)/dashboard/_components/user-growth-chart";
-import {
-  useDocumentStats,
-  useReportStats,
-  useSessionStats,
-  useUserStats,
-} from "./_services/dashboard.hook";
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.06 } },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0 },
-};
-
-function formatStat(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
-  return n.toLocaleString();
-}
-
-function StatCards() {
-  const { data: userStats } = useUserStats();
-  const { data: docStats } = useDocumentStats();
-  const { data: sessionStats } = useSessionStats();
-  const { data: reportStats } = useReportStats();
-
-  return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-    >
-      <motion.div variants={item}>
-        <StatCard
-          title="Total MSME Users"
-          value={userStats ? formatStat(userStats.total) : "—"}
-          trend={userStats?.trendPercent}
-          icon={Users}
-          colorIndex={1}
-        />
-      </motion.div>
-      <motion.div variants={item}>
-        <StatCard
-          title="Documents Processed"
-          value={docStats ? formatStat(docStats.total) : "—"}
-          trend={docStats ? docStats.trend : undefined}
-          icon={FileText}
-          colorIndex={2}
-        />
-      </motion.div>
-      <motion.div variants={item}>
-        <StatCard
-          title="Active Sessions"
-          value={sessionStats ? formatStat(sessionStats.total) : "—"}
-          icon={Activity}
-          colorIndex={3}
-          subtitle="Daily Avg"
-        />
-      </motion.div>
-      <motion.div variants={item}>
-        <StatCard
-          title="Flagged Content"
-          value={reportStats ? formatStat(reportStats.pending) : "—"}
-          trend={reportStats?.trendPercent ? -Math.abs(reportStats.trendPercent) : undefined}
-          icon={AlertCircle}
-          colorIndex={4}
-        />
-      </motion.div>
-    </motion.div>
-  );
-}
+import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
+import { AIUsageChart } from "./_components/ai-usage-chart";
+import { PagumeBanner } from "./_components/pagume-banner";
+import { RecentLogs } from "./_components/recent-logs";
+import { StatStrip } from "./_components/stat-card";
+import { SystemHealth } from "./_components/system-health";
+import { UserGrowthChart } from "./_components/user-growth-chart";
 
 export default function DashboardPage() {
-  return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-8">
-      <Suspense fallback={<StatCardsFallback />}>
-        <StatCards />
-      </Suspense>
+  const t = useTranslations("dashboard");
+  const locale = useLocale();
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Suspense fallback={<ChartFallback />}>
-          <UserGrowthChart />
-        </Suspense>
-        <Suspense fallback={<ChartFallback />}>
-          <AIUsageChart />
-        </Suspense>
+  /* "Today" resolves after mount so server HTML and client hydration agree. */
+  const [today, setToday] = useState<Date | null>(null);
+  useEffect(() => setToday(new Date()), []);
+
+  const dateLabel = useMemo(() => {
+    if (!today) return null;
+    const intlLocale = locale === "am" ? "am-ET" : "en";
+    return new Intl.DateTimeFormat(intlLocale, {
+      calendar: locale === "am" ? "ethiopic" : "gregory",
+      numberingSystem: "latn",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }).format(today);
+  }, [today, locale]);
+
+  return (
+    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-5 pb-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-[22px] leading-tight font-semibold tracking-tight">
+            {t("title")}
+          </h1>
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            {dateLabel ? t("subtitle", { date: dateLabel }) : t("subtitle", { date: "" })}
+          </p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Suspense fallback={<ChartFallback />}>
-          <SystemHealth />
-        </Suspense>
-        <Suspense fallback={<ChartFallback />}>
-          <RecentLogs />
-        </Suspense>
+      <PagumeBanner />
+
+      <StatStrip />
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.45fr_1fr]">
+        <UserGrowthChart />
+        <AIUsageChart />
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        <SystemHealth />
+        <RecentLogs />
       </div>
     </div>
   );
-}
-
-function StatCardsFallback() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {[1, 2, 3, 4].map((i) => (
-        <StatCard key={i} title="" value="" icon={Users} loading />
-      ))}
-    </div>
-  );
-}
-
-function ChartFallback() {
-  return <div className="h-[250px] animate-pulse rounded-xl bg-muted" />;
 }

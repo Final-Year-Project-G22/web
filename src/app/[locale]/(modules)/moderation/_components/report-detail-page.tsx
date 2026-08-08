@@ -2,14 +2,12 @@
 
 import { AlertTriangle, ArrowLeft, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { use } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { InlineError } from "@/components/ui/inline-error";
 import { CardSkeleton } from "@/components/ui/skeleton";
-import { getErrorMessage } from "@/lib/utils";
 import {
   useAdminDeleteReportedPost,
   useAdminGetPostReport,
@@ -25,55 +23,40 @@ import {
   useAdminGetUserReport,
   useAdminUpdateUserReportStatus,
 } from "../_services/user-reports.hook";
-
-const STATUS_VARIANTS: Record<string, "secondary" | "default" | "outline"> = {
-  pending: "secondary",
-  under_review: "outline",
-  resolved: "default",
-  dismissed: "outline",
-};
+import { ReportStatusBadge, reportStatusLabelKey } from "./report-status";
 
 type ReportType = "post" | "thread" | "user";
 
 const CONFIG: Record<
   ReportType,
   {
-    title: string;
-    destructiveLabel: string;
-    confirmTitle: string;
-    confirmDescription: string;
-    confirmLabel: string;
+    titleKey: "detailPost" | "detailThread" | "detailUser";
+    destructiveLabelKey: "deletePost" | "deleteThread" | "blockUser";
+    confirmTitleKey: "confirmDeletePost" | "confirmDeleteThread" | "confirmBlockUser";
+    confirmDescKey: "confirmDeletePostDesc" | "confirmDeleteThreadDesc" | "confirmBlockUserDesc";
     destructiveIcon: typeof Trash2;
-    mutationFn: "deletePost" | "deleteThread" | "blockUser";
   }
 > = {
   post: {
-    title: "Post Report Details",
-    destructiveLabel: "Delete Post",
-    confirmTitle: "Delete Post",
-    confirmDescription: "Delete this post and resolve the report? This action cannot be undone.",
-    confirmLabel: "Delete",
+    titleKey: "detailPost",
+    destructiveLabelKey: "deletePost",
+    confirmTitleKey: "confirmDeletePost",
+    confirmDescKey: "confirmDeletePostDesc",
     destructiveIcon: Trash2,
-    mutationFn: "deletePost",
   },
   thread: {
-    title: "Thread Report Details",
-    destructiveLabel: "Delete Thread",
-    confirmTitle: "Delete Thread",
-    confirmDescription: "Delete this thread and resolve the report? This action cannot be undone.",
-    confirmLabel: "Delete",
+    titleKey: "detailThread",
+    destructiveLabelKey: "deleteThread",
+    confirmTitleKey: "confirmDeleteThread",
+    confirmDescKey: "confirmDeleteThreadDesc",
     destructiveIcon: Trash2,
-    mutationFn: "deleteThread",
   },
   user: {
-    title: "User Report Details",
-    destructiveLabel: "Block User",
-    confirmTitle: "Block User",
-    confirmDescription:
-      "Block this user from the platform and resolve the report? This action cannot be undone.",
-    confirmLabel: "Block",
+    titleKey: "detailUser",
+    destructiveLabelKey: "blockUser",
+    confirmTitleKey: "confirmBlockUser",
+    confirmDescKey: "confirmBlockUserDesc",
     destructiveIcon: AlertTriangle,
-    mutationFn: "blockUser",
   },
 };
 
@@ -104,20 +87,26 @@ function ContentPreview({
   type: ReportType;
   content: ReportContent | undefined;
 }) {
+  const t = useTranslations("moderation");
+
   if (type === "post" && content?.post) {
     return (
-      <div className="rounded-lg border p-4 space-y-3">
-        <h4 className="text-sm font-medium text-muted-foreground">Reported Content Preview</h4>
+      <div className="space-y-3 rounded-lg border border-border bg-panel-2/50 p-4">
+        <h2 className="text-xs font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+          {t("contentPreview")}
+        </h2>
         <div className="space-y-2">
           <div className="text-sm">
-            <span className="text-muted-foreground">In thread: </span>
-            <span>{content.post.threadTitle ?? "Unknown Thread"}</span>
+            <span className="text-muted-foreground">{t("inThread")} </span>
+            <span>{content.post.threadTitle ?? t("unknownThread")}</span>
           </div>
-          <div className="rounded-md bg-muted/50 p-3 text-sm">
-            <p className="text-muted-foreground mb-1">
-              by {content.post.authorFirstName} {content.post.authorLastName}
+          <div className="rounded-md border border-border bg-panel p-3 text-sm">
+            <p className="mb-1 text-xs text-muted-foreground">
+              {t("byAuthor", {
+                author: `${content.post.authorFirstName} ${content.post.authorLastName}`,
+              })}
             </p>
-            <p className="whitespace-pre-wrap">{content.post.content}</p>
+            <p className="whitespace-pre-wrap text-sm">{content.post.content}</p>
           </div>
         </div>
       </div>
@@ -126,12 +115,16 @@ function ContentPreview({
 
   if (type === "thread" && content?.thread) {
     return (
-      <div className="rounded-lg border p-4 space-y-3">
-        <h4 className="text-sm font-medium text-muted-foreground">Reported Content Preview</h4>
+      <div className="space-y-3 rounded-lg border border-border bg-panel-2/50 p-4">
+        <h2 className="text-xs font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+          {t("contentPreview")}
+        </h2>
         <div className="space-y-1">
           <p className="font-medium text-base">{content.thread.title}</p>
           <p className="text-sm text-muted-foreground">
-            by {content.thread.authorFirstName} {content.thread.authorLastName}
+            {t("byAuthor", {
+              author: `${content.thread.authorFirstName} ${content.thread.authorLastName}`,
+            })}
           </p>
           {content.thread.description && (
             <p className="text-sm text-muted-foreground line-clamp-3">
@@ -145,8 +138,10 @@ function ContentPreview({
 
   if (type === "user" && content?.user) {
     return (
-      <div className="rounded-lg border p-4 space-y-3">
-        <h4 className="text-sm font-medium text-muted-foreground">Reported User</h4>
+      <div className="space-y-3 rounded-lg border border-border bg-panel-2/50 p-4">
+        <h2 className="text-xs font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+          {t("reportedUser")}
+        </h2>
         <div className="space-y-1">
           <p className="font-medium text-base">
             {content.user.firstName} {content.user.lastName}
@@ -169,6 +164,8 @@ export function ReportDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const t = useTranslations("moderation");
+  const locale = useLocale();
   const config = CONFIG[type];
 
   const postHooks = {
@@ -245,105 +242,100 @@ export function ReportDetailPage({
     hooks.destructive.error?.title ||
     "";
 
+  const statusLabel = report ? t(reportStatusLabelKey(report.status)) : "";
+
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-2">
-        <ArrowLeft className="w-4 h-4 mr-1" />
-        Back
+    <div className="mx-auto max-w-3xl space-y-6">
+      <Button variant="ghost" size="sm" onClick={() => router.back()}>
+        <ArrowLeft className="size-4" />
+        {t("back")}
       </Button>
 
-      <Card>
-        <CardHeader className="border-b">
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle>{config.title}</CardTitle>
-            </div>
+      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-card">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border px-5 py-4">
+          <div>
+            <h1 className="font-display text-lg font-semibold tracking-tight">
+              {t(config.titleKey)}
+            </h1>
             {report && (
-              <Badge variant={STATUS_VARIANTS[report.status] ?? "outline"}>
-                {report.status.replace("_", " ")}
-              </Badge>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("reportedOn")} · {new Date(report.createdAt).toLocaleString(locale)}
+              </p>
             )}
           </div>
-        </CardHeader>
+          {report && <ReportStatusBadge status={report.status} label={statusLabel} />}
+        </div>
 
-        <CardContent className="space-y-6">
+        <div className="space-y-6 px-5 py-5">
           {reportQuery.isLoading ? (
             <CardSkeleton lines={5} />
           ) : reportQuery.isError ? (
             <InlineError error={reportQuery.error} onRetry={() => reportQuery.refetch()} />
           ) : report ? (
             <>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <dl className="grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
                 <div>
-                  <span className="text-muted-foreground">Reporter</span>
-                  <p className="font-medium">
+                  <dt className="text-xs font-medium text-muted-foreground">{t("reporter")}</dt>
+                  <dd className="mt-0.5 font-medium">
                     {report.reporterFirstName} {report.reporterLastName}
-                  </p>
+                  </dd>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Reported On</span>
-                  <p className="font-medium">{new Date(report.createdAt).toLocaleString()}</p>
+                  <dt className="text-xs font-medium text-muted-foreground">{t("reason")}</dt>
+                  <dd className="mt-0.5 font-medium">{report.reason}</dd>
                 </div>
                 {report.adminNote && (
-                  <div className="col-span-2">
-                    <span className="text-muted-foreground">Admin Note</span>
-                    <p className="font-medium">{report.adminNote}</p>
+                  <div className="sm:col-span-2">
+                    <dt className="text-xs font-medium text-muted-foreground">{t("adminNote")}</dt>
+                    <dd className="mt-0.5 font-medium">{report.adminNote}</dd>
                   </div>
                 )}
-                <div className="col-span-2">
-                  <span className="text-muted-foreground">Reason</span>
-                  <p className="font-medium">{report.reason}</p>
-                </div>
-              </div>
+              </dl>
 
               <ContentPreview type={type} content={content} />
 
-              <div className="flex flex-col gap-3">
-                <h4 className="text-sm font-medium text-muted-foreground">Actions</h4>
-
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  {isPending && (
+              {isPending && (
+                <div className="space-y-3">
+                  <h2 className="text-sm font-medium">{t("actions")}</h2>
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <ConfirmDialog
-                      title={config.confirmTitle}
-                      description={config.confirmDescription}
-                      confirmLabel={config.confirmLabel}
+                      title={t(config.confirmTitleKey)}
+                      description={t(config.confirmDescKey)}
+                      confirmLabel={t(config.destructiveLabelKey)}
+                      cancelLabel={t("cancel")}
                       variant="destructive"
                       onConfirm={handleDestructive}
                     >
                       <Button variant="destructive" size="sm" disabled={isLoading}>
-                        <config.destructiveIcon className="w-4 h-4 mr-1" />
-                        {config.destructiveLabel}
+                        <config.destructiveIcon className="size-4" />
+                        {t(config.destructiveLabelKey)}
                       </Button>
                     </ConfirmDialog>
-                  )}
-                  {isPending && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={isLoading}
-                        onClick={handleDismiss}
-                      >
-                        Dismiss Report
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={isLoading}
-                        onClick={handleResolve}
-                      >
-                        Mark Resolved
-                      </Button>
-                    </>
-                  )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isLoading}
+                      onClick={handleDismiss}
+                    >
+                      {t("dismissReport")}
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      disabled={isLoading}
+                      onClick={handleResolve}
+                    >
+                      {t("markResolved")}
+                    </Button>
+                  </div>
                 </div>
+              )}
 
-                {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
-              </div>
+              {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
             </>
           ) : null}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
