@@ -317,7 +317,7 @@ function SidebarContent({
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-4 no-scrollbar" aria-label="Main">
+      <nav className="flex-1 overflow-y-auto px-3 py-4 no-scrollbar" aria-label={t("nav")}>
         {visibleSections.map((section) => (
           <div key={section.id}>
             {collapsed ? (
