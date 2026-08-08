@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ReportStatusBadge, reasonVariant } from "./report-status";
+import { ReportStatusBadge, reasonVariant, reportStatusLabelKey } from "./report-status";
 
 /** Relative time ("2h ago" / "ከ2 ሰዓት በፊት") — the triage urgency cue. */
 function timeAgo(iso: string, locale: string): string {
@@ -61,14 +61,7 @@ export function TriageRow({
   const t = useTranslations("moderation");
   const locale = useLocale();
 
-  const statusLabel =
-    status === "pending"
-      ? t("statusPending")
-      : status === "under_review"
-        ? t("statusUnderReview")
-        : status === "resolved"
-          ? t("statusResolved")
-          : t("statusDismissed");
+  const statusLabel = t(reportStatusLabelKey(status));
 
   // decided rows have no next action — the stamp on the right is the verdict
   const isDecided = status === "resolved" || status === "dismissed";

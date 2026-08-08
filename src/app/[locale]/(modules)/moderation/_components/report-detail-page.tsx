@@ -23,7 +23,7 @@ import {
   useAdminGetUserReport,
   useAdminUpdateUserReportStatus,
 } from "../_services/user-reports.hook";
-import { ReportStatusBadge } from "./report-status";
+import { ReportStatusBadge, reportStatusLabelKey } from "./report-status";
 
 type ReportType = "post" | "thread" | "user";
 
@@ -242,15 +242,7 @@ export function ReportDetailPage({
     hooks.destructive.error?.title ||
     "";
 
-  const statusLabel = report
-    ? report.status === "pending"
-      ? t("statusPending")
-      : report.status === "under_review"
-        ? t("statusUnderReview")
-        : report.status === "resolved"
-          ? t("statusResolved")
-          : t("statusDismissed")
-    : "";
+  const statusLabel = report ? t(reportStatusLabelKey(report.status)) : "";
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
