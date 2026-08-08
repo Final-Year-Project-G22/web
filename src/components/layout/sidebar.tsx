@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import type { ReactNode } from "react";
@@ -31,6 +30,7 @@ import {
   type SidebarLink,
   sidebarConfig,
 } from "./sidebar-config";
+import { useShellPathname } from "./use-shell-pathname";
 
 const iconMap: Record<string, ReactNode> = {
   LayoutDashboard: <LayoutDashboard className="size-4" strokeWidth={1.5} />,
@@ -47,13 +47,6 @@ const WEAVE =
   "repeating-linear-gradient(90deg, var(--navy) 0 4px, var(--emerald) 4px 8px, var(--amber) 8px 11px, var(--navy) 11px 15px)";
 
 const COLLAPSE_KEY = "admin-rail-collapsed";
-
-/* The proxy serves AM routes under /am, EN under / (as-needed prefix).
-   Strip the locale segment so active-state matching is locale-agnostic. */
-function useShellPathname(): string {
-  const pathname = usePathname();
-  return pathname.replace(/^\/(en|am)(?=\/|$)/, "") || "/";
-}
 
 function DarkModeSwitch() {
   const { theme, setTheme } = useTheme();
