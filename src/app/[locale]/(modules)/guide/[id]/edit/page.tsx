@@ -337,7 +337,7 @@ function EditGuideContent() {
 
   if (guideQuery.isLoading || stepsQuery.isLoading) {
     return (
-      <div className="-m-8 flex h-[calc(100vh-4rem)] items-center justify-center bg-editor-surface">
+      <div className="-m-8 flex h-[calc(100vh-4rem)] shrink-0 items-center justify-center bg-editor-surface">
         <CardSkeleton lines={8} className="max-w-md" />
       </div>
     );
@@ -345,7 +345,7 @@ function EditGuideContent() {
 
   if (guideQuery.isError || stepsQuery.isError) {
     return (
-      <div className="-m-8 flex h-[calc(100vh-4rem)] items-center justify-center bg-editor-surface">
+      <div className="-m-8 flex h-[calc(100vh-4rem)] shrink-0 items-center justify-center bg-editor-surface">
         <InlineError
           error={guideQuery.error ?? stepsQuery.error}
           onRetry={() => {
@@ -360,7 +360,7 @@ function EditGuideContent() {
   // ─── Render ───────────────────────────────────────────────
 
   return (
-    <div className="-m-8 flex h-[calc(100vh-4rem)] flex-col bg-editor-surface">
+    <div className="-m-8 flex h-[calc(100vh-4rem)] shrink-0 flex-col bg-editor-surface">
       <EditGuideHeader guideName={guideName} />
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[16.5rem_minmax(0,1fr)] xl:grid-cols-[16.5rem_minmax(0,1fr)_24rem]">
