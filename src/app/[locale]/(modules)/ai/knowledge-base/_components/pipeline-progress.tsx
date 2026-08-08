@@ -2,32 +2,18 @@
 
 import { useTranslations } from "next-intl";
 import { useAIStatusList } from "../_services/ai.hook";
-
-type StageTone = "muted" | "info" | "warning" | "success";
-
-const STAGES: { key: string; tone: StageTone }[] = [
-  { key: "queued", tone: "muted" },
-  { key: "validating", tone: "info" },
-  { key: "fetching", tone: "info" },
-  { key: "chunking", tone: "warning" },
-  { key: "embedding", tone: "warning" },
-  { key: "indexing", tone: "warning" },
-  { key: "completed", tone: "success" },
-];
-
-const DOT: Record<StageTone, string> = {
-  muted: "bg-muted-foreground/50",
-  info: "bg-info-strong",
-  warning: "bg-warning-strong",
-  success: "bg-success-strong",
-};
+import {
+  PIPELINE_DOT_CLASS,
+  PIPELINE_STAGE_LABEL_KEY,
+  PIPELINE_STAGES,
+} from "../_services/pipeline-stages";
 
 export function PipelineProgress() {
   const t = useTranslations("surfaces.ai.kb");
   const { data: documents } = useAIStatusList(1, 100);
 
   const counts: Record<string, number> = {};
-  for (const s of STAGES) counts[s.key] = 0;
+  for (const s of PIPELINE_STAGES) counts[s.key] = 0;
   let failed = 0;
 
   if (documents) {
@@ -44,7 +30,7 @@ export function PipelineProgress() {
   const total = documents?.length ?? 0;
   const live = counts.completed;
   const processing = total - live - failed;
-  const currentStage = STAGES.find((s) => s.key !== "completed" && counts[s.key] > 0)?.key;
+  const currentStage = PIPELINE_STAGES.find((s) => s.key !== "completed" && counts[s.key] > 0)?.key;
 
   return (
     <section className="overflow-hidden rounded-lg border border-line bg-panel shadow-card">
@@ -54,7 +40,7 @@ export function PipelineProgress() {
       </div>
 
       <div className="flex flex-wrap items-stretch">
-        {STAGES.map((stage, idx) => {
+        {PIPELINE_STAGES.map((stage, idx) => {
           const n = counts[stage.key];
           const isCurrent = stage.key === currentStage;
           const isDone = stage.key === "completed";
@@ -68,7 +54,7 @@ export function PipelineProgress() {
               <span className="flex items-center gap-1.5">
                 <span
                   className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                    isDone && n === 0 ? "bg-muted-foreground/50" : DOT[stage.tone]
+                    isDone && n === 0 ? PIPELINE_DOT_CLASS.muted : PIPELINE_DOT_CLASS[stage.dotTone]
                   }`}
                 />
                 <span
@@ -76,7 +62,7 @@ export function PipelineProgress() {
                     isCurrent ? "text-foreground" : "text-muted-foreground"
                   }`}
                 >
-                  {t(stage.key === "completed" ? "live" : stage.key)}
+                  {t(PIPELINE_STAGE_LABEL_KEY[stage.key])}
                 </span>
               </span>
               <span

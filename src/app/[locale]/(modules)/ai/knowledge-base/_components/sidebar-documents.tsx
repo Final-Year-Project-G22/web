@@ -14,19 +14,7 @@ import { Input } from "@/components/ui/input";
 import { CardSkeleton } from "@/components/ui/skeleton";
 import { getErrorMessage } from "@/lib/utils";
 import { useAIStatusList, useDeleteDocument, useUploadDocument } from "../_services/ai.hook";
-
-type StageTone = "secondary" | "info" | "warning" | "success" | "destructive";
-
-const STAGE_VARIANT: Record<string, StageTone> = {
-  queued: "secondary",
-  validating: "info",
-  fetching: "info",
-  chunking: "warning",
-  embedding: "warning",
-  indexing: "warning",
-  completed: "success",
-  failed: "destructive",
-};
+import { PIPELINE_BADGE_VARIANT, PIPELINE_STAGE_LABEL_KEY } from "../_services/pipeline-stages";
 
 export function SidebarDocuments() {
   const t = useTranslations("surfaces.ai.kb");
@@ -141,19 +129,9 @@ export function SidebarDocuments() {
         <div className="grid gap-2">
           {filteredDocs.map((doc) => {
             const stage = doc.currentStage.toLowerCase();
-            const variant = STAGE_VARIANT[stage] ?? "secondary";
-            const stageLabel =
-              {
-                queued: t("queued"),
-                validating: t("validating"),
-                fetching: t("fetching"),
-                chunking: t("chunking"),
-                embedding: t("embedding"),
-                indexing: t("indexing"),
-                completed: t("live"),
-                failed: t("failed"),
-              }[stage] ??
-              (doc.currentStage || "Processing");
+            const variant = PIPELINE_BADGE_VARIANT[stage] ?? "secondary";
+            const stageLabelKey = PIPELINE_STAGE_LABEL_KEY[stage];
+            const stageLabel = stageLabelKey ? t(stageLabelKey) : doc.currentStage || "Processing";
 
             const displayName = doc.sourceFilename || `Document ${doc.documentId.slice(0, 8)}`;
             const sectorNames = (doc.sectorIds || [])
