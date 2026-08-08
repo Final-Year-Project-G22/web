@@ -66,7 +66,11 @@ export function PipelineProgress() {
               } ${isCurrent ? "bg-warning-tint/25" : ""}`}
             >
               <span className="flex items-center gap-1.5">
-                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${DOT[stage.tone]}`} />
+                <span
+                  className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                    isDone && n === 0 ? "bg-muted-foreground/50" : DOT[stage.tone]
+                  }`}
+                />
                 <span
                   className={`text-[11px] font-medium ${
                     isCurrent ? "text-foreground" : "text-muted-foreground"
@@ -77,7 +81,13 @@ export function PipelineProgress() {
               </span>
               <span
                 className={`font-display text-[18px] font-semibold leading-none tabular-nums ${
-                  isDone ? "text-success-strong" : isCurrent ? "text-ink" : "text-ink-2"
+                  isDone
+                    ? n > 0
+                      ? "text-success-strong"
+                      : "text-muted-foreground"
+                    : isCurrent
+                      ? "text-ink"
+                      : "text-ink-2"
                 }`}
               >
                 {n}
@@ -93,7 +103,7 @@ export function PipelineProgress() {
               {processing} {t("processing")}
             </span>
           ) : null}
-          <span className="text-success-strong">
+          <span className={live > 0 ? "text-success-strong" : "text-muted-foreground"}>
             {live} {t("live")}
           </span>
           {failed > 0 ? (
