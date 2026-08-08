@@ -19,7 +19,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { APP_NAME } from "@/lib/constants";
 import { hasPermission } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
@@ -47,6 +47,33 @@ const WEAVE =
   "repeating-linear-gradient(90deg, var(--navy) 0 4px, var(--emerald) 4px 8px, var(--amber) 8px 11px, var(--navy) 11px 15px)";
 
 const COLLAPSE_KEY = "admin-rail-collapsed";
+
+/* Collapsed-rail persistence. useSyncExternalStore keeps the server render
+   (expanded) in agreement with hydration, then swaps to the stored value in a
+   post-hydration re-render — no hydration mismatch, no full-rail flash. */
+let storedCollapsed: boolean | null = null;
+const collapseListeners = new Set<() => void>();
+
+function subscribeCollapse(listener: () => void): () => void {
+  collapseListeners.add(listener);
+  return () => {
+    collapseListeners.delete(listener);
+  };
+}
+
+function readStoredCollapsed(): boolean {
+  if (typeof window === "undefined") return false;
+  if (storedCollapsed === null) {
+    storedCollapsed = window.localStorage.getItem(COLLAPSE_KEY) === "1";
+  }
+  return storedCollapsed;
+}
+
+function writeStoredCollapsed(value: boolean) {
+  storedCollapsed = value;
+  window.localStorage.setItem(COLLAPSE_KEY, value ? "1" : "0");
+  for (const listener of collapseListeners) listener();
+}
 
 function DarkModeSwitch() {
   const { theme, setTheme } = useTheme();
@@ -453,20 +480,9 @@ function renderItem(
 }
 
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  const collapsed = useSyncExternalStore(subscribeCollapse, readStoredCollapsed, () => false);
 
-  useEffect(() => {
-    const stored = window.localStorage.getItem(COLLAPSE_KEY);
-    if (stored === "1") setCollapsed(true);
-  }, []);
-
-  const toggleCollapsed = () => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      window.localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0");
-      return next;
-    });
-  };
+  const toggleCollapsed = () => writeStoredCollapsed(!collapsed);
 
   return (
     <aside
