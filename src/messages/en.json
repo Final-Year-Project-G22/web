@@ -37,7 +37,8 @@
       "language": "Language",
       "collapse": "Collapse rail",
       "expand": "Expand rail"
-    }
+    },
+    "nav": "Main navigation"
   },
   "common": {
     "modules": "Modules",
