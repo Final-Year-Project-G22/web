@@ -237,6 +237,16 @@ export function ChatPanel({ sessionId, onSessionChange }: ChatPanelProps) {
     onSessionChange(null);
   };
 
+  // Close the citation inspector with Escape on every viewport (mobile sheet + desktop aside).
+  useEffect(() => {
+    if (!inspectedCitation) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setInspectedCitation(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [inspectedCitation]);
+
   const showEmptyState = messages.length === 0 && !sessionId;
 
   // Citations for the hairline sources sidebar — from the latest answered message.
@@ -249,7 +259,7 @@ export function ChatPanel({ sessionId, onSessionChange }: ChatPanelProps) {
   return (
     <div className="flex min-h-0 flex-1 gap-5">
       {/* conversation column — composer bottom-locked */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-line bg-panel shadow-card">
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-line bg-panel shadow-card">
         {/* header */}
         <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3.5">
           <div className="flex items-center gap-2.5">
@@ -448,6 +458,24 @@ export function ChatPanel({ sessionId, onSessionChange }: ChatPanelProps) {
           </div>
           <p className="mt-2 text-center text-[11px] text-muted-foreground">{t("disclaimer")}</p>
         </div>
+
+        {/* mobile citation inspector — bottom sheet within the chat column (desktop keeps the hairline aside) */}
+        {inspectedCitation ? (
+          <div className="absolute inset-0 z-20 flex flex-col justify-end lg:hidden">
+            <button
+              type="button"
+              aria-label={t("close")}
+              onClick={() => setInspectedCitation(null)}
+              className="absolute inset-0 animate-in bg-black/50 duration-150 fade-in-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 motion-reduce:animate-none"
+            />
+            <div className="relative max-h-[70%] animate-in overflow-y-auto rounded-t-lg border-t border-line bg-panel shadow-popover duration-200 motion-reduce:animate-none slide-in-from-bottom-2">
+              <ChunkInspector
+                citation={inspectedCitation}
+                onClose={() => setInspectedCitation(null)}
+              />
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {/* citations — hairline sidebar */}
