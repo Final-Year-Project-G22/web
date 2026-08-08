@@ -8,6 +8,7 @@
     "start": "next start",
     "prepare": "husky",
     "generate:api": "orval",
+    "check:design": "node scripts/check-design-contract.js",
     "test": "vitest"
   },
   "lint-staged": {
