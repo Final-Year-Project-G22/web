@@ -1,11 +1,12 @@
 "use client";
 
 import { Bell, Key, LogOut, Menu } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useLogout } from "@/app/(auth)/auth/_services/auth.hook";
 import { SidebarContent } from "@/components/layout/sidebar";
+import { useShellPathname } from "@/components/layout/use-shell-pathname";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,13 +20,6 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuthStore } from "@/store/auth.store";
 import { sidebarConfig } from "./sidebar-config";
-
-/* The proxy serves AM routes under /am, EN under / (as-needed prefix).
-   Strip the locale segment so the crumb resolves in both locales. */
-function useShellPathname(): string {
-  const pathname = usePathname();
-  return pathname.replace(/^\/(en|am)(?=\/|$)/, "") || "/";
-}
 
 function useCrumbLabel(): string | null {
   const pathname = useShellPathname();
