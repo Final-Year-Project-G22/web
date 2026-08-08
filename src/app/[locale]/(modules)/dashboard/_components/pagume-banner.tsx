@@ -3,37 +3,13 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
+import { pagumeLength, toEthiopian } from "./pagume-calendar";
 
 /**
  * ጳጉሜን — the Ethiopian 13th month as a live year-end filing window
- * (locked §10.3, reference prototype-v7). No calendar library: a JDN
- * Gregorian→Ethiopian conversion (verified against Intl's ethiopic
- * calendar) plus Intl for localized month/date names.
+ * (locked §10.3, reference prototype-v7). Calendar math lives in
+ * pagume-calendar.ts (unit-tested); Intl provides localized month/date names.
  */
-function toEthiopian(date: Date): { year: number; month: number; day: number } {
-  const y = date.getFullYear();
-  const m = date.getMonth() + 1;
-  const d = date.getDate();
-
-  const a = Math.floor((14 - m) / 12);
-  const yy = y + 4800 - a;
-  const mm = m + 12 * a - 3;
-  const jdn =
-    d +
-    Math.floor((153 * mm + 2) / 5) +
-    365 * yy +
-    Math.floor(yy / 4) -
-    Math.floor(yy / 100) +
-    Math.floor(yy / 400) -
-    32045;
-
-  const r = (jdn - 1723856) % 1461;
-  const n = (r % 365) + 365 * Math.floor(r / 1460);
-  const year = 4 * Math.floor((jdn - 1723856) / 1461) + Math.floor(r / 365) - Math.floor(r / 1460);
-  const month = Math.floor(n / 30) + 1;
-  const day = (n % 30) + 1;
-  return { year, month, day };
-}
 
 export function PagumeBanner() {
   const t = useTranslations("dashboard");
@@ -47,7 +23,7 @@ export function PagumeBanner() {
   const info = useMemo(() => {
     if (!today) return null;
     const et = toEthiopian(today);
-    const pagumeLength = (et.year + 1) % 4 === 0 ? 6 : 5;
+    const pagumeLen = pagumeLength(et.year);
     const daysUntil = (13 - et.month) * 30 - (et.day - 1);
     const pagumeStart = new Date(today);
     pagumeStart.setDate(today.getDate() + daysUntil);
@@ -64,14 +40,14 @@ export function PagumeBanner() {
       numberingSystem: "latn",
     }).format(pagumeStart);
 
-    return { et, pagumeLength, monthName, startDate };
+    return { et, pagumeLen, monthName, startDate };
   }, [today, locale]);
 
   if (!info) return null;
 
-  const { et, pagumeLength, monthName, startDate } = info;
+  const { et, pagumeLen, monthName, startDate } = info;
   const inPagume = et.month === 13;
-  const daysLeft = inPagume ? pagumeLength - et.day : 0;
+  const daysLeft = inPagume ? pagumeLen - et.day : 0;
 
   return (
     <div
