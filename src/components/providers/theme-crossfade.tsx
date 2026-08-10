@@ -34,6 +34,15 @@ export function ThemeCrossfade() {
     return () => observer.disconnect();
   }, []);
 
+  // Safety net: if the enter animation is cancelled or lost (tab throttling,
+  // rapid toggling in the commit window), unmount the wash anyway so it can
+  // never strand at full opacity.
+  useEffect(() => {
+    if (!visible) return;
+    const safety = window.setTimeout(() => setVisible(false), 300);
+    return () => window.clearTimeout(safety);
+  }, [visible]);
+
   if (!visible) return null;
 
   return (
