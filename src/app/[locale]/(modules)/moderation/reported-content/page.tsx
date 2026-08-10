@@ -52,6 +52,7 @@ function ReportedContentContent() {
   const [page, setPage] = useState(initialPage);
   const [search, setSearch] = useState(initialSearch);
   const [pendingSkipId, setPendingSkipId] = useState<string | null>(null);
+  const [pendingReturnId, setPendingReturnId] = useState<string | null>(null);
 
   const pageSize = 20;
   const baseParams = { page, pageSize };
@@ -99,6 +100,18 @@ function ReportedContentContent() {
     );
   }
 
+  function returnToPending(item: ReportWithContentDTO) {
+    const id = item.report.id;
+    setPendingReturnId(id);
+    statusMutation.mutate(
+      { id, status: "pending" },
+      {
+        onSettled: () => setPendingReturnId((current) => (current === id ? null : current)),
+        onError: (error) => toast.error(getErrorMessage(error)),
+      }
+    );
+  }
+
   function rowProps(item: ReportWithContentDTO) {
     const r = item.report;
     const authorName =
@@ -123,6 +136,8 @@ function ReportedContentContent() {
       onDecide: () => decideOn(item),
       onSkip: () => skip(item),
       skipDisabled: pendingSkipId === item.report.id,
+      onReturnToPending: () => returnToPending(item),
+      returnDisabled: pendingReturnId === item.report.id,
     };
   }
 

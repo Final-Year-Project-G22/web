@@ -55,6 +55,17 @@ export function reportStatusLabelKey(status: string): string {
   return REPORT_STATUS_TRANSLATION_KEYS[status as ReportStatusKey] ?? "statusDismissed";
 }
 
+/**
+ * Which next action the triage dock shows for a row status. Decided rows show
+ * the verdict stamp; skipped (in-review) rows offer returning the report to
+ * pending — the undo for a mis-clicked skip; open rows offer skip.
+ */
+export function triageNextAction(status: string): "decided" | "skip" | "returnToPending" {
+  if (status === "resolved" || status === "dismissed") return "decided";
+  if (status === "under_review") return "returnToPending";
+  return "skip";
+}
+
 export function ReportStatusBadge({
   status,
   label,
