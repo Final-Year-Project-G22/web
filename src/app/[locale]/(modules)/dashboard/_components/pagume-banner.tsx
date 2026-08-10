@@ -88,7 +88,7 @@ export function PagumeBanner() {
         })}
       </span>
 
-      <span className="text-[11.5px] font-medium whitespace-nowrap text-muted">
+      <span className="text-[11.5px] font-medium whitespace-nowrap text-muted-foreground">
         {t("pagume.monthMeta", { month: et.month, name: monthName })}
       </span>
     </div>

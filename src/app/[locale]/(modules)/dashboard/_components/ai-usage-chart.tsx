@@ -22,7 +22,7 @@ export function AIUsageChart({ loading }: { loading?: boolean }) {
     <Card className="gap-0 py-0 shadow-card">
       <CardHeader className="flex flex-row items-center justify-between gap-3 border-b border-line px-5 py-3">
         <CardTitle>{t("stages.title")}</CardTitle>
-        <span className="font-mono text-[11.5px] whitespace-nowrap text-muted tabular-nums">
+        <span className="font-mono text-[11.5px] whitespace-nowrap text-muted-foreground tabular-nums">
           {t("stages.total")}: {total.toLocaleString("en-US")}
         </span>
       </CardHeader>
@@ -34,7 +34,7 @@ export function AIUsageChart({ loading }: { loading?: boolean }) {
             <div key={item.stage}>
               <div className="mb-1.5 flex items-baseline justify-between gap-3 text-xs">
                 <span className="truncate font-medium text-ink-2 capitalize">{item.stage}</span>
-                <span className="font-mono whitespace-nowrap text-muted tabular-nums">
+                <span className="font-mono whitespace-nowrap text-muted-foreground tabular-nums">
                   {item.count.toLocaleString("en-US")} · {item.percentage}%
                 </span>
               </div>

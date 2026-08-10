@@ -332,7 +332,9 @@ function SidebarContent({
             <p className="truncate font-display text-sm font-semibold tracking-[0.01em]">
               {APP_NAME}
             </p>
-            <p className="truncate text-[11px] font-medium text-muted">{t("brand.subtitle")}</p>
+            <p className="truncate text-[11px] font-medium text-muted-foreground">
+              {t("brand.subtitle")}
+            </p>
           </div>
         )}
       </div>
@@ -349,7 +351,7 @@ function SidebarContent({
                   className="h-[3px] w-[18px] flex-none rounded-sm"
                   style={{ background: WEAVE }}
                 />
-                <h4 className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
+                <h4 className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   {t(section.labelKey)}
                 </h4>
               </div>
@@ -389,7 +391,7 @@ function SidebarContent({
         <LanguageToggle compact={collapsed} />
         <div
           className={cn(
-            "flex items-center justify-between gap-2 text-xs text-muted",
+            "flex items-center justify-between gap-2 text-xs text-muted-foreground",
             collapsed && "justify-center"
           )}
         >

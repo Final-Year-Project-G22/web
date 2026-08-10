@@ -41,7 +41,7 @@ export function UserGrowthChart({ loading }: { loading?: boolean }) {
             </span>
           </div>
         </div>
-        <span className="text-[11.5px] text-muted">{t("growth.period")}</span>
+        <span className="text-[11.5px] text-muted-foreground">{t("growth.period")}</span>
       </CardHeader>
       <CardContent className="p-5">
         {chartData.length === 0 ? (

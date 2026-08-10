@@ -77,7 +77,7 @@ export function Header() {
           </SheetContent>
         </Sheet>
 
-        <div className="flex min-w-0 items-center gap-1.5 text-[13px] text-muted">
+        <div className="flex min-w-0 items-center gap-1.5 text-[13px] text-muted-foreground">
           <span className="flex-none">{t("modules")} /</span>
           {crumb && (
             <b className="truncate font-semibold text-ink" data-testid="header-crumb">
