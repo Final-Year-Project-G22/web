@@ -202,10 +202,13 @@ export function UploadDialog() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full"
+                className="w-full overflow-hidden"
+                title={file ? file.name : undefined}
                 onClick={() => fileInputRef.current?.click()}
               >
-                {file ? file.name : t("chooseFile")}
+                <span className="block w-full truncate text-left">
+                  {file ? file.name : t("chooseFile")}
+                </span>
               </Button>
             </div>
           </div>

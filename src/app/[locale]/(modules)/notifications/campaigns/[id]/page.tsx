@@ -641,7 +641,7 @@ export default function CampaignDetailPage() {
 
   if (campaignQuery.isLoading) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-10">
+      <div className="mx-auto max-w-7xl px-4 py-10">
         <p className="text-sm text-muted-foreground">Loading campaign…</p>
       </div>
     );
@@ -649,14 +649,14 @@ export default function CampaignDetailPage() {
 
   if (campaignQuery.isError || !campaign) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-10">
+      <div className="mx-auto max-w-7xl px-4 py-10">
         <p className="text-sm text-destructive">{getErrorMessage(campaignQuery.error)}</p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 space-y-8">
+    <div className="mx-auto max-w-7xl px-4 py-10 space-y-8">
       {/* HEADER */}
       <div className="flex items-start justify-between gap-4">
         <div>

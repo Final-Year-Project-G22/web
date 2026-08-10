@@ -91,7 +91,7 @@ export default function LibraryCategoryEditPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       <Card>
         <CardHeader className="border-b">
           <CardTitle>Edit Category</CardTitle>

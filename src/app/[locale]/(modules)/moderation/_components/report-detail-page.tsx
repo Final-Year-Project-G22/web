@@ -256,7 +256,7 @@ export function ReportDetailPage({
   const statusLabel = report ? t(reportStatusLabelKey(report.status)) : "";
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       <Button variant="ghost" size="sm" onClick={() => router.back()}>
         <ArrowLeft className="size-4" />
         {t("back")}

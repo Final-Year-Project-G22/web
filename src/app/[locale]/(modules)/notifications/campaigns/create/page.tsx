@@ -108,7 +108,7 @@ export default function CreateCampaignPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 space-y-10">
+    <div className="mx-auto max-w-7xl px-4 py-12 space-y-10">
       {/* Stepper */}
       <div className="flex justify-between items-center">
         {steps.map((s, i) => (
