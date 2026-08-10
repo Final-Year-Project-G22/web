@@ -78,6 +78,7 @@ function writeStoredCollapsed(value: boolean) {
 function DarkModeSwitch() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const t = useTranslations("sidebar");
 
   useEffect(() => setMounted(true), []);
 
@@ -88,7 +89,7 @@ function DarkModeSwitch() {
       type="button"
       role="switch"
       aria-checked={isDark}
-      aria-label="Toggle dark mode"
+      aria-label={t("footer.darkModeToggle")}
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={cn(
         "relative inline-flex h-6 w-10 flex-none items-center rounded-full transition-colors duration-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",

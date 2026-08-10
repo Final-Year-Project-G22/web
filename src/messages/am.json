@@ -31,6 +31,7 @@
     },
     "footer": {
       "darkMode": "ጨለማ ሁነታ",
+      "darkModeToggle": "ጨለማ ሁነታን ቀይር",
       "language": "ቋንቋ",
       "collapse": "የጎን አሞሌን ዝጋ",
       "expand": "የጎን አሞሌን ክፈት"
@@ -124,7 +125,16 @@
         "required": "የግድ",
         "optional": "አማራጭ",
         "checklistTitle": "የማረጋገጫ ክፍል ርዕስ ({lang})",
-        "save": "አስቀምጥ"
+        "save": "አስቀምጥ",
+        "stepCreated": "እርምጃ ተፈጥሯል",
+        "stepSaved": "እርምጃ ተቀምጧል",
+        "stepDeleted": "እርምጃ ተሰርዟል",
+        "orderSaved": "ቅደም ተከተል ተቀምጧል",
+        "saveFailed": "ማስቀመጥ አልተሳካም፦ {error}",
+        "deleteFailed": "መሰረዝ አልተሳካም፦ {error}",
+        "saveOrderFailed": "ቅደም ተከተልን ማስቀመጥ አልተሳካም፦ {error}",
+        "untitled": "ርዕስ የለም",
+        "untitledStep": "ርዕስ የሌለው እርምጃ"
       }
     },
     "ai": {
