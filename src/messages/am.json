@@ -130,9 +130,9 @@
         "stepSaved": "እርምጃ ተቀምጧል",
         "stepDeleted": "እርምጃ ተሰርዟል",
         "orderSaved": "ቅደም ተከተል ተቀምጧል",
-        "saveFailed": "ማስቀመጥ አልተሳካም፦ {error}",
-        "deleteFailed": "መሰረዝ አልተሳካም፦ {error}",
-        "saveOrderFailed": "ቅደም ተከተልን ማስቀመጥ አልተሳካም፦ {error}",
+        "saveFailed": "ማስቀመጥ አልተሳካም፡- {error}",
+        "deleteFailed": "መሰረዝ አልተሳካም፡- {error}",
+        "saveOrderFailed": "ቅደም ተከተልን ማስቀመጥ አልተሳካም፡- {error}",
         "untitled": "ርዕስ የለም",
         "untitledStep": "ርዕስ የሌለው እርምጃ"
       }
