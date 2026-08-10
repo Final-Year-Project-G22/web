@@ -45,7 +45,7 @@ interface TriageRowProps {
   onSkip: () => void;
   skipDisabled?: boolean;
   /** Reverse of skip — returns an in-review report to pending. Shown instead of Skip on in-review rows. */
-  onReturnToPending?: () => void;
+  onReturnToPending: () => void;
   returnDisabled?: boolean;
 }
 
