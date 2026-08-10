@@ -31,6 +31,7 @@
     },
     "footer": {
       "darkMode": "Dark Mode",
+      "darkModeToggle": "Toggle dark mode",
       "language": "Language",
       "collapse": "Collapse rail",
       "expand": "Expand rail"
@@ -124,7 +125,16 @@
         "required": "Required",
         "optional": "Optional",
         "checklistTitle": "Checklist Section Title ({lang})",
-        "save": "Save"
+        "save": "Save",
+        "stepCreated": "Step created",
+        "stepSaved": "Step saved",
+        "stepDeleted": "Step deleted",
+        "orderSaved": "Order saved",
+        "saveFailed": "Failed to save: {error}",
+        "deleteFailed": "Failed to delete: {error}",
+        "saveOrderFailed": "Failed to save order: {error}",
+        "untitled": "Untitled",
+        "untitledStep": "Untitled Step"
       }
     },
     "ai": {

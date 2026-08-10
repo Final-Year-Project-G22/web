@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { EditGuideHeader } from "@/app/[locale]/(modules)/guide/_components/edit-guide-header";
@@ -152,6 +153,7 @@ function EditGuideContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const language = useAdminLanguageStore((s) => s.language);
+  const t = useTranslations("surfaces.guide.editor");
 
   const guideQuery = useAdminGuideDetail(id, { locale: language });
   const stepsQuery = useAdminGuideSteps(id, { locale: language, pageSize: 100 });
@@ -221,7 +223,7 @@ function EditGuideContent() {
   }, [stepParam, setActiveStepId]);
 
   const guideName =
-    guideQuery.data?.translations?.find((t) => t.language === language)?.name ?? "Untitled";
+    guideQuery.data?.translations?.find((tr) => tr.language === language)?.name ?? t("untitled");
 
   // ─── Handlers ─────────────────────────────────────────────
 
@@ -252,7 +254,7 @@ function EditGuideContent() {
           activeStepId: result.id,
         }));
         navigateToStep(result.id);
-        toast.success("Step created");
+        toast.success(t("stepCreated"));
       } else {
         const payload = buildUpdatePayload(step);
         await updateStepMutation.mutateAsync({
@@ -260,10 +262,10 @@ function EditGuideContent() {
           guideId: id,
           patch: payload,
         });
-        toast.success("Step saved");
+        toast.success(t("stepSaved"));
       }
     } catch (err) {
-      toast.error(`Failed to save: ${getErrorMessage(err)}`);
+      toast.error(t("saveFailed", { error: getErrorMessage(err) }));
     }
   }
 
@@ -293,9 +295,9 @@ function EditGuideContent() {
           navigateToStep(remaining[0].clientId);
         }
       }
-      toast.success("Step deleted");
+      toast.success(t("stepDeleted"));
     } catch (err) {
-      toast.error(`Failed to delete: ${getErrorMessage(err)}`);
+      toast.error(t("deleteFailed", { error: getErrorMessage(err) }));
     }
   }
 
@@ -310,9 +312,9 @@ function EditGuideContent() {
         stepIds: orderedIds,
       });
       editGuideStore.getState().setHasPendingReorder(false);
-      toast.success("Order saved");
+      toast.success(t("orderSaved"));
     } catch (err) {
-      toast.error(`Failed to save order: ${getErrorMessage(err)}`);
+      toast.error(t("saveOrderFailed", { error: getErrorMessage(err) }));
     }
   }
 
@@ -321,17 +323,17 @@ function EditGuideContent() {
   const previewStep = useMemo(() => {
     const step = allSteps.find((s) => s.clientId === activeStepId) ?? null;
     if (!step) return null;
-    const translation = step.translations?.find((t) => t.language === language);
+    const translation = step.translations?.find((tr) => tr.language === language);
     return {
       sortOrder: step.sortOrder,
-      title: translation?.title ?? "Untitled Step",
+      title: translation?.title ?? t("untitledStep"),
       summary: step.ui.summary,
       proTip: step.ui.proTip,
       checklistTitle: step.ui.checklistTitle,
       checklist: step.ui.checklist,
       imageUrl: step.ui.imageUrl,
     };
-  }, [allSteps, activeStepId, language]);
+  }, [allSteps, activeStepId, language, t]);
 
   // ─── Loading / Error ──────────────────────────────────────
 
