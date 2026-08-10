@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono, Noto_Sans_Ethiopic, Sora } from "next/font/googl
 import "./globals.css";
 import { Toaster } from "sonner";
 import { AuthHydrator } from "@/components/auth/auth-hydrator";
+import { MotionProvider } from "@/components/providers/motion-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
@@ -51,17 +52,19 @@ export default function RootLayout({
         className={`${inter.variable} ${sora.variable} ${jetbrainsMono.variable} ${notoSansEthiopic.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <QueryProvider>
-            <AuthHydrator>{children}</AuthHydrator>
-            <Toaster position="bottom-right" />
-          </QueryProvider>
-        </ThemeProvider>
+        <MotionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <QueryProvider>
+              <AuthHydrator>{children}</AuthHydrator>
+              <Toaster position="bottom-right" />
+            </QueryProvider>
+          </ThemeProvider>
+        </MotionProvider>
       </body>
     </html>
   );
