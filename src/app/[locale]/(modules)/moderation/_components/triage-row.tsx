@@ -5,7 +5,12 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ReportStatusBadge, reasonVariant, reportStatusLabelKey } from "./report-status";
+import {
+  ReportStatusBadge,
+  reasonVariant,
+  reportStatusLabelKey,
+  triageNextAction,
+} from "./report-status";
 
 /** Relative time ("2h ago" / "ከ2 ሰዓት በፊት") — the triage urgency cue. */
 function timeAgo(iso: string, locale: string): string {
@@ -39,6 +44,9 @@ interface TriageRowProps {
   onDecide: () => void;
   onSkip: () => void;
   skipDisabled?: boolean;
+  /** Reverse of skip — returns an in-review report to pending. Shown instead of Skip on in-review rows. */
+  onReturnToPending?: () => void;
+  returnDisabled?: boolean;
 }
 
 /**
@@ -57,6 +65,8 @@ export function TriageRow({
   onDecide,
   onSkip,
   skipDisabled,
+  onReturnToPending,
+  returnDisabled,
 }: TriageRowProps) {
   const t = useTranslations("moderation");
   const locale = useLocale();
@@ -64,7 +74,7 @@ export function TriageRow({
   const statusLabel = t(reportStatusLabelKey(status));
 
   // decided rows have no next action — the stamp on the right is the verdict
-  const isDecided = status === "resolved" || status === "dismissed";
+  const nextAction = triageNextAction(status);
 
   return (
     <div
@@ -73,22 +83,34 @@ export function TriageRow({
     >
       {/* left dock — the next action, always visible on open rows */}
       <div className="flex items-center justify-center gap-1.5 border-b border-border bg-panel-2/50 p-2 sm:flex-col sm:border-b-0 sm:border-r">
-        {isDecided ? (
+        {nextAction === "decided" ? (
           <Check className="size-4 text-muted-foreground/40" aria-hidden="true" />
         ) : (
           <>
             <Button size="xs" variant="default" className="flex-1 sm:w-full" onClick={onDecide}>
               {t("decide")}
             </Button>
-            <Button
-              size="xs"
-              variant="ghost"
-              className="flex-1 sm:w-full"
-              onClick={onSkip}
-              disabled={skipDisabled}
-            >
-              {t("skip")}
-            </Button>
+            {nextAction === "returnToPending" ? (
+              <Button
+                size="xs"
+                variant="ghost"
+                className="flex-1 sm:w-full"
+                onClick={onReturnToPending}
+                disabled={returnDisabled}
+              >
+                {t("returnToPending")}
+              </Button>
+            ) : (
+              <Button
+                size="xs"
+                variant="ghost"
+                className="flex-1 sm:w-full"
+                onClick={onSkip}
+                disabled={skipDisabled}
+              >
+                {t("skip")}
+              </Button>
+            )}
           </>
         )}
       </div>

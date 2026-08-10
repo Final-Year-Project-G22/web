@@ -308,6 +308,7 @@
     "reportQueue": "የሪፖርት ወረፋ",
     "decide": "ውሳኔ",
     "skip": "ዝለል",
+    "returnToPending": "ወደ በመጠባበቅ ላይ መልስ",
     "byAuthor": "በ {author}",
     "reportedBy": "ሪፖርት ያደረገው {reporter}",
     "noReports": "በወረፋ ውስጥ ሪፖርቶች የሉም",

@@ -308,6 +308,7 @@
     "reportQueue": "Report queue",
     "decide": "Decide",
     "skip": "Skip",
+    "returnToPending": "Back to Pending",
     "byAuthor": "by {author}",
     "reportedBy": "reported by {reporter}",
     "noReports": "No reports in queue",

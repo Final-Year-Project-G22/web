@@ -4,10 +4,12 @@ import { AlertTriangle, ArrowLeft, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { use } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { InlineError } from "@/components/ui/inline-error";
 import { CardSkeleton } from "@/components/ui/skeleton";
+import { getErrorMessage } from "@/lib/utils";
 import {
   useAdminDeleteReportedPost,
   useAdminGetPostReport,
@@ -235,6 +237,15 @@ export function ReportDetailPage({
     }
   }
 
+  async function handleReturnToPending() {
+    try {
+      await updateStatus.mutateAsync({ id, status: "pending" });
+      reportQuery.refetch();
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  }
+
   const errorMessage =
     updateStatus.error?.detail ||
     updateStatus.error?.title ||
@@ -319,6 +330,16 @@ export function ReportDetailPage({
                     >
                       {t("dismissReport")}
                     </Button>
+                    {report?.status === "under_review" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={isLoading}
+                        onClick={handleReturnToPending}
+                      >
+                        {t("returnToPending")}
+                      </Button>
+                    )}
                     <Button
                       variant="default"
                       size="sm"

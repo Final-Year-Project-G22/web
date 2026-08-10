@@ -5,6 +5,7 @@ import {
   REPORT_STATUS_STAMP_VARIANTS,
   REPORT_STATUS_TRANSLATION_KEYS,
   reportStatusLabelKey,
+  triageNextAction,
 } from "./report-status";
 
 describe("report status grammar (single source of truth)", () => {
@@ -29,5 +30,13 @@ describe("report status grammar (single source of truth)", () => {
   it("keeps decided statuses on stamps and open statuses on pills", () => {
     expect(REPORT_STATUS_STAMP_VARIANTS).toEqual({ resolved: "good", dismissed: "bad" });
     expect(REPORT_STATUS_PILL_VARIANTS).toEqual({ pending: "warning", under_review: "info" });
+  });
+
+  it("offers skip on pending, return-to-pending on in-review, verdicts on decided", () => {
+    expect(triageNextAction("pending")).toBe("skip");
+    expect(triageNextAction("under_review")).toBe("returnToPending");
+    expect(triageNextAction("resolved")).toBe("decided");
+    expect(triageNextAction("dismissed")).toBe("decided");
+    expect(triageNextAction("mystery-status")).toBe("skip");
   });
 });
