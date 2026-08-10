@@ -98,7 +98,7 @@ export function StatCard({
         ) : trend !== undefined ? (
           <TrendPill value={trend} />
         ) : subtitle ? (
-          <span className="rounded-full border border-line bg-panel-2 px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-muted">
+          <span className="rounded-full border border-line bg-panel-2 px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-muted-foreground">
             {subtitle}
           </span>
         ) : null}
@@ -111,13 +111,13 @@ export function StatCard({
         </div>
       ) : (
         <>
-          <p className="mt-4 text-[10.5px] font-semibold tracking-[0.09em] uppercase text-muted">
+          <p className="mt-4 text-[10.5px] font-semibold tracking-[0.09em] uppercase text-muted-foreground">
             {title}
           </p>
           <p className="mt-0.5 font-display text-[25px] leading-tight font-semibold tracking-tight tabular-nums">
             {value}
           </p>
-          {sub ? <p className="mt-0.5 text-[11.5px] text-muted">{sub}</p> : null}
+          {sub ? <p className="mt-0.5 text-[11.5px] text-muted-foreground">{sub}</p> : null}
         </>
       )}
     </div>

@@ -24,7 +24,9 @@ export function SystemHealth() {
     <Card className="gap-0 py-0 shadow-card">
       <CardHeader className="flex flex-row items-center justify-between gap-3 border-b border-line px-5 py-3">
         <CardTitle>{t("health.title")}</CardTitle>
-        <span className="text-[11.5px] whitespace-nowrap text-muted">{t("health.uptime")}</span>
+        <span className="text-[11.5px] whitespace-nowrap text-muted-foreground">
+          {t("health.uptime")}
+        </span>
       </CardHeader>
       <CardContent className="p-0">
         {items.length === 0 ? (
@@ -45,7 +47,7 @@ export function SystemHealth() {
                   <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
                     {item.label}
                   </span>
-                  <span className="font-mono text-[11.5px] whitespace-nowrap text-muted tabular-nums">
+                  <span className="font-mono text-[11.5px] whitespace-nowrap text-muted-foreground tabular-nums">
                     {item.value}
                   </span>
                   <Badge variant={meta.badge} className="gap-1">
