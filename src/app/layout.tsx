@@ -52,6 +52,7 @@ export default function RootLayout({
         className={`${inter.variable} ${sora.variable} ${jetbrainsMono.variable} ${notoSansEthiopic.variable} antialiased`}
         suppressHydrationWarning
       >
+        {/* MotionProvider is theme-independent (context-only), so it safely wraps ThemeProvider; theme-dependent providers must stay inside ThemeProvider. */}
         <MotionProvider>
           <ThemeProvider
             attribute="class"
