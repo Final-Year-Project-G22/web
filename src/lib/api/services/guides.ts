@@ -16,6 +16,8 @@ import type {
   GetPersonalizedGuideResponseBody,
   GetRecentlyViewedParams,
   GetRecentlyViewedResponseBody,
+  ListAllGuidesParams,
+  ListAllGuidesResponseBody,
   ListBookmarksParams,
   ListBookmarksResponseBody,
   ListGuidesParams,
@@ -111,6 +113,56 @@ export const getListGuidesUrl = (params?: ListGuidesParams,) => {
 export const listGuides = async (params?: ListGuidesParams, options?: RequestInit): Promise<listGuidesResponse> => {
   
   return customFetch<listGuidesResponse>(getListGuidesUrl(params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+  
+
+/**
+ * Lists all available guides without user-based taxonomy filtering.
+ * @summary List all guides
+ */
+export type listAllGuidesResponse200 = {
+  data: ListAllGuidesResponseBody
+  status: 200
+}
+
+export type listAllGuidesResponseDefault = {
+  data: ErrorModel
+  status: Exclude<HTTPStatusCodes, 200>
+}
+
+export type listAllGuidesResponseSuccess = (listAllGuidesResponse200) & {
+  headers: Headers;
+};
+export type listAllGuidesResponseError = (listAllGuidesResponseDefault) & {
+  headers: Headers;
+};
+
+export type listAllGuidesResponse = (listAllGuidesResponseSuccess | listAllGuidesResponseError)
+
+export const getListAllGuidesUrl = (params?: ListAllGuidesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/guides/all?${stringifiedParams}` : `/api/v1/guides/all`
+}
+
+export const listAllGuides = async (params?: ListAllGuidesParams, options?: RequestInit): Promise<listAllGuidesResponse> => {
+  
+  return customFetch<listAllGuidesResponse>(getListAllGuidesUrl(params),
   {      
     ...options,
     method: 'GET'

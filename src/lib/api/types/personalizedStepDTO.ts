@@ -5,10 +5,13 @@
  * Backend API for the Adisu platform
  * OpenAPI spec version: 1.0.0
  */
+import type { PersonalizedStepDTODetailedContent } from './personalizedStepDTODetailedContent';
 
 export interface PersonalizedStepDTO {
   /** Localized description */
   description?: string;
+  /** Rich step content (checklists, documents, pro tips) */
+  detailedContent?: PersonalizedStepDTODetailedContent;
   /** Estimated time in minutes */
   estimatedTime?: number;
   /** Step ID */

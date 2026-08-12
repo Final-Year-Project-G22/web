@@ -9,7 +9,8 @@
     "prepare": "husky",
     "generate:api": "orval",
     "check:design": "node scripts/check-design-contract.js",
-    "test": "vitest"
+    "test": "vitest",
+    "sync:api": "cp ../backend/core-backend/docs/openapi.json src/openapi/openapi.json && pnpm generate:api"
   },
   "lint-staged": {
     "*.{js,ts,d.ts,tsx,json}": [

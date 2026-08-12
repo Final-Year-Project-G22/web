@@ -39,3 +39,13 @@
 4. `npx biome check`
 
 Commits are conventional (`type(scope): summary` — e.g. `feat(shell): …`). PRs target `dev` and close their ticket.
+
+## API contract (NON-NEGOTIABLE)
+
+The backend owns the OpenAPI spec (`backend/core-backend/docs/openapi.json`, huma-generated). This repo consumes it:
+
+- The spec copy lives at **`src/openapi/openapi.json`** — never edit it by hand, never invent API types.
+- **`pnpm sync:api`** copies the fresh spec from the backend and runs orval typegen (`src/lib/api/services`, `src/lib/api/types`).
+- After ANY backend API-shape change: run `pnpm sync:api` and commit the regenerated types **in the same change** as the consuming code.
+- **Never hand-write** types in `src/lib/api/` that the spec defines — regenerate them. Hand-written types are only for shapes that are not API-transported.
+- If a spec/type mismatch appears, the backend side is stale: `cd ../backend && make spec`, then `pnpm sync:api` here.
