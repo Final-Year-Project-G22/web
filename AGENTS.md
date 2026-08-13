@@ -49,3 +49,21 @@ The backend owns the OpenAPI spec (`backend/core-backend/docs/openapi.json`, hum
 - After ANY backend API-shape change: run `pnpm sync:api` and commit the regenerated types **in the same change** as the consuming code.
 - **Never hand-write** types in `src/lib/api/` that the spec defines — regenerate them. Hand-written types are only for shapes that are not API-transported.
 - If a spec/type mismatch appears, the backend side is stale: `cd ../backend && make spec`, then `pnpm sync:api` here.
+
+## Mandatory Ticket Branch/PR Gate
+
+For every implementation requested from a GitHub issue or Linear ticket:
+
+1. Before editing, fetch the latest `origin/dev` and create a feature branch from it: `git fetch origin dev && git switch -c <type>/<short-name> origin/dev`.
+2. Never implement or commit ticket work directly on `dev` or `main`. If the current branch is `dev` or `main`, stop and create the feature branch first.
+3. After verification, push the feature branch with `git push -u origin <branch>`.
+4. Create a GitHub PR with `gh pr create --base dev --head <branch>` and include the issue reference in the PR body.
+5. Do not resolve or close the source ticket until the PR exists, then record the PR URL on the source ticket.
+
+## Linear access
+
+Design decisions live in Linear (team *Final Year Project G22*, key `FIN`). Read them before implementing:
+
+- Auth: `LINEAR_TOKEN` in the project root `.env` (personal API key from https://linear.app/settings/api).
+- Helper: `../scripts/linear.sh` (from repo root). `view <identifier-or-id>` shows a ticket's description, relations, and comments (resolutions are usually in comments).
+- A GitHub issue ported from Linear should name its source ticket (e.g. FIN-75); check that ticket's resolution for design decisions before coding.
