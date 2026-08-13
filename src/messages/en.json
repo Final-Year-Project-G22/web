@@ -232,6 +232,9 @@
         "noAnswer": "No answer yet.",
         "call": "CALL",
         "result": "RESULT",
+        "skipped": "SKIPPED",
+        "suppressedReason": "Reason: {reason}",
+        "matchedQuery": "Matched query: {query}",
         "noPermission": "You do not have permission to access the debug panel."
       }
     }

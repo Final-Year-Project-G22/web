@@ -8,11 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { CitationDTO } from "@/lib/api/types";
 import { useAdminLanguageStore } from "@/stores/admin-language.store";
-import type { ThinkingChunk, ToolUseEvent } from "../../_services/ask.hook";
+import type { ThinkingChunk, ToolSuppressedEvent, ToolUseEvent } from "../../_services/ask.hook";
 import { useAskAIStream } from "../../_services/ask.hook";
 
 type DebugEntry = {
-  type: "thinking" | "tool_use" | "tool_result" | "chunk" | "citations" | "error";
+  type:
+    | "thinking"
+    | "tool_use"
+    | "tool_result"
+    | "tool_suppressed"
+    | "chunk"
+    | "citations"
+    | "error";
   timestamp: number;
   data: unknown;
 };
@@ -28,6 +35,7 @@ export function DebugPanel() {
   const [citations, setCitations] = useState<CitationDTO[] | null>(null);
   const [thinkingChunks, setThinkingChunks] = useState<ThinkingChunk[]>([]);
   const [toolUses, setToolUses] = useState<ToolUseEvent[]>([]);
+  const [toolSuppressed, setToolSuppressed] = useState<ToolSuppressedEvent[]>([]);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     thinking: true,
     tools: true,
@@ -55,6 +63,7 @@ export function DebugPanel() {
     setCitations(null);
     setThinkingChunks([]);
     setToolUses([]);
+    setToolSuppressed([]);
     setEntries([]);
 
     void start(
@@ -76,6 +85,10 @@ export function DebugPanel() {
         },
         onToolResult: (toolResult) => {
           addEntry({ type: "tool_result", timestamp: Date.now(), data: toolResult });
+        },
+        onToolSuppressed: (suppressed) => {
+          setToolSuppressed((prev) => [...prev, suppressed]);
+          addEntry({ type: "tool_suppressed", timestamp: Date.now(), data: suppressed });
         },
         onChunk: (text) => {
           setAnswer((prev) => prev + text);
@@ -188,18 +201,27 @@ export function DebugPanel() {
                 <Wrench className="h-4 w-4 text-muted-foreground" />
                 <h2 className="text-sm font-semibold text-ink">{t("toolCalls")}</h2>
                 <span className="text-xs font-normal text-muted-foreground">
-                  {t("calls", { count: toolUses.length })}
+                  {t("calls", { count: toolUses.length + toolSuppressed.length })}
                 </span>
               </button>
             </header>
             {expandedSections.tools && (
               <div className="px-4 pb-3 pt-3">
-                {entries.filter((e) => e.type === "tool_use" || e.type === "tool_result").length ===
-                  0 &&
+                {entries.filter(
+                  (e) =>
+                    e.type === "tool_use" ||
+                    e.type === "tool_result" ||
+                    e.type === "tool_suppressed"
+                ).length === 0 &&
                   !isStreaming && <p className="text-xs text-muted-foreground">{t("noTools")}</p>}
                 <div className="max-h-80 space-y-2 overflow-y-auto">
                   {entries
-                    .filter((e) => e.type === "tool_use" || e.type === "tool_result")
+                    .filter(
+                      (e) =>
+                        e.type === "tool_use" ||
+                        e.type === "tool_result" ||
+                        e.type === "tool_suppressed"
+                    )
                     .map((entry) => {
                       if (entry.type === "tool_use") {
                         const tu = entry.data as ToolUseEvent;
@@ -240,6 +262,32 @@ export function DebugPanel() {
                             {tr.resultSummary && (
                               <p className="mt-1 text-xs text-muted-foreground">
                                 {tr.resultSummary}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      }
+                      if (entry.type === "tool_suppressed") {
+                        const ts = entry.data as ToolSuppressedEvent;
+                        return (
+                          <div
+                            key={`${entry.timestamp}-${entry.type}`}
+                            className="ml-4 rounded-md border border-line bg-panel-2 p-2"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] font-semibold text-warning-strong">
+                                {t("skipped")}
+                              </span>
+                              <span className="text-xs font-semibold text-ink">{ts.tool}</span>
+                            </div>
+                            {ts.reason && (
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {t("suppressedReason", { reason: ts.reason })}
+                              </p>
+                            )}
+                            {ts.matchedQuery && (
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {t("matchedQuery", { query: ts.matchedQuery })}
                               </p>
                             )}
                           </div>
@@ -309,9 +357,11 @@ export function DebugPanel() {
                           ? "text-info-strong"
                           : entry.type === "tool_result"
                             ? "text-success-strong"
-                            : entry.type === "thinking"
-                              ? "italic text-muted-foreground"
-                              : "text-ink"
+                            : entry.type === "tool_suppressed"
+                              ? "text-warning-strong"
+                              : entry.type === "thinking"
+                                ? "italic text-muted-foreground"
+                                : "text-ink"
                     }
                   >
                     {entry.type}
