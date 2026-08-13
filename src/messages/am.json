@@ -232,6 +232,9 @@
         "noAnswer": "እስካሁን ምንም መልስ የለም።",
         "call": "ጥሪ",
         "result": "ውጤት",
+        "skipped": "ተዘሏል",
+        "suppressedReason": "ምክንያት: {reason}",
+        "matchedQuery": "የተዛመደ ጥያቄ: {query}",
         "noPermission": "የማረሚያ ፓነሉን ለመድረስ ፈቃድ የለዎትም።"
       }
     }

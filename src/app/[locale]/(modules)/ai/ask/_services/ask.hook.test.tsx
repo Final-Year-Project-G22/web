@@ -162,6 +162,53 @@ describe("useAskAIStream", () => {
     expect(donePayload.thinkingChunks[1].text).toBe("Searching knowledge base...");
   });
 
+  it("streams suppressed tool events in debug mode", async () => {
+    useAuthStore.setState({ token: "test-token" });
+
+    const full =
+      sseEvent("tool_suppressed", {
+        tool: "search_knowledge_base",
+        reason: "duplicate_of_prior_search",
+        matchedQuery: "Ethiopian government business registration process",
+      }) +
+      sseEvent("chunk", { text: "Grounded answer" }) +
+      sseEvent("done", {
+        model: "test-model",
+        latencyMs: 42,
+        usage: { promptTokens: 5, completionTokens: 10, totalTokens: 15 },
+        sessionId: "s3",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+      });
+
+    mockFetchStream([full]);
+
+    const onToolSuppressed = vi.fn();
+    const onDone = vi.fn();
+
+    const { result } = renderHook(() => useAskAIStream(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      await result.current.start(
+        { query: "hello", strategy: "agentic", debugMode: true },
+        { onToolSuppressed, onDone }
+      );
+    });
+
+    expect(onToolSuppressed).toHaveBeenCalledTimes(1);
+    expect(onToolSuppressed).toHaveBeenCalledWith({
+      tool: "search_knowledge_base",
+      reason: "duplicate_of_prior_search",
+      matchedQuery: "Ethiopian government business registration process",
+    });
+
+    const donePayload = onDone.mock.calls[0][0];
+    expect(donePayload.toolSuppressed).toHaveLength(1);
+    expect(donePayload.toolSuppressed[0].reason).toBe("duplicate_of_prior_search");
+  });
+
   it("handles error events", async () => {
     useAuthStore.setState({ token: "test-token" });
 

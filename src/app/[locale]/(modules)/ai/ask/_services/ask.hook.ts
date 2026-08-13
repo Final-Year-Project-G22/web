@@ -209,10 +209,17 @@ export type ThinkingChunk = {
   timestamp: number;
 };
 
+export type ToolSuppressedEvent = {
+  tool: string;
+  reason: string;
+  matchedQuery: string;
+};
+
 export type AskStreamState = {
   answer: string;
   citations: CitationDTO[] | null;
   toolUses: ToolUseEvent[];
+  toolSuppressed: ToolSuppressedEvent[];
   thinkingChunks: ThinkingChunk[];
 };
 
@@ -221,6 +228,7 @@ type AskStreamHandlers = {
   onCitations?: (citations: CitationDTO[]) => void;
   onToolUse?: (toolUse: ToolUseEvent) => void;
   onToolResult?: (toolResult: ToolResultEvent) => void;
+  onToolSuppressed?: (toolSuppressed: ToolSuppressedEvent) => void;
   onThinking?: (thinking: AskStreamThinkingEventBody, state: AskStreamState) => void;
   onDone?: (payload: AskStreamDoneEventBody & AskStreamState) => void;
   onError?: (error: AskStreamErrorEventBody) => void;
@@ -254,6 +262,7 @@ export function useAskAIStream() {
     let answer = "";
     let citations: CitationDTO[] | null = null;
     const toolUses: ToolUseEvent[] = [];
+    const toolSuppressed: ToolSuppressedEvent[] = [];
     const thinkingChunks: ThinkingChunk[] = [];
     let completed = false;
     let receivedEvent = false;
@@ -314,7 +323,13 @@ export function useAskAIStream() {
               const parsed = JSON.parse(event.data) as AskStreamChunkEventBody;
               if (parsed?.text) {
                 answer += parsed.text;
-                handlers.onChunk?.(parsed.text, { answer, citations, toolUses, thinkingChunks });
+                handlers.onChunk?.(parsed.text, {
+                  answer,
+                  citations,
+                  toolUses,
+                  toolSuppressed,
+                  thinkingChunks,
+                });
               }
             } else if (event.event === "citations") {
               const parsed = JSON.parse(event.data) as AskStreamCitationEventBody;
@@ -327,16 +342,33 @@ export function useAskAIStream() {
             } else if (event.event === "tool_result") {
               const parsed = JSON.parse(event.data) as ToolResultEvent;
               handlers.onToolResult?.(parsed);
+            } else if (event.event === "tool_suppressed") {
+              const parsed = JSON.parse(event.data) as ToolSuppressedEvent;
+              toolSuppressed.push(parsed);
+              handlers.onToolSuppressed?.(parsed);
             } else if (event.event === "thinking") {
               const parsed = JSON.parse(event.data) as AskStreamThinkingEventBody;
               if (parsed?.text) {
                 thinkingChunks.push({ text: parsed.text, timestamp: Date.now() });
-                handlers.onThinking?.(parsed, { answer, citations, toolUses, thinkingChunks });
+                handlers.onThinking?.(parsed, {
+                  answer,
+                  citations,
+                  toolUses,
+                  toolSuppressed,
+                  thinkingChunks,
+                });
               }
             } else if (event.event === "done") {
               const parsed = JSON.parse(event.data) as AskStreamDoneEventBody;
               completed = true;
-              handlers.onDone?.({ ...parsed, answer, citations, toolUses, thinkingChunks });
+              handlers.onDone?.({
+                ...parsed,
+                answer,
+                citations,
+                toolUses,
+                toolSuppressed,
+                thinkingChunks,
+              });
 
               queryClient.invalidateQueries({
                 queryKey: QUERY_KEYS.conversationsList,
