@@ -187,29 +187,11 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .fchip:hover{color:var(--ink);border-color:var(--line-2)}
 .fchip.on{background:var(--navy);border-color:var(--navy);color:#fff}
 [data-theme="dark"] .fchip.on{color:#0F172A}
-.fchip.danger.on{background:var(--destructive);border-color:var(--destructive);color:var(--canvas)}
 
 /* live dot */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 .live-dot{width:7px;height:7px;border-radius:50%;background:var(--success);flex:0 0 7px;animation:pulse 1.4s infinite}
 .runs-list .run.live-active{border-color:var(--success);background:var(--success-tint)}
-
-/* run actions (tag / delete) */
-.run .actrow{display:flex;align-items:center;gap:4px;margin-top:6px;opacity:0;transition:opacity var(--dur-fast)}
-.run:hover .actrow{opacity:1}
-.run .actrow .abtn{
-  display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;color:var(--ink-2);
-  background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:2px 7px;cursor:pointer;
-}
-.run .actrow .abtn:hover{color:var(--ink);border-color:var(--line-2)}
-.run .actrow .abtn.del:hover{color:var(--destructive-strong);border-color:var(--destructive);background:var(--destructive-tint)}
-.run .tagchips{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
-.tagchip{
-  font-size:10px;font-weight:600;background:var(--navy-tint);color:var(--navy-strong);
-  border-radius:4px;padding:1px 6px;display:inline-flex;align-items:center;gap:4px;
-}
-.tagchip .x{font-size:10px;cursor:pointer;opacity:.6}
-.tagchip .x:hover{opacity:1}
 .runs-list .emptystate{padding:16px 12px;font-size:12px;color:var(--muted);text-align:center}
 
 /* ─────────── right: inspector ─────────── */
@@ -416,7 +398,7 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
   <aside class="runs">
     <div class="runs-head">
       <h1>Debug runs</h1>
-      <p>Live ask, replay, and conversation threads — with filters, tags, and archive.</p>
+      <p>Live ask, replay, and conversation threads — with search and filters.</p>
     </div>
     <div class="runs-filters">
       <div class="search">
@@ -429,7 +411,6 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
         <button class="fchip" data-f="live">Live</button>
         <button class="fchip" data-f="suppressed">Suppressed</button>
         <button class="fchip" data-f="failed">Failed</button>
-        <button class="fchip danger" data-f="tagged">Tagged</button>
       </div>
     </div>
     <div class="runs-list" id="runsList"></div>
@@ -733,8 +714,7 @@ let view = { kind: "home" };          // home | thread:{thread} | turn:{thread,t
 let tab = "answer";
 let filter = "all";
 let search = "";
-let tagCounter = 0;
-const tags = {};                       // runId -> [tag,...]
+let seq = 0;
 
 function setComposerCtx(ctx){
   if (!ctx){
@@ -753,16 +733,6 @@ function setComposerCtx(ctx){
   composerCtxEl.innerHTML = `Standalone run — the next ask <b>promotes it into a conversation</b> (turn 2 of session ${esc(ctx.session)}).`;
 }
 
-function tagRun(id, label){
-  (tags[id] ||= []).push(label);
-  renderRuns();
-}
-
-function removeTag(id, label){
-  tags[id] = (tags[id] || []).filter(t => t !== label);
-  renderRuns();
-}
-
 /* ─────────────────────────── render: left rail ─────────────────────────── */
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
 function fmt(ms){ return ms >= 1000 ? (ms/1000).toFixed(2)+"s" : ms+"ms"; }
@@ -777,7 +747,6 @@ function renderRuns(){
       case "live": return !!r.live;
       case "suppressed": return hasSuppressed(r);
       case "failed": return (r.iterations||[]).some(i => i.err);
-      case "tagged": return !!(tags[r.id] || []).length;
       default: return true;
     }
   };
@@ -797,11 +766,6 @@ function renderRuns(){
           <span>${r.ts}</span>
           ${live ? `<span style="color:var(--success-strong)">…streaming</span>` : `<span>${(r.latencyMs/1000).toFixed(1)}s</span>`}
         </div>
-        ${(tags[r.id]||[]).length ? `<div class="tagchips">${tags[r.id].map(t => `<span class="tagchip">${esc(t)}<span class="x" data-act="untag" data-tag="${esc(t)}">×</span></span>`).join("")}</div>` : ""}
-        ${!live ? `<div class="actrow" onclick="event.stopPropagation()">
-          <button class="abtn" data-act="tag" data-id="${r.id}">+ tag</button>
-          <button class="abtn del" data-act="del" data-id="${r.id}">archive</button>
-        </div>` : ""}
       </button>`;
   };
   let html = "";
@@ -859,19 +823,9 @@ function renderRuns(){
       else if (act === "thread") view = { kind: "thread", thread: THREADS.find(t => t.id === btn.dataset.id) };
       else if (act === "turn"){ const th = THREADS.find(t => t.turns.some(x => x.id === btn.dataset.id)); view = { kind: "turn", thread: th, turn: th.turns.find(x => x.id === btn.dataset.id) }; }
       else if (act === "run" || act === "live") view = { kind: "turn", thread: null, turn: [...RUNS, LIVE_RUN, ...THREADS.flatMap(t=>t.turns)].find(r => r.id === btn.dataset.id) };
-      else if (act === "tag"){ const label = prompt("Tag this run:"); if (label && label.trim()) tagRun(btn.dataset.id, label.trim()); }
-      else if (act === "del"){ if (confirm("Archive this run? (30d retention no longer applies)")) { archiveRun(btn.dataset.id); } }
-      else if (act === "untag"){ removeTag(btn.dataset.id, btn.dataset.tag); return; }
       renderRuns(); renderInspector();
     });
   });
-}
-
-function archiveRun(id){
-  const ri = RUNS.findIndex(r => r.id === id);
-  if (ri >= 0) RUNS.splice(ri, 1);
-  THREADS.forEach(t => { const i = t.turns.findIndex(x => x.id === id); if (i >= 0) t.turns.splice(i,1); });
-  if (view.turn && view.turn.id === id) view = { kind: "home" };
 }
 
 /* ─────────────────────────── render: inspector ─────────────────────────── */
@@ -1190,7 +1144,7 @@ function mockTurn(query, target){
   const now = new Date();
   const ts = now.toTimeString().slice(0, 5);
   const base = {
-    id: "m" + (++tagCounter), query, locale: "en", strategy: "agentic", model: "gemini-2.5-flash",
+    id: "m" + (++seq), query, locale: "en", strategy: "agentic", model: "gemini-2.5-flash",
     cacheHit: false, ts: "2026-08-18 " + ts, latencyMs: 0, latencyDim: true,
     tokens: { prompt: 0, completion: 0 }, tokensDim: true,
     sessionId: target.sessionId, traceDim: true,
@@ -1224,7 +1178,7 @@ function askFlow(){
   const q = input.value.trim();
   if (!q) return;
 
-  let target = { sessionId: "new-session-…-m" + (++tagCounter) };
+  let target = { sessionId: "new-session-…-m" + (++seq) };
   if (view.kind === "turn" && view.turn){
     if (view.thread){
       target = { sessionId: view.thread.sessionId, thread: view.thread };
@@ -1232,7 +1186,7 @@ function askFlow(){
       target = { sessionId: view.turn.sessionId, thread: null };
     } else {
       // standalone run → promote into a conversation
-      const th = { id: "promoted-" + (++tagCounter), title: view.turn.query.slice(0, 24), sessionId: view.turn.sessionId, ts: "2026-08-18", turns: [view.turn] };
+      const th = { id: "promoted-" + (++seq), title: view.turn.query.slice(0, 24), sessionId: view.turn.sessionId, ts: "2026-08-18", turns: [view.turn] };
       view.turn.turnOf = th.id; view.turn.turnNo = 1;
       THREADS.push(th);
       target = { sessionId: th.sessionId, thread: th };
