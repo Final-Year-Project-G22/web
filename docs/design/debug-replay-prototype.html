@@ -445,9 +445,8 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 
 <div class="composer-bar">
   <div class="composer-inner">
-    <input id="composer" placeholder="Ask a question — starts a new debug session (agentic + debug)…" disabled
-      title="Composer is live in the app; this prototype shows its placement — bottom-locked, full width."/>
-    <button disabled>Ask</button>
+    <input id="composer" placeholder="Type to ask — it continues the open conversation, or starts a new session…"/>
+    <button id="composerBtn">Ask</button>
   </div>
   <div class="composer-context" id="composerCtx">No conversation open — a new session will start.</div>
 </div>
@@ -739,13 +738,19 @@ const tags = {};                       // runId -> [tag,...]
 
 function setComposerCtx(ctx){
   if (!ctx){
-    composerCtxEl.innerHTML = `No conversation open — the next ask starts a new session.`;
+    composerCtxEl.innerHTML = `No conversation open — the next ask <b>starts a new session</b>.`;
     return;
   }
-  const thread = ctx.threadTitle ? ` in <b>${esc(ctx.threadTitle)}</b>` : "";
-  const live = ctx.live ? `<span class="live-dot"></span><b>Live session open</b> — asks append to it.` :
-    `Continuing <b>session ${esc(ctx.session)}</b>${thread} — asks append as a new turn.`;
-  composerCtxEl.innerHTML = live;
+  if (ctx.live){
+    composerCtxEl.innerHTML = `<span class="live-dot"></span><b>Live session open</b> — the next ask <b>appends to it</b> as a new turn.`;
+    return;
+  }
+  if (ctx.threadTitle){
+    composerCtxEl.innerHTML = `In <b>${esc(ctx.threadTitle)}</b> — the next ask <b>continues it</b> (session ${esc(ctx.session)}) as a new turn.`;
+    return;
+  }
+  // standalone run / turn: promote into a conversation
+  composerCtxEl.innerHTML = `Standalone run — the next ask <b>promotes it into a conversation</b> (turn 2 of session ${esc(ctx.session)}).`;
 }
 
 function tagRun(id, label){
@@ -1179,6 +1184,87 @@ document.getElementById("filterChips").querySelectorAll(".fchip").forEach(chip =
     renderInspector();
   });
 });
+
+/* ── mock ask: demonstrates continuation semantics ── */
+function mockTurn(query, target){
+  const now = new Date();
+  const ts = now.toTimeString().slice(0, 5);
+  const base = {
+    id: "m" + (++tagCounter), query, locale: "en", strategy: "agentic", model: "gemini-2.5-flash",
+    cacheHit: false, ts: "2026-08-18 " + ts, latencyMs: 0, latencyDim: true,
+    tokens: { prompt: 0, completion: 0 }, tokensDim: true,
+    sessionId: target.sessionId, traceDim: true,
+    iterations: [], finalizeNote: "…", answer: "", citations: [], retrieval: [], logs: [],
+    live: true
+  };
+  if (target.thread){ base.turnOf = target.thread.id; base.turnNo = (target.thread.turns.length + 1); }
+  else if (target.promote){ base.turnOf = target.promote.id; base.turnNo = 2; }
+  base.logs = [
+    { t: ts, event: "thinking", text: `Calling search_knowledge_base with {'query': '${query.slice(0, 42)}…'}` },
+    { t: ts, event: "tool_use", text: "search_knowledge_base (iteration 1)" },
+    { t: ts, event: "tool_result", text: "2 hits — mock retrieval (score 0.72–0.63)" }
+  ];
+  return base;
+}
+
+function finishMock(turn){
+  turn.live = false; turn.latencyDim = false; turn.latencyMs = 1820;
+  turn.tokensDim = false; turn.tokens = { prompt: 1380, completion: 430 };
+  turn.iterations = [
+    { n: 1, tool: "search_knowledge_base", args: { query: turn.query.slice(0, 36), top_k: 5, language: "en" }, ms: 312, ok: true, result: "2 hits — mock retrieval." }
+  ];
+  turn.finalizeNote = "1 tool turn; answered from KB hits.";
+  turn.answer = `**${turn.query}**\n\nMock continuation turn — the prototype renders whatever a real trace would show here.`;
+  turn.citations = [{ n: 1, title: "Mock source — continued conversation", score: 0.72 }];
+  turn.retrieval = [{ rank: 1, doc: "Mock doc — continued conversation", score: 0.72, lang: "en", chunk: "mock:1", excerpt: "Mock chunk served to demonstrate the replay inspector." }];
+}
+
+function askFlow(){
+  const input = document.getElementById("composer");
+  const q = input.value.trim();
+  if (!q) return;
+
+  let target = { sessionId: "new-session-…-m" + (++tagCounter) };
+  if (view.kind === "turn" && view.turn){
+    if (view.thread){
+      target = { sessionId: view.thread.sessionId, thread: view.thread };
+    } else if (view.turn.live){
+      target = { sessionId: view.turn.sessionId, thread: null };
+    } else {
+      // standalone run → promote into a conversation
+      const th = { id: "promoted-" + (++tagCounter), title: view.turn.query.slice(0, 24), sessionId: view.turn.sessionId, ts: "2026-08-18", turns: [view.turn] };
+      view.turn.turnOf = th.id; view.turn.turnNo = 1;
+      THREADS.push(th);
+      target = { sessionId: th.sessionId, thread: th };
+      view = { kind: "thread", thread: th };
+    }
+  }
+
+  input.value = "";
+  renderRuns(); renderInspector();
+
+  const turn = mockTurn(q, target);
+  if (target.thread){
+    target.thread.turns.push(turn);
+    view = { kind: "turn", thread: target.thread, turn };
+  } else {
+    LIVE_RUN.id = turn.id; Object.assign(LIVE_RUN, turn);
+    view = { kind: "turn", thread: null, turn: LIVE_RUN };
+  }
+  tab = "live";
+  renderRuns(); renderInspector();
+
+  setTimeout(() => {
+    finishMock(turn);
+    if (target.thread) view = { kind: "turn", thread: target.thread, turn };
+    else { Object.assign(LIVE_RUN, turn); view = { kind: "turn", thread: null, turn: LIVE_RUN }; }
+    tab = "answer";
+    renderRuns(); renderInspector();
+  }, 1400);
+}
+
+document.getElementById("composer").addEventListener("keydown", (e) => { if (e.key === "Enter") askFlow(); });
+document.getElementById("composerBtn").addEventListener("click", askFlow);
 </script>
 </body>
 </html>
