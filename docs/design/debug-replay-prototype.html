@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Debug AI — replayable sessions &amp; full-answer inspector · prototype (FIN-70)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────── tokens (mirror of the app) ─────────────────────────── */
+:root{
+  --canvas:#F8FAFC; --canvas-2:#F1F5F9; --panel:#FFFFFF; --panel-2:#F1F5F9;
+  --ink:#0F172A; --ink-2:#475569; --muted:#64748B; --muted-foreground:#64748B;
+  --line:#E2E8F0; --line-2:#CBD5E1;
+  --navy:#1E293B; --navy-strong:#0F172A; --navy-tint:rgba(30,41,59,.06);
+  --emerald:#10B981; --emerald-strong:#047857; --emerald-tint:rgba(16,185,129,.12);
+  --amber:#F59E0B; --amber-strong:#92400E; --amber-tint:rgba(245,158,11,.14);
+  --red:#EF4444; --red-strong:#DC2626; --red-tint:rgba(239,68,68,.10);
+  --blue:#3B82F6; --blue-strong:#2563EB; --blue-tint:rgba(59,130,246,.10);
+  --success:#10B981; --success-strong:#047857; --success-tint:rgba(16,185,129,.12);
+  --warning:#F59E0B; --warning-strong:#92400E; --warning-tint:rgba(245,158,11,.14);
+  --info:#3B82F6; --info-strong:#2563EB; --info-tint:rgba(59,130,246,.10);
+  --destructive:#EF4444; --destructive-strong:#DC2626; --destructive-tint:rgba(239,68,68,.10);
+  --radius:8px; --rail:236px;
+  --display:"Sora","Noto Sans Ethiopic",system-ui,sans-serif;
+  --body:"Inter","Noto Sans Ethiopic",system-ui,sans-serif;
+  --mono:"JetBrains Mono","Noto Sans Ethiopic",ui-monospace,monospace;
+  --shadow-card:0 1px 2px rgba(15,23,42,.05);
+  --dur-fast:120ms; --dur-base:150ms;
+}
+[data-theme="dark"]{
+  --canvas:#14171A; --canvas-2:#171B1E; --panel:#1B1E22; --panel-2:#20242A;
+  --ink:#ECEEEA; --ink-2:#B4BBC4; --muted:#9AA0A6; --muted-foreground:#9AA0A6;
+  --line:#2A2E33; --line-2:#373C45;
+  --navy:#94A3B8; --navy-strong:#CBD5E1; --navy-tint:rgba(148,163,184,.12);
+  --emerald:#6EE7B7; --emerald-strong:#34D399; --emerald-tint:rgba(110,231,183,.14);
+  --amber:#FCD34D; --amber-strong:#FDE68A; --amber-tint:rgba(252,211,77,.14);
+  --red:#FCA5A5; --red-strong:#F87171; --red-tint:rgba(252,165,165,.12);
+  --blue:#93C5FD; --blue-strong:#7DB4FA; --blue-tint:rgba(147,197,253,.12);
+  --success:#6EE7B7; --success-strong:#34D399; --success-tint:rgba(110,231,183,.14);
+  --warning:#FCD34D; --warning-strong:#FDE68A; --warning-tint:rgba(252,211,77,.14);
+  --info:#93C5FD; --info-strong:#7DB4FA; --info-tint:rgba(147,197,253,.12);
+  --destructive:#FCA5A5; --destructive-strong:#F87171; --destructive-tint:rgba(252,165,165,.12);
+  --shadow-card:0 1px 2px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--body);font-size:14px;line-height:1.5;
+  background:var(--canvas);color:var(--ink);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+:focus-visible{outline:2px solid var(--navy);outline-offset:2px;border-radius:4px}
+button{font-family:var(--body)}
+.font-mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ─────────────────────────── signature: tibeb band ─────────────────────────── */
+.tibeb{
+  height:3px;flex:0 0 3px;
+  background:repeating-linear-gradient(90deg,
+    var(--navy) 0 8px, var(--emerald) 8px 15px, var(--amber) 15px 22px, var(--navy) 22px 30px);
+  border-bottom:1px solid var(--line);
+}
+
+/* ─────────────────────────── banner ─────────────────────────── */
+.banner{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:8px 16px;font-size:12px;color:var(--ink-2);
+  background:var(--canvas-2);border-bottom:1px solid var(--line);
+}
+.banner b{color:var(--navy-strong);font-weight:600}
+.banner .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);flex:0 0 6px}
+.banner .spacer{flex:1}
+.banner .pill{
+  font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;
+  background:var(--warning-tint);color:var(--warning-strong);
+}
+
+/* ─────────────────────────── page shell ─────────────────────────── */
+.page{display:flex;height:calc(100vh - 36px);padding:16px;gap:16px}
+
+/* ─────────── left: runs rail ─────────── */
+.runs{
+  width:300px;flex:0 0 300px;display:flex;flex-direction:column;min-height:0;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-card);
+}
+.runs-head{padding:14px 14px 10px;border-bottom:1px solid var(--line)}
+.runs-head h1{font-family:var(--display);font-size:16px;font-weight:600;letter-spacing:.01em}
+.runs-head p{font-size:12px;color:var(--muted);margin-top:2px}
+
+.composer{display:flex;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.composer input{
+  flex:1;min-width:0;height:34px;padding:0 10px;font-size:13px;font-family:var(--body);
+  background:var(--canvas-2);border:1px solid var(--line);border-radius:6px;color:var(--ink);
+}
+.composer input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 2px var(--navy-tint)}
+.composer button{
+  height:34px;padding:0 12px;font-size:12px;font-weight:600;color:#fff;
+  background:var(--navy);border:0;border-radius:6px;cursor:pointer;
+}
+.composer button:hover{filter:brightness(1.1)}
+
+.runs-list{flex:1;overflow-y:auto;padding:8px}
+.runs-list .run{
+  display:block;width:100%;text-align:left;border:1px solid transparent;border-radius:6px;
+  background:transparent;padding:9px 10px;cursor:pointer;margin-bottom:2px;
+}
+.runs-list .run:hover{background:var(--panel-2)}
+.runs-list .run.active{background:var(--navy-tint);border-color:var(--line-2)}
+.runs-list .run .q{
+  font-size:13px;font-weight:600;color:var(--ink);line-height:1.35;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.runs-list .run .meta{display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap}
+.runs-list .run .meta span{font-size:11px;color:var(--muted);font-family:var(--mono);font-variant-numeric:tabular-nums}
+.chip{
+  font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  padding:1px 6px;border-radius:4px;
+}
+.chip.agentic{background:var(--info-tint);color:var(--info-strong)}
+.chip.simple{background:var(--panel-2);color:var(--ink-2);border:1px solid var(--line)}
+.chip.cache{background:var(--success-tint);color:var(--success-strong)}
+.chip.am{background:var(--emerald-tint);color:var(--emerald-strong)}
+.chip.suppressed{background:var(--warning-tint);color:var(--warning-strong)}
+
+.runs-foot{padding:10px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+.runs-foot .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+
+/* ─────────── right: inspector ─────────── */
+.inspector{flex:1;display:flex;flex-direction:column;min-height:0;min-width:0}
+.insp-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);font-size:13px}
+.insp-empty svg{width:34px;height:34px;opacity:.5}
+
+.meta{
+  display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow-card);padding:14px 16px;margin-bottom:12px;
+}
+.meta .qcol{flex:1;min-width:240px}
+.meta .qcol h2{font-family:var(--display);font-size:15px;font-weight:600;line-height:1.4}
+.meta .qcol .sub{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.meta .qcol .sub .mono{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.meta .stats{display:flex;gap:0;align-items:stretch}
+.meta .stat{padding:0 14px;border-left:1px solid var(--line);text-align:right}
+.meta .stat:first-child{border-left:0;padding-left:0}
+.meta .stat .v{font-family:var(--display);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.meta .stat .k{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-top:1px}
+.meta .stat .v.dim{color:var(--muted);text-decoration:line-through;text-decoration-style:dotted;text-decoration-color:var(--line-2)}
+.meta .stat .missing{font-size:10px;color:var(--warning-strong)}
+
+/* tabs */
+.tabs{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px;width:max-content;margin-bottom:12px}
+.tabs button{
+  border:0;background:transparent;padding:6px 14px;border-radius:4px;
+  font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{background:var(--ink);color:var(--canvas)}
+.tabs button .cnt{font-size:10px;font-weight:700;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:0 6px;line-height:16px}
+.tabs button.on .cnt{background:var(--navy-tint)}
+
+/* panels */
+.pane{
+  flex:1;min-height:0;display:flex;flex-direction:column;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow-card);overflow:hidden;
+}
+.pane-body{flex:1;overflow-y:auto;padding:16px}
+.pane[hidden]{display:none}
+
+.sec-title{
+  font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 8px;display:flex;align-items:center;gap:8px;
+}
+.sec-title .badge-recon{
+  font-size:9.5px;font-weight:600;text-transform:none;letter-spacing:.02em;
+  background:var(--warning-tint);color:var(--warning-strong);padding:1px 7px;border-radius:999px;
+}
+.gap-16 > * + *{margin-top:16px}
+
+/* answer */
+.answer .md{font-size:14px;color:var(--ink-2);line-height:1.65}
+.answer .md h3{margin:14px 0 6px;font-size:14px;color:var(--ink)}
+.answer .md p{margin:6px 0}
+.answer .md ul{margin:6px 0 6px 18px}
+.answer .md li{margin:2px 0}
+.citations{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.citation{
+  display:flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--line);
+  border-radius:999px;background:var(--panel-2);font-size:11.5px;color:var(--ink-2);cursor:pointer;
+}
+.citation:hover{background:var(--info-tint);border-color:var(--info)}
+.citation .n{font-family:var(--mono);font-size:10.5px;color:var(--info-strong);font-weight:600}
+.citation .sc{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+
+/* iterations */
+.iter{display:flex;gap:12px;position:relative;padding-bottom:14px}
+.iter::before{content:"";position:absolute;left:11px;top:24px;bottom:0;width:1px;background:var(--line)}
+.iter:last-child::before{display:none}
+.iter .numcol{width:24px;flex:0 0 24px;display:flex;flex-direction:column;align-items:center;z-index:1}
+.iter .num{
+  width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;
+  font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);
+}
+.iter.suppressed .num{background:var(--amber);color:#fff}
+.iter .card{
+  flex:1;min-width:0;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);
+  padding:10px 12px;font-size:12.5px;
+}
+.iter .card .row1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.iter .card .row1 .tool{font-size:13px;font-weight:600;color:var(--ink);font-family:var(--mono)}
+.iter .card .row1 .dur{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto}
+.iter .card .row1 .dur.ok{color:var(--success-strong)}
+.iter .card .args{margin-top:6px;font-size:11.5px;color:var(--ink-2);line-height:1.55}
+.iter .card .args code{font-family:var(--mono);font-size:11px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.iter .card .result{margin-top:6px;font-size:11.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:6px}
+.iter .card .result b{color:var(--success-strong);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+.iter .card .result.err b{color:var(--destructive-strong)}
+.iter .supp-bar{
+  margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  background:var(--warning-tint);border:1px solid rgba(0,0,0,0);border-radius:4px;padding:6px 8px;
+}
+.iter .supp-bar .lab{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warning-strong)}
+.iter .supp-bar .why{font-family:var(--mono);font-size:11px;color:var(--warning-strong)}
+.iter .supp-bar .mq{font-size:11px;color:var(--ink-2);font-style:italic}
+.iter .finalize{margin-top:8px;font-size:11px;color:var(--muted)}
+.iter .finalize b{color:var(--navy-strong)}
+
+/* retrieval table */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{
+  text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+  padding:6px 10px;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap;
+}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tr:hover td{background:var(--panel-2)}
+.tbl .rank{font-family:var(--mono);font-size:11px;color:var(--muted);width:34px}
+.tbl .doc{font-weight:500;color:var(--ink);font-size:12.5px}
+.tbl .excerpt{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.5}
+.tbl .lang{font-size:10px;font-weight:600;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--ink-2)}
+.scorebar{display:flex;align-items:center;gap:8px}
+.scorebar .track{width:70px;height:5px;border-radius:3px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden}
+.scorebar .fill{height:100%;border-radius:3px;background:var(--navy)}
+.scorebar .fill.hi{background:var(--success)}
+.scorebar .fill.mid{background:var(--navy)}
+.scorebar .fill.lo{background:var(--amber)}
+.scorebar .sc{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+.scorebar .chunk{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+
+/* prompt */
+.prompt-block{margin-bottom:14px}
+.prompt-block .head{
+  display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:6px;
+}
+.prompt-block pre{
+  background:var(--canvas-2);border:1px solid var(--line);border-radius:6px;
+  padding:12px;font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--ink-2);
+  overflow-x:auto;white-space:pre-wrap;word-break:break-word;
+}
+.prompt-block pre .k{color:var(--navy-strong);font-weight:600}
+.prompt-block .meta-note{font-size:11px;color:var(--muted);margin-top:6px;display:flex;gap:6px;align-items:center}
+
+/* usage */
+.usage-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.u-card{border:1px solid var(--line);border-radius:6px;background:var(--panel-2);padding:10px 12px}
+.u-card .k{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.u-card .v{font-family:var(--display);font-size:17px;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+.u-card .v.dim{color:var(--muted);text-decoration:line-through dotted var(--line-2)}
+.u-card .hint{font-size:10px;color:var(--warning-strong);margin-top:2px;font-weight:500}
+
+/* footnotes */
+.footnotes{margin-top:16px;border-top:1px dashed var(--line);padding-top:10px}
+.footnotes .fn{font-size:11px;color:var(--muted);display:flex;gap:8px;margin-top:5px;line-height:1.5}
+.footnotes .fn .mark{font-family:var(--mono);color:var(--warning-strong);flex:0 0 auto}
+</style>
+</head>
+<body>
+<div class="tibeb"></div>
+<div class="banner">
+  <span class="dot"></span>
+  <span><b>Prototype — Debug AI: replayable sessions + full-answer inspector</b> (Linear FIN-70 · web admin, AI module tab)</span>
+  <span class="spacer"></span>
+  <span class="pill">react, don't review — this is a cheap draft to argue with</span>
+</div>
+
+<div class="page">
+  <!-- ══════════════ LEFT: RUNS RAIL ══════════════ -->
+  <aside class="runs">
+    <div class="runs-head">
+      <h1>Debug runs</h1>
+      <p>Live ask stays as-is; every completed run persists and re-opens here.</p>
+    </div>
+    <div class="composer">
+      <input id="composer" placeholder="Ask a question (live, agentic + debug)…" disabled
+        title="Live composer unchanged in this prototype — the replay surface below is the new part"/>
+      <button disabled>Ask</button>
+    </div>
+    <div class="runs-list" id="runsList"></div>
+    <div class="runs-foot">
+      <div class="row">
+        <span>Runs kept</span><span class="font-mono">30 days / 500</span>
+      </div>
+      <div class="row" style="margin-top:4px">
+        <span>Streaming mode</span><span class="chip cache">unchanged</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══════════════ RIGHT: INSPECTOR ══════════════ -->
+  <main class="inspector" id="inspector"></main>
+</div>
+
+<script>
+/* ─────────────────────────── mock runs ─────────────────────────── */
+const TOOLS = [
+  { name: "search_knowledge_base", params: { query: "string", top_k: "int (default 5)", language: "en | am" }, desc: "Hybrid vector + BM25 over the knowledge base, language-filtered." },
+  { name: "search_trusted_web",     params: { query: "string", language: "en | am" }, desc: "Whitelisted official domains; strict registry-only deep links." },
+  { name: "search_guides",          params: { query: "string", account_id: "uuid?" }, desc: "Guide content + steps from the core-backend." },
+  { name: "get_user_profile",       params: { account_id: "uuid" }, desc: "Business profile, sector, tags, stage." },
+  { name: "check_compliance_status",params: { account_id: "uuid" }, desc: "Licenses/deadlines for the account." },
+  { name: "find_template",          params: { name: "string" }, desc: "Business document template lookup." },
+  { name: "get_guide_progress",     params: { account_id: "uuid", guide_id: "uuid" }, desc: "Steps completed/locked." },
+];
+
+const RUNS = [
+  {
+    id: "r1", query: "What are the VAT registration requirements for a coffee exporter in Oromia?",
+    locale: "en", strategy: "agentic", model: "gemini-2.5-flash", cacheHit: false,
+    ts: "2026-08-18 09:41", latencyMs: 4230, latencyDim: false,
+    tokens: { prompt: 1184, completion: 642 }, tokensDim: false,
+    sessionId: "08a1f2e4-…-9c31", traceDim: true,
+    iterations: [
+      {
+        n: 1, tool: "search_knowledge_base",
+        args: { query: "VAT registration requirements coffee exporter Oromia", top_k: 5, language: "en" },
+        ms: 341, ok: true,
+        result: "5 hits — top: VAT Registration Guide (0.84), Export Procedures (0.71), Business Registration (0.62)."
+      },
+      {
+        n: 2, tool: "check_compliance_status",
+        args: { account_id: "eval-msme-01" },
+        ms: 188, ok: true,
+        result: "3 obligations: trade_license (2027-01-10, 30d), TIN (2030-06-15, 45d), business_reg (2031-06-15, 60d)."
+      },
+      {
+        n: 3, tool: "search_knowledge_base",
+        suppressed: true, reason: "duplicate_of_prior_search", matchedQuery: "VAT registration requirements coffee exporter Oromia",
+        args: { query: "VAT registration requirements" }, ms: 12,
+        result: "Cosine 0.94 vs prior KB query — suppressed, no iteration consumed."
+      },
+      {
+        n: 4, tool: "search_trusted_web",
+        args: { query: "VAT registration Ethiopia threshold", language: "en" },
+        ms: 0, ok: false, err: true,
+        result: "Failed: timeout after 1 retry (failure ladder → stale-flagged → fallback)."
+      },
+      {
+        n: 5, tool: "search_knowledge_base",
+        suppressed: true, reason: "drift", matchedQuery: "export license coffee Ethiopia",
+        args: { query: "export license coffee Ethiopia" }, ms: 9,
+        result: "Entity/intent not preserved (export ≠ VAT) — suppressed, invites a new message."
+      }
+    ],
+    finalizeNote: "2 consecutive suppressions → forced finalization; answered from KB hits.",
+    answer: `VAT registration in Ethiopia applies to coffee exporters once taxable turnover crosses the **1 million ETB** threshold (registration is mandatory, not optional).
+
+**What you need:**
+- TIN certificate and business license
+- Expected annual turnover estimate
+- Taxpayer identification for the export operation
+- Registration within **30 days** of crossing the threshold (per the compliance schedule on your account: trade license renews 2027-01-10)
+
+Citations below, in order of retrieval score.`,
+    citations: [
+      { n: 1, title: "VAT Registration Guide — Ministry of Revenues", score: 0.84 },
+      { n: 2, title: "Export Procedures — Coffee Sector", score: 0.71 },
+      { n: 3, title: "Business Registration Basics", score: 0.62 },
+      { n: 4, title: "Compliance Deadlines Overview", score: 0.55 }
+    ],
+    retrieval: [
+      { rank: 1, doc: "VAT Registration Guide (am?) — en", score: 0.84, lang: "en", chunk: "en:mof-vat:3", excerpt: "Any person whose taxable turnover exceeds 1,000,000 ETB must register within 30 days of crossing the threshold. Exporters…" },
+      { rank: 2, doc: "Export Procedures — Coffee Sector", score: 0.71, lang: "en", chunk: "en:mint-export:2", excerpt: "Coffee exporters must hold a valid business license and TIN before applying for export permits…" },
+      { rank: 3, doc: "Business Registration Basics", score: 0.62, lang: "en", chunk: "en:mint-reg:1", excerpt: "Registration requires the TIN, trade license, and sector-specific permits depending on the business type…" },
+      { rank: 4, doc: "Compliance Deadlines Overview", score: 0.55, lang: "en", chunk: "en:mof-deadlines:1", excerpt: "Trade license renewals and TIN obligations follow the fiscal calendar; late filing incurs penalties…" }
+    ]
+  },
+  {
+    id: "r2", query: "የንግድ ሥራ ፈቃድ ለማደስ ምን ሰነዶች ያስፈልጋሉ?",
+    locale: "am", strategy: "agentic", model: "gemini-2.5-flash", cacheHit: false,
+    ts: "2026-08-18 09:02", latencyMs: 5110, latencyDim: false,
+    tokens: { prompt: 1310, completion: 590 }, tokensDim: false,
+    sessionId: "77c9b3d1-…-4a02", traceDim: true,
+    iterations: [
+      { n: 1, tool: "search_knowledge_base", args: { query: "የንግድ ሥራ ፈቃድ ማደስ ሰነዶች", top_k: 5, language: "am" }, ms: 412, ok: true, result: "3 hits — trade license renewal (0.79), TIN (0.58)." },
+      { n: 2, tool: "search_guides", args: { query: "ትሬድ ላይሰንስ ማደስ", account_id: "eval-msme-01" }, ms: 265, ok: true, result: "Guide: Trade License Renewal (4 steps, 1 in progress)." },
+      { n: 3, tool: "search_knowledge_base", suppressed: true, reason: "duplicate_of_prompt", matchedQuery: "የንግድ ሥራ ፈቃድ ለማደስ ምን ሰነዶች", args: { query: "የንግድ ሥራ ፈቃድ ማደስ" }, ms: 8, result: "Cosine 0.95 vs prompt — exact re-search of turn 1 suppressed." }
+    ],
+    finalizeNote: "1 suppression (duplicate_of_prompt); loop ended after the tool-free synthesis cap.",
+    answer: `የንግድ ሥራ ፈቃድዎን ለማደስ የሚያስፈልጉ ሰነዶች፦
+
+- የቲን (TIN) የምዝገባ ሰርተፍኬት
+- የንግድ ሥራ ፈቃድ የማደስ ቅጽ
+- የታደሰ የንግድ እንቅስቃሴ ማስረጃ (የታክስ ሪፖርት)
+- የማኅበር/የካቲት ማስረጃ ካለ`,
+    citations: [
+      { n: 1, title: "የንግድ ሥራ ፈቃድ ማደስ መመሪያ", score: 0.79 },
+      { n: 2, title: "የቲን ምዝገባ", score: 0.58 }
+    ],
+    retrieval: [
+      { rank: 1, doc: "Trade License Renewal Guide", score: 0.79, lang: "am", chunk: "am:mint-license:2", excerpt: "ሰነዶች፡ የቲን ሰርተፍኬት፣ የፈቃድ ማደስ ቅጽ፣ የታክስ ሪፖርት…" },
+      { rank: 2, doc: "TIN Registration", score: 0.58, lang: "am", chunk: "am:mof-tin:1", excerpt: "ቲን ሳይኖር የንግድ ፈቃድ ማደስ አይቻልም…" }
+    ]
+  },
+  {
+    id: "r3", query: "What is the deadline for VAT filing?",
+    locale: "en", strategy: "simple", model: "gemini-2.5-flash", cacheHit: true,
+    ts: "2026-08-17 16:20", latencyMs: 890, latencyDim: true,
+    tokens: { prompt: 0, completion: 0 }, tokensDim: true,
+    sessionId: "3f60d9aa-…-71be", traceDim: true,
+    iterations: [], finalizeNote: "Simple strategy — single-pass answer, no tool loop. Latency & tokens not recorded for this strategy.",
+    answer: `VAT returns are due **by the end of the month following the tax period** (monthly filers) — the Ministry of Revenues calendar governs. Cache hit: answered from a prior identical query.`,
+    citations: [{ n: 1, title: "VAT Filing Deadlines — Ministry of Revenues", score: 0.81 }],
+    retrieval: [
+      { rank: 1, doc: "VAT Filing Deadlines", score: 0.81, lang: "en", chunk: "en:mof-vat:5", excerpt: "Returns are due by the last day of the month following the tax period…" }
+    ]
+  }
+];
+
+/* ─────────────────────────── render ─────────────────────────── */
+const runsList = document.getElementById("runsList");
+const inspector = document.getElementById("inspector");
+let current = RUNS[0];
+
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+
+function renderRuns(){
+  runsList.innerHTML = RUNS.map(r => `
+    <button class="run ${r.id === current.id ? "active" : ""}" data-id="${r.id}">
+      <div class="q">${esc(r.query)}</div>
+      <div class="meta">
+        <span class="chip ${r.strategy}">${r.strategy}</span>
+        <span class="chip ${r.locale}">${r.locale}</span>
+        ${r.cacheHit ? '<span class="chip cache">cache</span>' : ""}
+        ${r.iterations.some(i => i.suppressed) ? '<span class="chip suppressed">suppressed</span>' : ""}
+        <span>${r.ts}</span>
+        <span>${(r.latencyMs/1000).toFixed(1)}s</span>
+      </div>
+    </button>`).join("");
+  runsList.querySelectorAll(".run").forEach(btn =>
+    btn.addEventListener("click", () => { current = RUNS.find(r => r.id === btn.dataset.id); renderRuns(); renderInspector(); }));
+}
+
+function fmt(ms){ return ms >= 1000 ? (ms/1000).toFixed(2)+"s" : ms+"ms"; }
+
+function metaBar(r){
+  const tks = r.tokensDim ? `<div class="stat"><div class="v dim">—</div><div class="k">tokens</div><div class="missing">not recorded</div></div>`
+    : `<div class="stat"><div class="v">${(r.tokens.prompt+r.tokens.completion).toLocaleString()}</div><div class="k">tokens</div></div>`;
+  const lat = r.latencyDim ? `<div class="stat"><div class="v dim">—</div><div class="k">latency</div><div class="missing">not recorded</div></div>`
+    : `<div class="stat"><div class="v">${(r.latencyMs/1000).toFixed(1)}s</div><div class="k">latency</div></div>`;
+  return `
+  <div class="meta">
+    <div class="qcol">
+      <h2>${esc(r.query)}</h2>
+      <div class="sub">
+        <span class="chip ${r.strategy}">${r.strategy}</span>
+        <span class="chip ${r.locale}">${r.locale}</span>
+        ${r.cacheHit ? '<span class="chip cache">cache hit</span>' : ""}
+        <span class="mono">${r.model}</span>
+        <span class="mono">${r.ts}</span>
+        <span class="mono">session ${r.sessionId}</span>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="v">${r.iterations.length || "—"}</div><div class="k">iterations</div></div>
+      ${lat}
+      ${tks}
+    </div>
+  </div>`;
+}
+
+function iterationsTab(r){
+  if (!r.iterations.length){
+    return `<div class="pane"><div class="pane-body"><p style="font-size:12.5px;color:var(--muted)">No tool loop — ${r.strategy} strategy answered in a single pass.</p></div></div>`;
+  }
+  return `<div class="pane"><div class="pane-body"><div class="gap-16">${r.iterations.map(i => `
+    <div class="iter ${i.suppressed ? "suppressed" : ""}">
+      <div class="numcol"><div class="num">${i.suppressed ? "×" : i.n}</div></div>
+      <div class="card">
+        <div class="row1">
+          <span class="tool">${esc(i.tool)}</span>
+          ${i.suppressed ? `<span class="chip suppressed">suppressed</span>` : (i.err ? `<span class="chip" style="background:var(--destructive-tint);color:var(--destructive-strong)">failed</span>` : `<span class="chip cache">ok</span>`)}
+          <span class="dur ${i.ok && !i.suppressed ? "ok" : ""}">${fmt(i.ms)}</span>
+        </div>
+        <div class="args">${Object.entries(i.args || {}).map(([k,v]) => `<code>${esc(k)}=${esc(typeof v === "object" ? JSON.stringify(v) : v)}</code>`).join(" ")}</div>
+        ${i.suppressed ? `
+          <div class="supp-bar">
+            <span class="lab">suppressed</span>
+            <span class="why">${esc(i.reason)}</span>
+            <span class="mq">matched: "${esc(i.matchedQuery)}"</span>
+          </div>` : `
+          <div class="result ${i.err ? "err" : ""}">
+            <b>${i.err ? "error" : "result"}</b> ${esc(i.result)}
+          </div>`}
+      </div>
+    </div>`).join("")}
+    <div class="finalize"><b>Finalization:</b> ${esc(r.finalizeNote)}</div>
+  </div></div></div>`;
+}
+
+function retrievalTab(r){
+  return `<div class="pane"><div class="pane-body">
+    <div class="sec-title">Retrieved chunks — ${r.retrieval.length} used in context</div>
+    <table class="tbl">
+      <thead><tr><th>#</th><th>Document / chunk</th><th>Language</th><th>Score</th></tr></thead>
+      <tbody>${r.retrieval.map(c => `
+        <tr>
+          <td class="rank">${c.rank}</td>
+          <td>
+            <div class="doc">${esc(c.doc)}</div>
+            <div class="excerpt">${esc(c.excerpt)}</div>
+          </td>
+          <td><span class="lang">${c.lang}</span></td>
+          <td>
+            <div class="scorebar">
+              <div class="track"><div class="fill ${c.score >= 0.8 ? "hi" : c.score >= 0.6 ? "mid" : "lo"}" style="width:${Math.round(c.score*100)}%"></div></div>
+              <span class="sc">${c.score.toFixed(2)}</span>
+              <span class="chunk">${esc(c.chunk)}</span>
+            </div>
+          </td>
+        </tr>`).join("")}
+      </tbody>
+    </table>
+    <div class="footnotes">
+      <div class="fn"><span class="mark">*</span><span>persisted as <span class="font-mono">context_chunks</span> on the message — replay needs it exposed via the conversation API (not today).</span></div>
+      <div class="fn"><span class="mark">†</span><span>response_sources carries the ≤300-char excerpts actually cited; chunks shown here are the full retrieved set with scores.</span></div>
+    </div>
+  </div></div>`;
+}
+
+function promptTab(r){
+  const system = `You are Adisu Serategna (አዲሱ ሥራተኛ), an assistant for Ethiopian MSME formalization.
+Answer in ${r.locale === "am" ? "Amharic" : "English"}. Cite sources from retrieval. If unknown, say so — never invent.
+When a search would repeat prior work or drift from intent, it is suppressed automatically.`;
+  const user = r.query;
+  const toolDefs = TOOLS.map(t => `{
+  "name": "${t.name}",
+  "description": "${t.desc}",
+  "parameters": ${JSON.stringify(t.params)}
+}`).join("\n");
+  return `<div class="pane"><div class="pane-body"><div class="gap-16">
+    <div class="prompt-block">
+      <div class="head">System prompt <span class="badge-recon">reconstructed — not persisted at ask time</span></div>
+      <pre>${esc(system)}</pre>
+      <div class="meta-note">Template <span class="font-mono">agentic_system.j2</span> + <span class="font-mono">_persona.j2</span> + <span class="font-mono">_guardrails.j2</span> — rendered at ask time, never stored.</div>
+    </div>
+    <div class="prompt-block">
+      <div class="head">Tool definitions <span class="badge-recon">reconstructed — 7 tools registered</span></div>
+      <pre>${esc(toolDefs)}</pre>
+    </div>
+    <div class="prompt-block">
+      <div class="head">User turn</div>
+      <pre><span class="k">user:</span> ${esc(user)}</pre>
+    </div>
+    <div class="footnotes">
+      <div class="fn"><span class="mark">!</span><span>If the inspector is the destination, the exact rendered prompt should be <b>persisted at ask time</b> (new column), instead of reconstructed. Decision needed.</span></div>
+    </div>
+  </div></div></div>`;
+}
+
+function usageTab(r){
+  const totals = r.iterations.filter(i => !i.suppressed);
+  const llmMs = r.latencyDim ? null : r.latencyMs - totals.reduce((s,i) => s + i.ms, 0);
+  return `<div class="pane"><div class="pane-body">
+    <div class="sec-title">Per-iteration latency &amp; tokens</div>
+    <div class="usage-cards">
+      <div class="u-card"><div class="k">Total wall</div><div class="v ${r.latencyDim ? "dim" : ""}">${r.latencyDim ? "—" : fmt(r.latencyMs)}</div>${r.latencyDim ? '<div class="hint">not recorded (simple)</div>' : ""}</div>
+      <div class="u-card"><div class="k">Tool execution</div><div class="v">${fmt(totals.reduce((s,i) => s+i.ms, 0))}</div></div>
+      <div class="u-card"><div class="k">LLM (inferred)</div><div class="v ${llmMs === null ? "dim" : ""}">${llmMs === null ? "—" : fmt(llmMs)}</div>${llmMs === null ? '<div class="hint">no tool loop</div>' : ""}</div>
+      <div class="u-card"><div class="k">Prompt tokens</div><div class="v ${r.tokensDim ? "dim" : ""}">${r.tokensDim ? "—" : r.tokens.prompt}</div>${r.tokensDim ? '<div class="hint">not recorded</div>' : ""}</div>
+      <div class="u-card"><div class="k">Completion tokens</div><div class="v ${r.tokensDim ? "dim" : ""}">${r.tokensDim ? "—" : r.tokens.completion}</div>${r.tokensDim ? '<div class="hint">not recorded</div>' : ""}</div>
+    </div>
+    <table class="tbl">
+      <thead><tr><th>Iteration</th><th>Tool</th><th>Status</th><th>Tool ms</th><th>LLM ms</th><th>Tokens</th></tr></thead>
+      <tbody>${r.iterations.length ? r.iterations.map((i, idx) => `
+        <tr>
+          <td class="rank">${i.n}</td>
+          <td><span class="font-mono" style="color:var(--ink)">${esc(i.tool)}</span></td>
+          <td>${i.suppressed ? `<span class="chip suppressed">suppressed · ${esc(i.reason)}</span>` : i.err ? `<span class="chip" style="background:var(--destructive-tint);color:var(--destructive-strong)">failed</span>` : `<span class="chip cache">ok</span>`}</td>
+          <td class="font-mono">${i.suppressed ? fmt(i.ms)+"*" : fmt(i.ms)}</td>
+          <td class="font-mono" style="color:var(--muted)">—</td>
+          <td class="font-mono" style="color:var(--muted)">—</td>
+        </tr>`).join("") : `<tr><td class="rank">—</td><td colspan="5" style="color:var(--muted)">No iterations (${r.strategy} strategy).</td></tr>`}
+      </tbody>
+    </table>
+    <div class="footnotes">
+      <div class="fn"><span class="mark">*</span><span>suppressed calls are near-free — shown so replay matches the stream.</span></div>
+      <div class="fn"><span class="mark">!</span><span>LLM-per-iteration ms &amp; token counts are <b>never populated today</b> — adapters don't parse usage. Persisting them at ask time is a decision for this effort.</span></div>
+    </div>
+  </div></div>`;
+}
+
+function answerTab(r){
+  const sup = r.iterations.filter(i => i.suppressed);
+  return `<div class="pane"><div class="pane-body"><div class="answer">
+    <div class="sec-title">Answer — ${r.model} · ${r.strategy}</div>
+    <div class="md">${r.answer.split(/\n\n/).map(p => {
+      if (/^\d+\./.test(p) || /^- /.test(p)) return `<ul>${p.split("\n").filter(Boolean).map(l => `<li>${esc(l.replace(/^(\d+\.|-) /, ""))}</li>`).join("")}</ul>`;
+      return `<p>${esc(p)}</p>`;
+    }).join("")}</div>
+    <div class="citations">
+      ${r.citations.map(c => `<span class="citation"><span class="n">[${c.n}]</span>${esc(c.title)}<span class="sc">${c.score.toFixed(2)}</span></span>`).join("")}
+    </div>
+    ${sup.length ? `<div class="footnotes">
+      <div class="fn"><span class="mark">×${sup.length}</span><span>suppressed call(s) in this run — see <b>Iterations</b> tab for reasons (duplicate_of_prompt / duplicate_of_prior_search / drift).</span></div>
+    </div>` : ""}
+  </div></div></div>`;
+}
+
+function renderInspector(){
+  if (!current){ inspector.innerHTML = `<div class="insp-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg><div>No run selected</div></div>`; return; }
+  const tabs = [
+    ["answer", "Answer", answerTab(current)],
+    ["iterations", `Iterations ${current.iterations.length ? "("+current.iterations.length+")" : ""}`, iterationsTab(current)],
+    ["retrieval", `Retrieval (${current.retrieval.length})`, retrievalTab(current)],
+    ["prompt", "Prompt & tools", promptTab(current)],
+    ["usage", "Latency & tokens", usageTab(current)]
+  ];
+  inspector.innerHTML = `
+    ${metaBar(current)}
+    <div class="tabs">${tabs.map(([k,label], i) => `<button data-tab="${k}" class="${i===0?"on":""}">${label}</button>`).join("")}</div>
+    ${tabs.map(([k,label,html], i) => `<div class="pane" data-pane="${k}" ${i===0?"":"hidden"}>${html}</div>`).join("")}`;
+  inspector.querySelectorAll(".tabs button").forEach(btn =>
+    btn.addEventListener("click", () => {
+      inspector.querySelectorAll(".tabs button").forEach(b => b.classList.remove("on"));
+      inspector.querySelectorAll("[data-pane]").forEach(p => p.hidden = true);
+      btn.classList.add("on");
+      inspector.querySelector(`[data-pane="${btn.dataset.tab}"]`).hidden = false;
+    }));
+}
+
+renderRuns();
+renderInspector();
+</script>
+</body>
+</html>
