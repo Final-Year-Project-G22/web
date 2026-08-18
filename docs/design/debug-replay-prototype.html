@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Debug AI — replayable sessions &amp; full-answer inspector · prototype (FIN-70)</title>
+<title>Debug AI — replayable sessions &amp; full-answer inspector · prototype (FIN-70 + conversation mode)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -79,9 +79,9 @@ button{font-family:var(--body)}
 /* ─────────────────────────── page shell ─────────────────────────── */
 .page{display:flex;height:calc(100vh - 36px);padding:16px;gap:16px}
 
-/* ─────────── left: runs rail ─────────── */
+/* ─────────── left: runs/conversations rail ─────────── */
 .runs{
-  width:300px;flex:0 0 300px;display:flex;flex-direction:column;min-height:0;
+  width:310px;flex:0 0 310px;display:flex;flex-direction:column;min-height:0;
   background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-card);
 }
 .runs-head{padding:14px 14px 10px;border-bottom:1px solid var(--line)}
@@ -99,8 +99,15 @@ button{font-family:var(--body)}
   background:var(--navy);border:0;border-radius:6px;cursor:pointer;
 }
 .composer button:hover{filter:brightness(1.1)}
+.composer .note{width:100%;font-size:11px;color:var(--muted)}
 
 .runs-list{flex:1;overflow-y:auto;padding:8px}
+.runs-list .group{
+  display:flex;align-items:center;gap:6px;margin:12px 6px 6px;padding:0 4px;
+  font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+}
+.runs-list .group:first-child{margin-top:2px}
+.runs-list .group .count{font-family:var(--mono);font-size:10px;color:var(--muted)}
 .runs-list .run{
   display:block;width:100%;text-align:left;border:1px solid transparent;border-radius:6px;
   background:transparent;padding:9px 10px;cursor:pointer;margin-bottom:2px;
@@ -113,6 +120,18 @@ button{font-family:var(--body)}
 }
 .runs-list .run .meta{display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap}
 .runs-list .run .meta span{font-size:11px;color:var(--muted);font-family:var(--mono);font-variant-numeric:tabular-nums}
+.runs-list .thread-title{font-size:13px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:7px}
+.runs-list .thread-title svg{width:14px;height:14px;color:var(--navy-strong);flex:0 0 14px}
+.runs-list .thread-sub{font-size:11px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
+.runs-list .turn-tag{font-size:10px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px;line-height:16px}
+.runs-list .turn-tag.hot{color:var(--info-strong);border-color:var(--info);background:var(--info-tint)}
+.back-row{padding:8px 10px 0}
+.back-row button{
+  display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--ink-2);
+  background:transparent;border:0;cursor:pointer;padding:4px 6px;border-radius:6px;
+}
+.back-row button:hover{background:var(--panel-2);color:var(--ink)}
+
 .chip{
   font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
   padding:1px 6px;border-radius:4px;
@@ -122,6 +141,8 @@ button{font-family:var(--body)}
 .chip.cache{background:var(--success-tint);color:var(--success-strong)}
 .chip.am{background:var(--emerald-tint);color:var(--emerald-strong)}
 .chip.suppressed{background:var(--warning-tint);color:var(--warning-strong)}
+.chip.thread{background:var(--navy-tint);color:var(--navy-strong)}
+.chip.followup{background:var(--info-tint);color:var(--info-strong)}
 
 .runs-foot{padding:10px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
 .runs-foot .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -220,7 +241,7 @@ button{font-family:var(--body)}
 .iter .card .result.err b{color:var(--destructive-strong)}
 .iter .supp-bar{
   margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-  background:var(--warning-tint);border:1px solid rgba(0,0,0,0);border-radius:4px;padding:6px 8px;
+  background:var(--warning-tint);border-radius:4px;padding:6px 8px;
 }
 .iter .supp-bar .lab{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warning-strong)}
 .iter .supp-bar .why{font-family:var(--mono);font-size:11px;color:var(--warning-strong)}
@@ -262,6 +283,7 @@ button{font-family:var(--body)}
   overflow-x:auto;white-space:pre-wrap;word-break:break-word;
 }
 .prompt-block pre .k{color:var(--navy-strong);font-weight:600}
+.prompt-block pre .hist{color:var(--info-strong)}
 .prompt-block .meta-note{font-size:11px;color:var(--muted);margin-top:6px;display:flex;gap:6px;align-items:center}
 
 /* usage */
@@ -271,6 +293,43 @@ button{font-family:var(--body)}
 .u-card .v{font-family:var(--display);font-size:17px;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
 .u-card .v.dim{color:var(--muted);text-decoration:line-through dotted var(--line-2)}
 .u-card .hint{font-size:10px;color:var(--warning-strong);margin-top:2px;font-weight:500}
+
+/* context tab */
+.ctx-window{margin-bottom:14px}
+.ctx-window .bar{display:flex;height:10px;border-radius:5px;overflow:hidden;border:1px solid var(--line);background:var(--panel-2);margin-top:8px}
+.ctx-window .bar .used{background:var(--navy)}
+.ctx-window .bar .hist{background:var(--info)}
+.ctx-window .bar .comp{background:var(--success)}
+.ctx-window .legend{display:flex;gap:14px;margin-top:8px;font-size:11px;color:var(--muted);flex-wrap:wrap}
+.ctx-window .legend i{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:middle}
+.ctx-window .legend .l-used i{background:var(--navy)}
+.ctx-window .legend .l-hist i{background:var(--info)}
+.ctx-window .legend .l-comp i{background:var(--success)}
+.ctx-window .limit-note{font-size:11px;color:var(--muted);margin-top:8px;display:flex;gap:6px;align-items:center}
+.ctx-window .limit-note .badge-recon{font-size:9.5px;font-weight:600;background:var(--warning-tint);color:var(--warning-strong);padding:1px 7px;border-radius:999px}
+.hist-item{border:1px solid var(--line);border-radius:6px;margin-bottom:8px;overflow:hidden}
+.hist-item .h-head{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--panel-2);
+  border-bottom:1px solid var(--line);font-size:11px;
+}
+.hist-item .h-head .who{font-weight:700;color:var(--ink);font-size:11px}
+.hist-item .h-head .turn{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.hist-item .h-head .tk{font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:auto}
+.hist-item .h-body{padding:8px 10px;font-size:11.5px;color:var(--ink-2);line-height:1.55}
+.hist-item .h-body .hl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--info-strong);margin-top:6px}
+.hist-item .h-body .hl:first-child{margin-top:0}
+.hist-item .h-body pre{
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-2);background:var(--canvas-2);
+  border:1px solid var(--line);border-radius:4px;padding:6px 8px;margin-top:4px;white-space:pre-wrap;
+}
+.policy-list{margin-top:4px}
+.policy-list .policy{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed var(--line);font-size:12px;color:var(--ink-2)}
+.policy-list .policy:last-child{border-bottom:0}
+.policy-list .policy .tag{flex:0 0 auto;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;border-radius:4px;margin-top:1px}
+.policy-list .policy .tag.applied{background:var(--info-tint);color:var(--info-strong)}
+.policy-list .policy .tag.blocked{background:var(--warning-tint);color:var(--warning-strong)}
+.policy-list .policy .tag.ok{background:var(--success-tint);color:var(--success-strong)}
+.policy-list .policy b{color:var(--ink);font-weight:600}
 
 /* footnotes */
 .footnotes{margin-top:16px;border-top:1px dashed var(--line);padding-top:10px}
@@ -282,31 +341,28 @@ button{font-family:var(--body)}
 <div class="tibeb"></div>
 <div class="banner">
   <span class="dot"></span>
-  <span><b>Prototype — Debug AI: replayable sessions + full-answer inspector</b> (Linear FIN-70 · web admin, AI module tab)</span>
+  <span><b>Prototype — Debug AI: replayable sessions + full-answer inspector + conversations</b> (FIN-70 · FIN-84 · web admin, AI module tab)</span>
   <span class="spacer"></span>
   <span class="pill">react, don't review — this is a cheap draft to argue with</span>
 </div>
 
 <div class="page">
-  <!-- ══════════════ LEFT: RUNS RAIL ══════════════ -->
+  <!-- ══════════════ LEFT: RUNS + CONVERSATIONS RAIL ══════════════ -->
   <aside class="runs">
     <div class="runs-head">
       <h1>Debug runs</h1>
-      <p>Live ask stays as-is; every completed run persists and re-opens here.</p>
+      <p>Live ask stays as-is; every completed run and conversation persists and re-opens here.</p>
     </div>
     <div class="composer">
       <input id="composer" placeholder="Ask a question (live, agentic + debug)…" disabled
         title="Live composer unchanged in this prototype — the replay surface below is the new part"/>
       <button disabled>Ask</button>
+      <span class="note">Continue mode: when a conversation is open, asks continue it (session_id reuse).</span>
     </div>
     <div class="runs-list" id="runsList"></div>
     <div class="runs-foot">
-      <div class="row">
-        <span>Runs kept</span><span class="font-mono">30 days / 500</span>
-      </div>
-      <div class="row" style="margin-top:4px">
-        <span>Streaming mode</span><span class="chip cache">unchanged</span>
-      </div>
+      <div class="row"><span>Runs kept</span><span class="font-mono">30 days / 500</span></div>
+      <div class="row" style="margin-top:4px"><span>Streaming mode</span><span class="chip cache">unchanged</span></div>
     </div>
   </aside>
 
@@ -315,7 +371,7 @@ button{font-family:var(--body)}
 </div>
 
 <script>
-/* ─────────────────────────── mock runs ─────────────────────────── */
+/* ─────────────────────────── mock data ─────────────────────────── */
 const TOOLS = [
   { name: "search_knowledge_base", params: { query: "string", top_k: "int (default 5)", language: "en | am" }, desc: "Hybrid vector + BM25 over the knowledge base, language-filtered." },
   { name: "search_trusted_web",     params: { query: "string", language: "en | am" }, desc: "Whitelisted official domains; strict registry-only deep links." },
@@ -326,47 +382,53 @@ const TOOLS = [
   { name: "get_guide_progress",     params: { account_id: "uuid", guide_id: "uuid" }, desc: "Steps completed/locked." },
 ];
 
-const RUNS = [
-  {
-    id: "r1", query: "What are the VAT registration requirements for a coffee exporter in Oromia?",
-    locale: "en", strategy: "agentic", model: "gemini-2.5-flash", cacheHit: false,
-    ts: "2026-08-18 09:41", latencyMs: 4230, latencyDim: false,
-    tokens: { prompt: 1184, completion: 642 }, tokensDim: false,
-    sessionId: "08a1f2e4-…-9c31", traceDim: true,
-    iterations: [
-      {
-        n: 1, tool: "search_knowledge_base",
-        args: { query: "VAT registration requirements coffee exporter Oromia", top_k: 5, language: "en" },
-        ms: 341, ok: true,
-        result: "5 hits — top: VAT Registration Guide (0.84), Export Procedures (0.71), Business Registration (0.62)."
-      },
-      {
-        n: 2, tool: "check_compliance_status",
-        args: { account_id: "eval-msme-01" },
-        ms: 188, ok: true,
-        result: "3 obligations: trade_license (2027-01-10, 30d), TIN (2030-06-15, 45d), business_reg (2031-06-15, 60d)."
-      },
-      {
-        n: 3, tool: "search_knowledge_base",
-        suppressed: true, reason: "duplicate_of_prior_search", matchedQuery: "VAT registration requirements coffee exporter Oromia",
-        args: { query: "VAT registration requirements" }, ms: 12,
-        result: "Cosine 0.94 vs prior KB query — suppressed, no iteration consumed."
-      },
-      {
-        n: 4, tool: "search_trusted_web",
-        args: { query: "VAT registration Ethiopia threshold", language: "en" },
-        ms: 0, ok: false, err: true,
-        result: "Failed: timeout after 1 retry (failure ladder → stale-flagged → fallback)."
-      },
-      {
-        n: 5, tool: "search_knowledge_base",
-        suppressed: true, reason: "drift", matchedQuery: "export license coffee Ethiopia",
-        args: { query: "export license coffee Ethiopia" }, ms: 9,
-        result: "Entity/intent not preserved (export ≠ VAT) — suppressed, invites a new message."
-      }
-    ],
-    finalizeNote: "2 consecutive suppressions → forced finalization; answered from KB hits.",
-    answer: `VAT registration in Ethiopia applies to coffee exporters once taxable turnover crosses the **1 million ETB** threshold (registration is mandatory, not optional).
+const TURN_1 = {
+  id: "t1-1", query: "What are the VAT registration requirements for a coffee exporter in Oromia?",
+  locale: "en", strategy: "agentic", model: "gemini-2.5-flash", cacheHit: false,
+  ts: "2026-08-18 09:41", latencyMs: 4230, latencyDim: false,
+  tokens: { prompt: 1184, completion: 642 }, tokensDim: false,
+  sessionId: "08a1f2e4-…-9c31", traceDim: true,
+  turnOf: "c1", turnNo: 1,
+  history: [],
+  contextWindow: { limit: 1048576, limitLabel: "1,048,576 (Gemini 2.5 Flash)", historyTokens: 0, promptTokens: 1184, completionTokens: 642 },
+  policies: [
+    { tag: "ok", label: "First turn", text: "Fresh session — no history injected. KB pre-fetch at turn start." },
+    { tag: "blocked", label: "Suppressed", text: "Re-search guard: none needed, first turn." }
+  ],
+  iterations: [
+    {
+      n: 1, tool: "search_knowledge_base",
+      args: { query: "VAT registration requirements coffee exporter Oromia", top_k: 5, language: "en" },
+      ms: 341, ok: true,
+      result: "5 hits — top: VAT Registration Guide (0.84), Export Procedures (0.71), Business Registration (0.62)."
+    },
+    {
+      n: 2, tool: "check_compliance_status",
+      args: { account_id: "eval-msme-01" },
+      ms: 188, ok: true,
+      result: "3 obligations: trade_license (2027-01-10, 30d), TIN (2030-06-15, 45d), business_reg (2031-06-15, 60d)."
+    },
+    {
+      n: 3, tool: "search_knowledge_base",
+      suppressed: true, reason: "duplicate_of_prior_search", matchedQuery: "VAT registration requirements coffee exporter Oromia",
+      args: { query: "VAT registration requirements" }, ms: 12,
+      result: "Cosine 0.94 vs prior KB query — suppressed, no iteration consumed."
+    },
+    {
+      n: 4, tool: "search_trusted_web",
+      args: { query: "VAT registration Ethiopia threshold", language: "en" },
+      ms: 0, ok: false, err: true,
+      result: "Failed: timeout after 1 retry (failure ladder → stale-flagged → fallback)."
+    },
+    {
+      n: 5, tool: "search_knowledge_base",
+      suppressed: true, reason: "drift", matchedQuery: "export license coffee Ethiopia",
+      args: { query: "export license coffee Ethiopia" }, ms: 9,
+      result: "Entity/intent not preserved (export ≠ VAT) — suppressed, invites a new message."
+    }
+  ],
+  finalizeNote: "2 consecutive suppressions → forced finalization; answered from KB hits.",
+  answer: `VAT registration in Ethiopia applies to coffee exporters once taxable turnover crosses the **1 million ETB** threshold (registration is mandatory, not optional).
 
 **What you need:**
 - TIN certificate and business license
@@ -375,21 +437,140 @@ const RUNS = [
 - Registration within **30 days** of crossing the threshold (per the compliance schedule on your account: trade license renews 2027-01-10)
 
 Citations below, in order of retrieval score.`,
-    citations: [
-      { n: 1, title: "VAT Registration Guide — Ministry of Revenues", score: 0.84 },
-      { n: 2, title: "Export Procedures — Coffee Sector", score: 0.71 },
-      { n: 3, title: "Business Registration Basics", score: 0.62 },
-      { n: 4, title: "Compliance Deadlines Overview", score: 0.55 }
-    ],
-    retrieval: [
-      { rank: 1, doc: "VAT Registration Guide (am?) — en", score: 0.84, lang: "en", chunk: "en:mof-vat:3", excerpt: "Any person whose taxable turnover exceeds 1,000,000 ETB must register within 30 days of crossing the threshold. Exporters…" },
-      { rank: 2, doc: "Export Procedures — Coffee Sector", score: 0.71, lang: "en", chunk: "en:mint-export:2", excerpt: "Coffee exporters must hold a valid business license and TIN before applying for export permits…" },
-      { rank: 3, doc: "Business Registration Basics", score: 0.62, lang: "en", chunk: "en:mint-reg:1", excerpt: "Registration requires the TIN, trade license, and sector-specific permits depending on the business type…" },
-      { rank: 4, doc: "Compliance Deadlines Overview", score: 0.55, lang: "en", chunk: "en:mof-deadlines:1", excerpt: "Trade license renewals and TIN obligations follow the fiscal calendar; late filing incurs penalties…" }
-    ]
-  },
+  citations: [
+    { n: 1, title: "VAT Registration Guide — Ministry of Revenues", score: 0.84 },
+    { n: 2, title: "Export Procedures — Coffee Sector", score: 0.71 },
+    { n: 3, title: "Business Registration Basics", score: 0.62 },
+    { n: 4, title: "Compliance Deadlines Overview", score: 0.55 }
+  ],
+  retrieval: [
+    { rank: 1, doc: "VAT Registration Guide (am?) — en", score: 0.84, lang: "en", chunk: "en:mof-vat:3", excerpt: "Any person whose taxable turnover exceeds 1,000,000 ETB must register within 30 days of crossing the threshold. Exporters…" },
+    { rank: 2, doc: "Export Procedures — Coffee Sector", score: 0.71, lang: "en", chunk: "en:mint-export:2", excerpt: "Coffee exporters must hold a valid business license and TIN before applying for export permits…" },
+    { rank: 3, doc: "Business Registration Basics", score: 0.62, lang: "en", chunk: "en:mint-reg:1", excerpt: "Registration requires the TIN, trade license, and sector-specific permits depending on the business type…" },
+    { rank: 4, doc: "Compliance Deadlines Overview", score: 0.55, lang: "en", chunk: "en:mof-deadlines:1", excerpt: "Trade license renewals and TIN obligations follow the fiscal calendar; late filing incurs penalties…" }
+  ]
+};
+
+const TURN_2 = {
+  id: "t1-2", query: "What documents do I need for the TIN itself?",
+  locale: "en", strategy: "agentic", model: "gemini-2.5-flash", cacheHit: false,
+  ts: "2026-08-18 09:47", latencyMs: 2980, latencyDim: false,
+  tokens: { prompt: 1640, completion: 410 }, tokensDim: false,
+  sessionId: "08a1f2e4-…-9c31", traceDim: true,
+  turnOf: "c1", turnNo: 2,
+  history: [
+    { who: "user", turn: "turn 1 · 09:41", tk: "38 tokens", text: "What are the VAT registration requirements for a coffee exporter in Oromia?" },
+    { who: "assistant", turn: "turn 1 · answer summary", tk: "74 tokens", text: "Summary: VAT registration mandatory above 1,000,000 ETB turnover; TIN + business license + turnover estimate needed; register within 30 days." },
+    { who: "tools", turn: "turn 1 · tool history", tk: "268 tokens", text: "search_knowledge_base(query=VAT registration requirements coffee exporter Oromia) → 5 hits\ncheck_compliance_status(account=eval-msme-01) → 3 obligations\nsearch_trusted_web(query=VAT registration Ethiopia threshold) → FAILED timeout\nsearch_knowledge_base(query=export license coffee Ethiopia) → SUPPRESSED (drift)" }
+  ],
+  contextWindow: { limit: 1048576, limitLabel: "1,048,576 (Gemini 2.5 Flash)", historyTokens: 380, promptTokens: 1640, completionTokens: 410 },
+  policies: [
+    { tag: "applied", label: "History injected", text: "tool_history.j2 condensed turn 1: prior query + answer summary + tool history (268 tk) + prior user message (38 tk)." },
+    { tag: "ok", label: "KB re-search allowed", text: "Distinct follow-up query (cosine 0.41 vs prior KB queries) — allowed, injects hits into context." },
+    { tag: "blocked", label: "Suppressed", text: "attempted duplicate_of_prompt re-search (cosine 0.94 vs prompt) — see Iterations tab." },
+    { tag: "applied", label: "message_order", text: "Turn 2 stored with message_order=4 — order integrity across follow-ups preserved." }
+  ],
+  iterations: [
+    {
+      n: 1, tool: "search_knowledge_base",
+      args: { query: "TIN registration documents Ethiopia", top_k: 5, language: "en" },
+      ms: 297, ok: true,
+      result: "3 hits — top: TIN Registration Guide (0.81), Business Registration (0.66)."
+    },
+    {
+      n: 2, tool: "search_knowledge_base",
+      suppressed: true, reason: "duplicate_of_prompt", matchedQuery: "What documents do I need for the TIN itself?",
+      args: { query: "TIN documents" }, ms: 11,
+      result: "Cosine 0.95 vs prompt — exact re-search of the follow-up suppressed."
+    },
+    {
+      n: 3, tool: "search_guides",
+      args: { query: "TIN registration", account_id: "eval-msme-01" },
+      ms: 240, ok: true,
+      result: "Guide: TIN Registration (3 steps, all pending)."
+    }
+  ],
+  finalizeNote: "1 suppression (duplicate_of_prompt); answered from KB + guide hits.",
+  answer: `For the **TIN itself** you need:
+- Completed TIN application form
+- Copy of your business license (or registration certificate)
+- Proof of address
+- Photo ID of the proprietor
+
+The TIN guide on your account covers this in 3 steps — all currently pending.`,
+  citations: [
+    { n: 1, title: "TIN Registration Guide", score: 0.81 },
+    { n: 2, title: "Business Registration Basics", score: 0.66 }
+  ],
+  retrieval: [
+    { rank: 1, doc: "TIN Registration Guide", score: 0.81, lang: "en", chunk: "en:mof-tin:2", excerpt: "TIN application requires the completed form, business license copy, proof of address, and ID…" },
+    { rank: 2, doc: "Business Registration Basics", score: 0.66, lang: "en", chunk: "en:mint-reg:2", excerpt: "Sole proprietors register with a single ID; companies need additional incorporation documents…" }
+  ]
+};
+
+const TURN_3 = {
+  id: "t1-3", query: "And what happens if I file the VAT return late?",
+  locale: "en", strategy: "agentic", model: "gemini-2.5-flash", cacheHit: false,
+  ts: "2026-08-18 09:52", latencyMs: 3540, latencyDim: false,
+  tokens: { prompt: 2380, completion: 520 }, tokensDim: false,
+  sessionId: "08a1f2e4-…-9c31", traceDim: true,
+  turnOf: "c1", turnNo: 3,
+  history: [
+    { who: "user", turn: "turn 1 · 09:41", tk: "38 tokens", text: "What are the VAT registration requirements for a coffee exporter in Oromia?" },
+    { who: "tools", turn: "turn 1 · tool history", tk: "268 tokens", text: "search_knowledge_base(...) → 5 hits\ncheck_compliance_status(...) → 3 obligations\nsearch_trusted_web(...) → FAILED\nsearch_knowledge_base(...) → SUPPRESSED (drift)" },
+    { who: "user", turn: "turn 2 · 09:47", tk: "41 tokens", text: "What documents do I need for the TIN itself?" },
+    { who: "assistant", turn: "turn 2 · answer summary", tk: "58 tokens", text: "Summary: TIN needs form, business license copy, proof of address, photo ID." },
+    { who: "tools", turn: "turn 2 · tool history", tk: "210 tokens", text: "search_knowledge_base(query=TIN registration documents Ethiopia) → 3 hits\nsearch_guides(query=TIN registration) → guide 3 steps\nsearch_knowledge_base(...) → SUPPRESSED (duplicate_of_prompt)" }
+  ],
+  contextWindow: { limit: 1048576, limitLabel: "1,048,576 (Gemini 2.5 Flash)", historyTokens: 615, promptTokens: 2380, completionTokens: 520 },
+  policies: [
+    { tag: "applied", label: "History injected", text: "tool_history.j2 condensed turns 1–2: 5 history entries, 615 tokens injected into the prompt." },
+    { tag: "ok", label: "KB re-search allowed", text: "Distinct follow-up (filing deadlines ≠ TIN documents) — allowed." },
+    { tag: "applied", label: "Context window", text: "3,515/1,048,576 tokens used this turn — history is 17% of the prompt, growing linearly per turn." },
+    { tag: "blocked", label: "None suppressed", text: "No suppression this turn — all guards passed." }
+  ],
+  iterations: [
+    {
+      n: 1, tool: "search_knowledge_base",
+      args: { query: "VAT late filing penalty Ethiopia", top_k: 5, language: "en" },
+      ms: 310, ok: true,
+      result: "2 hits — top: VAT Filing Deadlines (0.77), Penalties & Fines (0.69)."
+    },
+    {
+      n: 2, tool: "search_trusted_web",
+      args: { query: "VAT late filing penalty Ethiopia MoR", language: "en" },
+      ms: 420, ok: true,
+      result: "1 hit — Ministry of Revenues VAT guide (0.88): 5% late penalty + interest."
+    }
+  ],
+  finalizeNote: "No suppressions; loop ended on tool-free synthesis.",
+  answer: `Filing the VAT return **late** incurs:
+- A **5% penalty** on the tax due, plus
+- **Interest** accruing monthly until payment
+
+This comes from the Ministry of Revenues guide — cited below.`,
+  citations: [
+    { n: 1, title: "Ministry of Revenues — VAT guide", score: 0.88 },
+    { n: 2, title: "VAT Filing Deadlines", score: 0.77 },
+    { n: 3, title: "Penalties & Fines", score: 0.69 }
+  ],
+  retrieval: [
+    { rank: 1, doc: "Ministry of Revenues VAT guide (web)", score: 0.88, lang: "en", chunk: "web:mof-vat-guide", excerpt: "Late filing incurs a 5% penalty of the tax due plus monthly interest on the outstanding amount…" },
+    { rank: 2, doc: "VAT Filing Deadlines", score: 0.77, lang: "en", chunk: "en:mof-vat:5", excerpt: "Returns are due by the last day of the month following the tax period…" },
+    { rank: 3, doc: "Penalties & Fines", score: 0.69, lang: "en", chunk: "en:mof-penalties:1", excerpt: "Penalty rates and interest accrual schedule for late filings…" }
+  ]
+};
+
+const THREADS = [
   {
-    id: "r2", query: "የንግድ ሥራ ፈቃድ ለማደስ ምን ሰነዶች ያስፈልጋሉ?",
+    id: "c1", title: "VAT for coffee exporter", sessionId: "08a1f2e4-…-9c31",
+    ts: "2026-08-18 · 3 turns", turns: [TURN_1, TURN_2, TURN_3]
+  }
+];
+
+const RUNS = [
+  {
+    id: "r1", query: "የንግድ ሥራ ፈቃድ ለማደስ ምን ሰነዶች ያስፈልጋሉ?",
     locale: "am", strategy: "agentic", model: "gemini-2.5-flash", cacheHit: false,
     ts: "2026-08-18 09:02", latencyMs: 5110, latencyDim: false,
     tokens: { prompt: 1310, completion: 590 }, tokensDim: false,
@@ -416,7 +597,7 @@ Citations below, in order of retrieval score.`,
     ]
   },
   {
-    id: "r3", query: "What is the deadline for VAT filing?",
+    id: "r2", query: "What is the deadline for VAT filing?",
     locale: "en", strategy: "simple", model: "gemini-2.5-flash", cacheHit: true,
     ts: "2026-08-17 16:20", latencyMs: 890, latencyDim: true,
     tokens: { prompt: 0, completion: 0 }, tokensDim: true,
@@ -430,42 +611,103 @@ Citations below, in order of retrieval score.`,
   }
 ];
 
-/* ─────────────────────────── render ─────────────────────────── */
+/* ─────────────────────────── state ─────────────────────────── */
 const runsList = document.getElementById("runsList");
 const inspector = document.getElementById("inspector");
-let current = RUNS[0];
+let view = { kind: "home" };          // home | thread:{thread} | turn:{thread,turn}
+let tab = "answer";
 
+/* ─────────────────────────── render: left rail ─────────────────────────── */
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+function fmt(ms){ return ms >= 1000 ? (ms/1000).toFixed(2)+"s" : ms+"ms"; }
+function hasSuppressed(r){ return (r.iterations || []).some(i => i.suppressed); }
 
 function renderRuns(){
-  runsList.innerHTML = RUNS.map(r => `
-    <button class="run ${r.id === current.id ? "active" : ""}" data-id="${r.id}">
-      <div class="q">${esc(r.query)}</div>
-      <div class="meta">
-        <span class="chip ${r.strategy}">${r.strategy}</span>
-        <span class="chip ${r.locale}">${r.locale}</span>
-        ${r.cacheHit ? '<span class="chip cache">cache</span>' : ""}
-        ${r.iterations.some(i => i.suppressed) ? '<span class="chip suppressed">suppressed</span>' : ""}
-        <span>${r.ts}</span>
-        <span>${(r.latencyMs/1000).toFixed(1)}s</span>
-      </div>
-    </button>`).join("");
-  runsList.querySelectorAll(".run").forEach(btn =>
-    btn.addEventListener("click", () => { current = RUNS.find(r => r.id === btn.dataset.id); renderRuns(); renderInspector(); }));
+  let html = "";
+  if (view.kind === "thread"){
+    const th = view.thread;
+    html += `<div class="back-row"><button data-act="home">← All runs &amp; conversations</button></div>`;
+    html += `<div class="group">${esc(th.title)} · ${th.turnNo===undefined?th.turns.length+" turns":""}</div>`;
+    th.turns.forEach((t, i) => {
+      const active = view.kind === "turn" && view.turn.id === t.id;
+      html += `
+        <button class="run ${active ? "active" : ""}" data-act="turn" data-id="${t.id}">
+          <div class="q"><span class="turn-tag ${i===0?"hot":""}">${t.turnNo}</span> ${esc(t.query)}</div>
+          <div class="meta">
+            <span class="chip ${t.strategy}">${t.strategy}</span>
+            <span class="chip ${t.locale}">${t.locale}</span>
+            ${t.cacheHit ? '<span class="chip cache">cache</span>' : ""}
+            ${hasSuppressed(t) ? '<span class="chip suppressed">suppressed</span>' : ""}
+            <span>${t.ts}</span>
+            <span>${(t.latencyMs/1000).toFixed(1)}s</span>
+            <span>${(t.tokens.prompt + t.tokens.completion).toLocaleString()} tk</span>
+          </div>
+        </button>`;
+    });
+    html += `<div class="group" style="margin-top:16px">Continue this conversation</div>
+      <div class="composer" style="border:0;padding:4px 4px 8px">
+        <input placeholder="Ask a follow-up (reuses session ${esc(th.sessionId)})…" disabled/>
+        <button disabled>Ask</button>
+      </div>`;
+  } else {
+    html += `<div class="group">Conversations <span class="count">${THREADS.length}</span></div>`;
+    THREADS.forEach(th => {
+      html += `
+        <button class="run" data-act="thread" data-id="${th.id}">
+          <div class="thread-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12a8 8 0 0 1-8 8H4l2-2.5A8 8 0 1 1 21 12z"/></svg>
+            ${esc(th.title)}
+          </div>
+          <div class="meta">
+            <span class="chip thread">thread</span>
+            <span>${th.turns.length} turns</span>
+            <span>${th.ts}</span>
+          </div>
+          <div class="thread-sub">session ${esc(th.sessionId)}</div>
+        </button>`;
+    });
+    html += `<div class="group">Single runs <span class="count">${RUNS.length}</span></div>`;
+    RUNS.forEach(r => {
+      html += `
+        <button class="run ${view.kind==="turn" && view.turn.id===r.id ? "active" : ""}" data-act="run" data-id="${r.id}">
+          <div class="q">${esc(r.query)}</div>
+          <div class="meta">
+            <span class="chip ${r.strategy}">${r.strategy}</span>
+            <span class="chip ${r.locale}">${r.locale}</span>
+            ${r.cacheHit ? '<span class="chip cache">cache</span>' : ""}
+            ${hasSuppressed(r) ? '<span class="chip suppressed">suppressed</span>' : ""}
+            <span>${r.ts}</span>
+            <span>${(r.latencyMs/1000).toFixed(1)}s</span>
+          </div>
+        </button>`;
+    });
+  }
+  runsList.innerHTML = html;
+  runsList.querySelectorAll("[data-act]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const act = btn.dataset.act;
+      if (act === "home") view = { kind: "home" };
+      else if (act === "thread") view = { kind: "thread", thread: THREADS.find(t => t.id === btn.dataset.id) };
+      else if (act === "turn"){ const th = THREADS.find(t => t.turns.some(x => x.id === btn.dataset.id)); view = { kind: "turn", thread: th, turn: th.turns.find(x => x.id === btn.dataset.id) }; }
+      else if (act === "run") view = { kind: "turn", thread: null, turn: RUNS.find(r => r.id === btn.dataset.id) };
+      renderRuns(); renderInspector();
+    });
+  });
 }
 
-function fmt(ms){ return ms >= 1000 ? (ms/1000).toFixed(2)+"s" : ms+"ms"; }
-
-function metaBar(r){
+/* ─────────────────────────── render: inspector ─────────────────────────── */
+function metaBar(r, inThread){
   const tks = r.tokensDim ? `<div class="stat"><div class="v dim">—</div><div class="k">tokens</div><div class="missing">not recorded</div></div>`
     : `<div class="stat"><div class="v">${(r.tokens.prompt+r.tokens.completion).toLocaleString()}</div><div class="k">tokens</div></div>`;
   const lat = r.latencyDim ? `<div class="stat"><div class="v dim">—</div><div class="k">latency</div><div class="missing">not recorded</div></div>`
     : `<div class="stat"><div class="v">${(r.latencyMs/1000).toFixed(1)}s</div><div class="k">latency</div></div>`;
+  const turnChips = r.turnNo ? `<span class="chip followup">turn ${r.turnNo} of ${inThread ? inThread.turns.length : "?"}</span>` : "";
   return `
   <div class="meta">
     <div class="qcol">
       <h2>${esc(r.query)}</h2>
       <div class="sub">
+        ${turnChips}
         <span class="chip ${r.strategy}">${r.strategy}</span>
         <span class="chip ${r.locale}">${r.locale}</span>
         ${r.cacheHit ? '<span class="chip cache">cache hit</span>' : ""}
@@ -551,7 +793,16 @@ When a search would repeat prior work or drift from intent, it is suppressed aut
   "description": "${t.desc}",
   "parameters": ${JSON.stringify(t.params)}
 }`).join("\n");
+  const historyBlock = (r.history || []).length ? r.history.map(h =>
+    `<span class="hist">[history · ${h.who} · turn ${h.turn}]</span> ${esc(h.text)}`
+  ).join("\n") : null;
   return `<div class="pane"><div class="pane-body"><div class="gap-16">
+    ${historyBlock ? `
+    <div class="prompt-block">
+      <div class="head">Injected history <span class="badge-recon">reconstructed — from tool_history.j2 + prior turns</span></div>
+      <pre>${historyBlock}</pre>
+      <div class="meta-note">Condensed by <span class="font-mono">tool_history.j2</span> at ask time — token cost of history shown in the Context tab.</div>
+    </div>` : ""}
     <div class="prompt-block">
       <div class="head">System prompt <span class="badge-recon">reconstructed — not persisted at ask time</span></div>
       <pre>${esc(system)}</pre>
@@ -566,7 +817,7 @@ When a search would repeat prior work or drift from intent, it is suppressed aut
       <pre><span class="k">user:</span> ${esc(user)}</pre>
     </div>
     <div class="footnotes">
-      <div class="fn"><span class="mark">!</span><span>If the inspector is the destination, the exact rendered prompt should be <b>persisted at ask time</b> (new column), instead of reconstructed. Decision needed.</span></div>
+      <div class="fn"><span class="mark">!</span><span>If the inspector is the destination, the exact rendered prompt (incl. history block) should be <b>persisted at ask time</b> (new column), instead of reconstructed. Decision needed.</span></div>
     </div>
   </div></div></div>`;
 }
@@ -585,7 +836,7 @@ function usageTab(r){
     </div>
     <table class="tbl">
       <thead><tr><th>Iteration</th><th>Tool</th><th>Status</th><th>Tool ms</th><th>LLM ms</th><th>Tokens</th></tr></thead>
-      <tbody>${r.iterations.length ? r.iterations.map((i, idx) => `
+      <tbody>${r.iterations.length ? r.iterations.map(i => `
         <tr>
           <td class="rank">${i.n}</td>
           <td><span class="font-mono" style="color:var(--ink)">${esc(i.tool)}</span></td>
@@ -601,6 +852,48 @@ function usageTab(r){
       <div class="fn"><span class="mark">!</span><span>LLM-per-iteration ms &amp; token counts are <b>never populated today</b> — adapters don't parse usage. Persisting them at ask time is a decision for this effort.</span></div>
     </div>
   </div></div>`;
+}
+
+function contextTab(r){
+  if (!r.contextWindow && !r.history) return `<div class="pane"><div class="pane-body"><p style="font-size:12.5px;color:var(--muted)">No conversation context — this is a single run.</p></div></div>`;
+  const cw = r.contextWindow || { limit: 1048576, limitLabel: "1,048,576 (Gemini 2.5 Flash)", historyTokens: 0, promptTokens: 0, completionTokens: 0 };
+  const total = cw.historyTokens + cw.promptTokens + cw.completionTokens;
+  const pct = Math.min(100, (total / cw.limit) * 100);
+  const histPct = cw.limit ? (cw.historyTokens / total) * 100 : 0;
+  const promptPct = cw.limit ? (cw.promptTokens / total) * 100 : 0;
+  const compPct = Math.max(0, 100 - histPct - promptPct);
+  const history = r.history || [];
+  return `<div class="pane"><div class="pane-body"><div class="gap-16">
+    <div class="ctx-window">
+      <div class="sec-title">Context window — turn ${r.turnNo}</div>
+      <div class="bar">
+        <div class="used" style="width:${pct}%"></div>
+      </div>
+      <div class="legend">
+        <span class="l-used"><i></i>${total.toLocaleString()} used this turn</span>
+        <span class="l-comp"><i></i>${compPct.toFixed(1)}% completion</span>
+      </div>
+      <div class="limit-note"><span class="badge-recon">provider-dependent</span>${cw.limitLabel} limit (Cohere Command A: 256K — verify per active provider)</div>
+    </div>
+    <div>
+      <div class="sec-title">History injected this turn ${history.length ? `(${history.length} entries · ${cw.historyTokens.toLocaleString()} tokens)` : "— none, first turn"}</div>
+      ${history.map(h => `
+        <div class="hist-item">
+          <div class="h-head"><span class="who">${esc(h.who)}</span><span class="turn">${esc(h.turn)}</span><span class="tk">${esc(h.tk)}</span></div>
+          <div class="h-body">${esc(h.text)}</div>
+        </div>`).join("") || `<p style="font-size:12.5px;color:var(--muted)">Fresh session — nothing from prior turns enters this prompt.</p>`}
+    </div>
+    <div>
+      <div class="sec-title">Follow-up policy applied this turn</div>
+      <div class="policy-list">${(r.policies || []).map(p => `
+        <div class="policy"><span class="tag ${p.tag}">${p.tag}</span><span>${p.text}</span></div>`).join("")}
+      </div>
+    </div>
+    <div class="footnotes">
+      <div class="fn"><span class="mark">!</span><span>History is condensed by <span class="font-mono">tool_history.j2</span> — exact rendering depends on the persisted-prompt decision (FIN-82).</span></div>
+      <div class="fn"><span class="mark">?</span><span>With a 1M-token window, the bar is near-flat — is the interesting metric the <b>history share of the prompt</b>, not the window?</span></div>
+    </div>
+  </div></div></div>`;
 }
 
 function answerTab(r){
@@ -621,24 +914,32 @@ function answerTab(r){
 }
 
 function renderInspector(){
-  if (!current){ inspector.innerHTML = `<div class="insp-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg><div>No run selected</div></div>`; return; }
-  const tabs = [
-    ["answer", "Answer", answerTab(current)],
-    ["iterations", `Iterations ${current.iterations.length ? "("+current.iterations.length+")" : ""}`, iterationsTab(current)],
-    ["retrieval", `Retrieval (${current.retrieval.length})`, retrievalTab(current)],
-    ["prompt", "Prompt & tools", promptTab(current)],
-    ["usage", "Latency & tokens", usageTab(current)]
-  ];
+  if (view.kind === "home"){
+    inspector.innerHTML = `<div class="insp-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg><div>Select a conversation or run — or ask live</div></div>`;
+    return;
+  }
+  const r = view.turn;
+  const thread = view.thread;
+  const tabs = [];
+  if (r.contextWindow || (r.history || []).length) tabs.push(["context", "Context", contextTab(r)]);
+  tabs.push(["answer", "Answer", answerTab(r)]);
+  tabs.push(["iterations", `Iterations ${r.iterations.length ? "("+r.iterations.length+")" : ""}`, iterationsTab(r)]);
+  tabs.push(["retrieval", `Retrieval (${r.retrieval.length})`, retrievalTab(r)]);
+  tabs.push(["prompt", "Prompt & tools", promptTab(r)]);
+  tabs.push(["usage", "Latency & tokens", usageTab(r)]);
+
+  const activeTab = tabs.some(t => t[0] === tab) ? tab : tabs[0][0];
   inspector.innerHTML = `
-    ${metaBar(current)}
-    <div class="tabs">${tabs.map(([k,label], i) => `<button data-tab="${k}" class="${i===0?"on":""}">${label}</button>`).join("")}</div>
-    ${tabs.map(([k,label,html], i) => `<div class="pane" data-pane="${k}" ${i===0?"":"hidden"}>${html}</div>`).join("")}`;
+    ${metaBar(r, thread)}
+    <div class="tabs">${tabs.map(([k,label]) => `<button data-tab="${k}" class="${k === activeTab ? "on" : ""}">${label}</button>`).join("")}</div>
+    ${tabs.map(([k,label,html]) => `<div class="pane" data-pane="${k}" ${k === activeTab ? "" : "hidden"}>${html}</div>`).join("")}`;
   inspector.querySelectorAll(".tabs button").forEach(btn =>
     btn.addEventListener("click", () => {
+      tab = btn.dataset.tab;
       inspector.querySelectorAll(".tabs button").forEach(b => b.classList.remove("on"));
       inspector.querySelectorAll("[data-pane]").forEach(p => p.hidden = true);
       btn.classList.add("on");
-      inspector.querySelector(`[data-pane="${btn.dataset.tab}"]`).hidden = false;
+      inspector.querySelector(`[data-pane="${tab}"]`).hidden = false;
     }));
 }
 
