@@ -122,24 +122,31 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .panelc .pb{flex:1;overflow-y:auto;padding:12px 14px}
 .panelc .pf{padding:10px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);flex:0 0 auto}
 
-/* cell matrix */
-.matrix-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+/* cell matrix — 3 rows (intent) × 2 cols (locale) so nothing scrolls sideways */
+.matrix-grid{display:grid;grid-template-columns:118px 1fr 1fr;gap:8px}
+.m-hdr,.m-row{display:contents}
+.m-hdr .m-label,.m-row .m-label{
+  display:flex;align-items:center;justify-content:flex-start;padding:0 4px;font-size:10px;
+  font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+}
+.m-hdr .m-label{justify-content:center;font-size:9.5px}
 .cell{
   border:1px solid var(--line);border-radius:6px;padding:8px 10px;cursor:pointer;
   background:var(--panel);transition:border-color var(--dur-fast), background var(--dur-fast);
+  min-width:0;
 }
 .cell:hover{background:var(--panel-2)}
 .cell.on{border-color:var(--navy-strong);background:var(--navy-tint)}
 .cell .cell-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.cell .cell-top .nm{font-size:11px;font-weight:700;font-family:var(--mono)}
-.cell .cell-top .v{font-family:var(--display);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.cell .cell-top .nm{font-size:11px;font-weight:700}
+.cell .cell-top .v{font-family:var(--display);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
 .cell .cell-top .v.ok{color:var(--success-strong)}
 .cell .cell-top .v.bad{color:var(--destructive-strong)}
 .cell .cell-top .v.reg{color:var(--destructive-strong)}
 .cell .cell-sub{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap}
 .cell .chunkline{font-size:10px;color:var(--muted);margin-top:6px;font-family:var(--mono)}
-
-.grid-empty{grid-column:1/-1;font-size:11.5px;color:var(--muted);text-align:center;padding:12px}
+.cell .unk{font-size:10px;color:var(--success-strong);font-weight:600;margin-top:6px}
+.cell .unk.bad{color:var(--destructive-strong)}
 
 /* variance vs pass bar */
 .barline{display:flex;align-items:center;gap:8px;margin-top:5px}
@@ -418,6 +425,16 @@ const CELL_SCORES = {
   "mixed:am":  { cit: .71, gnd: .85, tool: .87, ctx: .55, faith: .75, relv: .76, pass: 3, total: 6, verdict: "fail", note: "AM retrieval drags citations + context recall together" },
 };
 
+/* per-cell unknown-handling gate (FIN-69: 100% hard gate, distinct from other metrics) */
+const CELL_UNKNOWN = {
+  "knowledge:en": { handle: 2, total: 2 },
+  "knowledge:am": { handle: 2, total: 2 },
+  "personal:en": { handle: 0, total: 0 },
+  "personal:am": { handle: 0, total: 0 },
+  "mixed:en":  { handle: 0, total: 0 },
+  "mixed:am":  { handle: 0, total: 0 },
+};
+
 /* pass bars — provisional until FIN-77 calibration */
 const BARS = {
   cit:   { bar: .80, label: "Required-citation coverage", status: "provisional" },
@@ -526,7 +543,17 @@ const SBS_SAMPLE = {
   }
 };
 
-/* ═══════════════════════ STATE ═══════════════════════ */
+/* personal/mixed side-by-side — simple can't fetch account state, so gaps are by design */
+const SBS_SAMPLE_PERSONAL = {
+  query: "Which compliance obligation of mine is due soonest?",
+  intent: "personal", locale: "en",
+  simple: {
+    strategy: "simple", model: "gemini-2.5-flash", latencyMs: 540, tokens: { prompt: 301, completion: 146 },
+    answer: "I don't have access to your account records here. To see which compliance obligation is due soonest, check your dashboard for upcoming deadlines, or contact the relevant authority.",
+    citations: [], toolUse: [], wrongFamily: false, exhausted: false,
+    gates: { cit: {got:0,bar:.80,pass:false}, gnd:{got:0,bar:.90,pass:false}, tool:{got:0,bar:.90,pass:false}, ctx:{got:0,bar:.70,pass:false} }
+  }
+};
 let mode = "eval";
 let cellSel = "knowledge:en";
 let itemSel = "KB-EN-01";
@@ -584,29 +611,43 @@ function renderEval(){
   const passing = items.filter(i => !i.unknown).filter(i => i.answeredTools.length >= i.tools.length).length;
   const verdict = cs.verdict;
 
-  const cellsHtml = INTS.flatMap(intent => LOCS.map(locale => {
-    const key = cellKey(intent, locale);
-    const c = CELL_SCORES[key];
-    const cls = c.verdict === "fail" ? "bad" : (c.verdict === "pass" ? "ok" : "reg");
-    const on = key === cellSel;
-    return `<div class="cell ${on?"on":""}" data-cell="${key}">
-      <div class="cell-top">
-        <span class="nm">${intent.slice(0,3).toUpperCase()}/${locale}</span>
-        <span class="v ${cls}">${(c.pass/c.total*100).toFixed(0)}%</span>
-      </div>
-      <div class="cell-sub"><span class="chip ${locale}">${locale}</span><span class="chip ${intent}">${intent}</span></div>
-      <div class="chunkline">${c.pass}/${c.total} items · ${verdictGist(c)}</div>
-    </div>`;
-  }).join(""));
+  const cellsHtml = [
+    `<div class="m-hdr"><span class="m-label">intent \\ locale</span><span class="m-label">en</span><span class="m-label">am</span></div>`,
+    ...INTS.map(intent => {
+      const cells = LOCS.map(locale => {
+        const key = cellKey(intent, locale);
+        const c = CELL_SCORES[key];
+        const cls = c.verdict === "fail" ? "bad" : (c.verdict === "pass" ? "ok" : "reg");
+        const on = key === cellSel;
+        const unknown = CELL_UNKNOWN[key];
+        return `<div class="cell ${on?"on":""}" data-cell="${key}">
+          <div class="cell-top">
+            <span class="nm">${locale.toUpperCase()}</span>
+            <span class="v ${cls}">${(c.pass/c.total*100).toFixed(0)}%</span>
+          </div>
+          <div class="cell-sub"><span class="chip ${intent}">${intent}</span><span class="chip ${c.verdict==="pass"?"pass":"fail"}">${verdictGist(c)}</span></div>
+          <div class="chunkline">${c.pass}/${c.total} items</div>
+          <div class="unk ${unknown.handle>=unknown.total?"":"bad"}">unknown ${unknown.handle}/${unknown.total}</div>
+        </div>`;
+      });
+      return `<div class="m-row"><span class="m-label">${intent}</span>${cells.join("")}</div>`;
+    })
+  ].join("");
 
+  const unk = CELL_UNKNOWN[cellSel];
   const summary = `
     <div class="sum-strip">
       ${["cit","gnd","tool","ctx","faith","relv"].map(m => {
         const bar = BARS[m].bar, got = cs[m];
         const na = got==null;
+        const judge = m==="faith" || m==="relv";
         const cls = na ? "defer" : (got>=bar ? "ok" : "bad");
-        return `<div class="s-card"><div class="k">${m}</div><div class="v ${cls}">${na?"n/a":(got*100).toFixed(0)}%</div><div class="sub">bar ${pct(bar)}</div></div>`;
+        return `<div class="s-card"><div class="k">${m}</div><div class="v ${cls}">${na?"n/a":(got*100).toFixed(0)}%</div><div class="sub">${judge ? "judge · nightly CLI" : "bar "+pct(bar)}</div></div>`;
       }).join("")}
+    </div>
+    <div class="sbs-verdict" style="margin-top:0">
+      <b>unknown-handling</b>
+      <span><span class="font-mono">${unk.handle}/${unk.total} known-unknown items told the truth</span> — hard gate, 100% required.</span>
     </div>`;
 
   surf.innerHTML = `
@@ -621,7 +662,7 @@ function renderEval(){
         <div class="sec-title" style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Cell ${esc(cellSel)} items</div>
         <div style="margin-top:8px">${items.map(runnerRow).join("")}</div>
       </div>
-      <div class="pf">Legend: green passes the provisional cell bar; red fails. Unknown-handling scored separately.</div>
+      <div class="pf">Legend: green passes the provisional cell bar; red fails; unknown-handling shown per cell (100% hard gate).</div>
     </section>
 
     <section class="panelc" style="flex:1">
@@ -636,7 +677,8 @@ function renderEval(){
         ${cs.note ? `<div class="sbs-verdict"><b>cell note</b><span>${esc(cs.note)}</span></div>` : ""}
         <div class="footnotes">
           <div class="fn"><span class="mark">!</span><span>Bars are <b>provisional</b> until FIN-77 runs a known-bad baseline and gets human approval.</span></div>
-          <div class="fn"><span class="mark">–</span><span>ctx recall is n/a for <span class="font-mono">personal</span> items; unknown-handling is a separate hard gate (100%).</span></div>
+          <div class="fn"><span class="mark">judge</span><span>Deterministic gates compute <b>live</b> in the runner; faithfulness &amp; relevancy are LLM-judge metrics filled by the <b>nightly CLI pass</b> (Gemini 2.5 Flash · t0) and surfaced here.</span></div>
+          <div class="fn"><span class="mark">–</span><span>ctx recall is n/a for <span class="font-mono">personal</span> items (no KB evidence expected); unknown-handling is a separate hard gate (100%).</span></div>
         </div>
       </div>
       <div class="pf">
@@ -644,7 +686,7 @@ function renderEval(){
           <button class="btn primary" id="runCell">${runState==="running" ? '<span class="spin"></span>Running cell…' : "Run this cell (6 items)"}</button>
           <button class="btn" id="runAll" ${runState==="running"?"disabled":""}>Run full set (36)</button>
           <button class="btn danger" style="display:none" id="abortTn">Abort</button>
-          <span class="mono" style="font-size:11px;color:var(--muted)">→ captures full traces to the runs rail (replayable)</span>
+          <span style="font-size:11px;color:var(--muted)">runs the in-process ask path per item (fixture account · cache-bypassed) → traces land in the <b>separate Eval runs store</b>, replayable.</span>
         </div>
       </div>
     </section>`;
@@ -653,6 +695,9 @@ function renderEval(){
 function verdictGist(c){ return c.verdict==="pass" ? "pass" : c.verdict==="fail" ? "fail" : "~"; }
 
 /* ——— mode: SIDE-BY-SIDE ——— */
+let sbsItem = "KB-EN-01";            // golden item only — free-form not allowed
+let sbsPersonal = false;             // personal/mixed blocked by default (knowing where the gap is welcome)
+
 function sbsVerdict(a){
   const pass = a.gates.cit.pass && a.gates.gnd.pass && a.gates.tool.pass && a.gates.ctx.pass;
   return pass ? `<span class="chip pass">passes gates</span>` : `<span class="chip fail">fails gates</span>`;
@@ -690,19 +735,26 @@ function sbsColumn(name, d, cls){
 }
 
 function renderSbs(){
-  const d = SBS_SAMPLE;
+  const sitem = GOLDEN.find(g => g.id === sbsItem) || GOLDEN[0];
+  const isPersonal = sitem.intent !== "knowledge";
+  const d = isPersonal ? SBS_SAMPLE_PERSONAL : SBS_SAMPLE;
   surf.innerHTML = `
     <div class="panelc" style="flex:1">
       <div class="ph">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <h2 style="flex:1">Side-by-side — ${esc(d.query)}</h2>
-          <span class="chip ${d.intent}">${d.intent}</span>
-          <span class="chip ${d.locale}">${d.locale}</span>
+          <h2 style="flex:1">Side-by-side — <span class="font-mono">${sitem.id}</span></h2>
+          <span class="chip ${sitem.intent}">${sitem.intent}</span>
+          <span class="chip ${sitem.locale}">${sitem.locale}</span>
           <span class="chip cache">fixture account</span>
+          <select id="sbsItemSel" style="padding:5px 8px;font-size:11.5px;background:var(--canvas-2);border:1px solid var(--line);border-radius:6px;color:var(--ink);font-family:var(--mono)" title="golden items only">
+            ${GOLDEN.map(g => `<option value="${g.id}" ${g.id===sitem.id?"selected":""}>${g.id} · ${esc(g.query.slice(0,34))}${g.intent!=="knowledge"?" …":""}</option>`).join("")}
+          </select>
         </div>
-        <p>Same query, both strategies, scored on the same gates — the answer-quality delta the eval exists to make visible.</p>
+        <p>Golden items only — no free-form. Knowledge intents by default; <button class="btn" id="sbsUnlock" style="height:auto;padding:1px 8px;font-size:11px">${isPersonal?"show":"unlock"} personal/mixed</button> to see where simple can't reach.</p>
       </div>
       <div class="pb" style="display:flex;flex-direction:column">
+        ${isPersonal ? `
+        <div class="supp-bar" style="margin-bottom:12px"><b>personal / mixed</b><span>Simple Ask has no account tools — it <b>cannot</b> fetch profile/compliance/guide state. Run for the delta (agentic fetches, simple doesn't), but the tool-use gate will fail simple <b>by design</b>. This is informative, not a comparison.</span></div>` : ""}
         <div class="sbs-grid" style="flex:1;min-height:0">
           ${sbsColumn("Simple Ask", d.simple, "simple")}
           ${sbsColumn("Agentic Ask", d.agentic, "agentic")}
@@ -710,11 +762,12 @@ function renderSbs(){
         <div class="box row" style="margin-top:12px">
           <div style="border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:var(--canvas-2);font-size:12px;color:var(--ink-2);display:flex;gap:8px">
             <b style="flex:0 0 auto">verdict</b>
-            <span>Simple is faster and cheaper but <b>fails 3 of 4 deterministic gates</b> (missed the export-profile obligation and the 1M threshold nuance); agentic passes and cites the account-record source. The eval runner is what turns this intuition into a pass/fail number.</span>
+            <span>${isPersonal ? "Simple fails the tool-use gate because it has no account state path — the gap is real, so the run is still worth keeping but never acceptance.</span>"
+                                : "Simple is faster and cheaper but <b>fails 3 of 4 deterministic gates</b> (missed the export-profile obligation and the 1M threshold nuance); agentic passes and cites the account-record source. The eval runner is what turns this intuition into a pass/fail number.</span>"}
           </div>
         </div>
         <div class="footnotes">
-          <div class="fn"><span class="mark">!</span><span>Both runs come from the same fixture account (eval-msme-01) and cache-bypass — the only variable is the strategy.</span></div>
+          <div class="fn"><span class="mark">!</span><span>Both runs come from the same fixture account (eval-msme-01) and cache-bypass — the only variable is the strategy. Trace for each lands in the Eval runs store, comparable and replayable.</span></div>
           <div class="fn"><span class="mark">?</span><span>Which cells do you actually want side-by-side for, and does the verdict belong per-run or per-cell?</span></div>
         </div>
       </div>
@@ -785,7 +838,7 @@ function renderSandbox(){
         </div>
       </div>
       <div class="pf">
-        <span class="mono" style="font-size:11px;color:var(--muted)">sandbox uses the same ToolRegistry.execute_tool path (credentials + account context injected) — it is the debug escape hatch for "is this tool actually working?".</span>
+        <span class="mono" style="font-size:11px;color:var(--muted)">sandbox uses the same ToolRegistry.execute_tool path (credentials + account context injected) — the debug escape hatch for "is this tool actually working?". admin-only (same gate as Debug Streaming) · <b>throwaway</b>: nothing persists, no message rows written.</span>
       </div>
     </section>`;
 }
@@ -835,6 +888,15 @@ surf.addEventListener("click", (e) => {
     setTimeout(()=>{ runState="done"; render(); }, 2600);
     return;
   }
+  const sbsSel = e.target.closest("#sbsItemSel");
+  if (sbsSel){
+    sbsItem = sbsSel.value;
+    const item = GOLDEN.find(g => g.id === sbsItem);
+    if (item && item.intent === "knowledge" && sbsPersonal) sbsPersonal = false;
+    render(); return;
+  }
+  const sbsUnlock = e.target.closest("#sbsUnlock");
+  if (sbsUnlock){ sbsPersonal = true; render(); return; }
   const inv = e.target.closest("#invokeBtn");
   if (inv){
     const tool = TOOLS.find(t => t.name === sbTool);
