@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Debug AI — eval runner + side-by-side + tool sandbox · prototype (FIN-71)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────── tokens (mirror of the app) ─────────────────────────── */
+:root{
+  --canvas:#F8FAFC; --canvas-2:#F1F5F9; --panel:#FFFFFF; --panel-2:#F1F5F9;
+  --ink:#0F172A; --ink-2:#475569; --muted:#64748B; --muted-foreground:#64748B;
+  --line:#E2E8F0; --line-2:#CBD5E1;
+  --navy:#1E293B; --navy-strong:#0F172A; --navy-tint:rgba(30,41,59,.06);
+  --emerald:#10B981; --emerald-strong:#047857; --emerald-tint:rgba(16,185,129,.12);
+  --amber:#F59E0B; --amber-strong:#92400E; --amber-tint:rgba(245,158,11,.14);
+  --red:#EF4444; --red-strong:#DC2626; --red-tint:rgba(239,68,68,.10);
+  --blue:#3B82F6; --blue-strong:#2563EB; --blue-tint:rgba(59,130,246,.10);
+  --success:#10B981; --success-strong:#047857; --success-tint:rgba(16,185,129,.12);
+  --warning:#F59E0B; --warning-strong:#92400E; --warning-tint:rgba(245,158,11,.14);
+  --info:#3B82F6; --info-strong:#2563EB; --info-tint:rgba(59,130,246,.10);
+  --destructive:#EF4444; --destructive-strong:#DC2626; --destructive-tint:rgba(239,68,68,.10);
+  --radius:8px; --rail:236px;
+  --display:"Sora","Noto Sans Ethiopic",system-ui,sans-serif;
+  --body:"Inter","Noto Sans Ethiopic",system-ui,sans-serif;
+  --mono:"JetBrains Mono","Noto Sans Ethiopic",ui-monospace,monospace;
+  --shadow-card:0 1px 2px rgba(15,23,42,.05);
+  --dur-fast:120ms; --dur-base:150ms;
+}
+[data-theme="dark"]{
+  --canvas:#14171A; --canvas-2:#171B1E; --panel:#1B1E22; --panel-2:#20242A;
+  --ink:#ECEEEA; --ink-2:#B4BBC4; --muted:#9AA0A6; --muted-foreground:#9AA0A6;
+  --line:#2A2E33; --line-2:#373C45;
+  --navy:#94A3B8; --navy-strong:#CBD5E1; --navy-tint:rgba(148,163,184,.12);
+  --emerald:#6EE7B7; --emerald-strong:#34D399; --emerald-tint:rgba(110,231,183,.14);
+  --amber:#FCD34D; --amber-strong:#FDE68A; --amber-tint:rgba(252,211,77,.14);
+  --red:#FCA5A5; --red-strong:#F87171; --red-tint:rgba(252,165,165,.12);
+  --blue:#93C5FD; --blue-strong:#7DB4FA; --blue-tint:rgba(147,197,253,.12);
+  --success:#6EE7B7; --success-strong:#34D399; --success-tint:rgba(110,231,183,.14);
+  --warning:#FCD34D; --warning-strong:#FDE68A; --warning-tint:rgba(252,211,77,.14);
+  --info:#93C5FD; --info-strong:#7DB4FA; --info-tint:rgba(147,197,253,.12);
+  --destructive:#FCA5A5; --destructive-strong:#F87171; --destructive-tint:rgba(252,165,165,.12);
+  --shadow-card:0 1px 2px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--body);font-size:14px;line-height:1.5;
+  background:var(--canvas);color:var(--ink);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+:focus-visible{outline:2px solid var(--navy);outline-offset:2px;border-radius:4px}
+button{font-family:var(--body)}
+input,select,textarea{font-family:var(--body)}
+.font-mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* tibeb band */
+.tibeb{
+  height:3px;flex:0 0 3px;
+  background:repeating-linear-gradient(90deg,
+    var(--navy) 0 8px, var(--emerald) 8px 15px, var(--amber) 15px 22px, var(--navy) 22px 30px);
+  border-bottom:1px solid var(--line);
+}
+
+/* banner */
+.banner{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:8px 16px;font-size:12px;color:var(--ink-2);
+  background:var(--canvas-2);border-bottom:1px solid var(--line);
+}
+.banner b{color:var(--navy-strong);font-weight:600}
+.banner .spacer{flex:1}
+.banner .pill{
+  font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;
+  background:var(--warning-tint);color:var(--warning-strong);
+}
+
+/* shell */
+body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.page{display:flex;flex:1;min-height:0;padding:16px 16px 12px;gap:16px}
+
+/* ——— mode nav (segmented) ——— */
+.mode-bar{padding:0 16px;background:var(--canvas);display:flex;align-items:center;gap:4px;border-bottom:1px solid var(--line)}
+.mode-bar .mbtn{
+  border:0;background:transparent;padding:11px 16px;font-size:12.5px;font-weight:600;
+  color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:8px;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.mode-bar .mbtn:hover{color:var(--ink)}
+.mode-bar .mbtn.on{color:var(--ink);border-bottom-color:var(--navy-strong)}
+.mode-bar .mbtn .mini{font-size:10px;font-weight:700;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:0 6px;line-height:16px}
+.mode-bar .spacer{flex:1}
+.mode-bar .ctx{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+
+.chip{
+  font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  padding:1px 6px;border-radius:4px;white-space:nowrap;
+}
+.chip.agentic{background:var(--info-tint);color:var(--info-strong)}
+.chip.simple{background:var(--panel-2);color:var(--ink-2);border:1px solid var(--line)}
+.chip.cache{background:var(--success-tint);color:var(--success-strong)}
+.chip.knowledge{background:var(--navy-tint);color:var(--navy-strong)}
+.chip.personal{background:var(--emerald-tint);color:var(--emerald-strong)}
+.chip.mixed{background:var(--amber-tint);color:var(--amber-strong)}
+.chip.easy{background:var(--success-tint);color:var(--success-strong)}
+.chip.medium{background:var(--amber-tint);color:var(--amber-strong)}
+.chip.hard{background:var(--red-tint);color:var(--red-strong)}
+.chip.en{background:var(--panel-2);color:var(--ink-2);border:1px solid var(--line)}
+.chip.am{background:var(--emerald-tint);color:var(--emerald-strong)}
+.chip.pass{background:var(--success-tint);color:var(--success-strong)}
+.chip.fail{background:var(--destructive-tint);color:var(--destructive-strong)}
+.chip.defer{background:var(--warning-tint);color:var(--warning-strong)}
+.chip.regress{background:var(--destructive-tint);color:var(--destructive-strong)}
+
+/* ——— three surface columns ——— */
+.eval-page{flex:1;display:flex;gap:16px;min-height:0}
+.panelc{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-card);display:flex;flex-direction:column;min-height:0}
+.panelc .ph{padding:12px 14px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.panelc .ph h2{font-family:var(--display);font-size:14px;font-weight:600}
+.panelc .ph p{font-size:11.5px;color:var(--muted);margin-top:2px}
+.panelc .pb{flex:1;overflow-y:auto;padding:12px 14px}
+.panelc .pf{padding:10px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);flex:0 0 auto}
+
+/* cell matrix */
+.matrix-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.cell{
+  border:1px solid var(--line);border-radius:6px;padding:8px 10px;cursor:pointer;
+  background:var(--panel);transition:border-color var(--dur-fast), background var(--dur-fast);
+}
+.cell:hover{background:var(--panel-2)}
+.cell.on{border-color:var(--navy-strong);background:var(--navy-tint)}
+.cell .cell-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.cell .cell-top .nm{font-size:11px;font-weight:700;font-family:var(--mono)}
+.cell .cell-top .v{font-family:var(--display);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.cell .cell-top .v.ok{color:var(--success-strong)}
+.cell .cell-top .v.bad{color:var(--destructive-strong)}
+.cell .cell-top .v.reg{color:var(--destructive-strong)}
+.cell .cell-sub{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap}
+.cell .chunkline{font-size:10px;color:var(--muted);margin-top:6px;font-family:var(--mono)}
+
+.grid-empty{grid-column:1/-1;font-size:11.5px;color:var(--muted);text-align:center;padding:12px}
+
+/* variance vs pass bar */
+.barline{display:flex;align-items:center;gap:8px;margin-top:5px}
+.barline .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;width:150px;flex:0 0 auto}
+.barline .track{flex:1;height:6px;border-radius:3px;background:var(--panel-2);border:1px solid var(--line);position:relative;overflow:hidden}
+.barline .track .fill{position:absolute;top:0;bottom:0;left:0;border-radius:3px;background:var(--navy)}
+.barline .track .fill.pass{background:var(--success)}
+.barline .track .fill.fail{background:var(--destructive)}
+.barline .track .fill.defer{background:var(--warning)}
+.barline .track .bar{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--navy-strong);border-radius:1px}
+.barline .track .bar.defer{background:var(--warning-strong)}
+.barline .val{font-family:var(--mono);font-size:11px;width:48px;text-align:right;flex:0 0 auto}
+.barline .val.ok{color:var(--success-strong)}
+.barline .val.bad{color:var(--destructive-strong)}
+.barline .val.defer{color:var(--warning-strong)}
+
+/* item rows */
+.item{
+  border:1px solid var(--line);border-radius:6px;padding:9px 11px;margin-bottom:7px;cursor:pointer;
+  display:flex;flex-direction:column;gap:6px;transition:border-color var(--dur-fast), background var(--dur-fast);
+}
+.item:hover{background:var(--panel-2)}
+.item.on{border-color:var(--navy-strong);background:var(--navy-tint)}
+.item .row1{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.item .row1 .q{font-size:12.5px;font-weight:600;color:var(--ink);flex:1;min-width:0}
+.item .row1 .st{margin-left:auto}
+.item .row2{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.item .row2 .perf{display:flex;gap:2px;align-items:center;flex:1}
+.item .row2 .perf .dot{width:16px;height:6px;border-radius:2px}
+.item .row2 .perf .dot.ok{background:var(--success)}
+.item .row2 .perf .dot.bad{background:var(--destructive)}
+.item .row2 .perf .dot.defer{background:var(--warning)}
+.item .row2 .mono{font-size:10.5px;color:var(--muted);font-family:var(--mono)}
+.item.simple-dim{opacity:.55}
+
+/* run controls */
+.run-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{
+  height:34px;padding:0 14px;font-size:12.5px;font-weight:600;border-radius:6px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink-2);
+}
+.btn:hover{color:var(--ink);border-color:var(--line-2)}
+.btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.danger{background:var(--destructive-tint);color:var(--destructive-strong);border-color:var(--destructive)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn .spin{display:inline-block;width:11px;height:11px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-1px;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* score summary */
+.sum-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:12px}
+.s-card{border:1px solid var(--line);border-radius:6px;background:var(--panel-2);padding:8px 10px}
+.s-card .k{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.s-card .v{font-family:var(--display);font-size:18px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
+.s-card .v.ok{color:var(--success-strong)}
+.s-card .v.bad{color:var(--destructive-strong)}
+.s-card .v.defer{color:var(--warning-strong)}
+.s-card .sub{font-size:9.5px;color:var(--muted);margin-top:1px}
+
+/* metric table */
+.mtbl{width:100%;border-collapse:collapse;font-size:12px}
+.mtbl th{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:5px 8px;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+.mtbl td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.mtbl tr:last-child td{border-bottom:0}
+.mtbl .val{font-family:var(--mono);font-size:11.5px}
+.mtbl .val.ok{color:var(--success-strong)}
+.mtbl .val.bad{color:var(--destructive-strong)}
+.mtbl .val.defer{color:var(--warning-strong)}
+
+/* ——— side by side ——— */
+.sbs-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;min-height:0}
+.sbs-col{display:flex;flex-direction:column;min-height:0}
+.sbs-col .head{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-bottom:0;
+  border-radius:var(--radius) var(--radius) 0 0;background:var(--panel-2);
+}
+.sbs-col .head .nm{font-family:var(--display);font-size:13px;font-weight:600;flex:1}
+.sbs-col .body{
+  flex:1;overflow-y:auto;border:1px solid var(--line);border-radius:0 0 var(--radius) var(--radius);
+  background:var(--panel);padding:14px;
+}
+.ans-block{font-size:13px;color:var(--ink-2);line-height:1.6}
+.ans-block h3{margin:12px 0 4px;font-size:13px;color:var(--ink)}
+.ans-block ul{margin:6px 0 6px 18px}
+.cite-row{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2);margin-top:4px}
+.cite-row .t{flex:1;min-width:0}
+.cite-pill{display:flex;align-items:center;gap:6px;padding:3px 8px;border:1px solid var(--line);border-radius:999px;background:var(--panel-2);font-size:11px;margin:3px 0}
+.cite-pill .n{font-family:var(--mono);font-size:10px;color:var(--info-strong);font-weight:600}
+.cite-pill .sc{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.cite-pill .missing{color:var(--destructive-strong);font-size:10px;font-weight:700}
+.perf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.perf-grid .pc{border:1px solid var(--line);border-radius:6px;background:var(--panel-2);padding:7px 9px;text-align:center}
+.perf-grid .pc .k{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.perf-grid .pc .v{font-family:var(--display);font-size:15px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
+.perf-grid .pc .v.ok{color:var(--success-strong)}
+.perf-grid .pc .v.bad{color:var(--destructive-strong)}
+.sbs-verdict{
+  margin-top:10px;border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:11.5px;
+  background:var(--canvas-2);color:var(--ink-2);display:flex;gap:8px;align-items:flex-start;
+}
+.sbs-verdict b{color:var(--ink)}
+
+/* ——— tool sandbox ——— */
+.sb-grid{display:grid;grid-template-columns:300px 1fr;gap:16px;min-height:0}
+.tool-list{display:flex;flex-direction:column;gap:3px}
+.tool-row{
+  border:1px solid transparent;border-radius:6px;padding:8px 10px;cursor:pointer;text-align:left;
+  background:transparent;display:flex;flex-direction:column;gap:3px;
+}
+.tool-row:hover{background:var(--panel-2)}
+.tool-row.on{background:var(--navy-tint);border-color:var(--line-2)}
+.tool-row .t{font-size:12.5px;font-weight:600;color:var(--ink);font-family:var(--mono)}
+.tool-row .d{font-size:11px;color:var(--muted);line-height:1.4}
+.tool-row .where{font-size:10px;color:var(--muted);font-family:var(--mono)}
+.tool-row .where.local{color:var(--info-strong)}
+
+.sb-form .field{margin-bottom:10px}
+.sb-form .field label{display:block;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}
+.sb-form .field input,.sb-form .field textarea{
+  width:100%;padding:8px 10px;font-size:12.5px;background:var(--canvas-2);
+  border:1px solid var(--line);border-radius:6px;color:var(--ink);font-family:var(--mono);resize:vertical;
+}
+.sb-form .field input:focus,.sb-form .field textarea:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 2px var(--navy-tint)}
+.sb-form .field .hint{font-size:10.5px;color:var(--muted);margin-top:3px}
+.sb-form .acct{margin-bottom:10px;display:flex;gap:8px;align-items:center}
+.sb-form .acct label{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);flex:0 0 auto}
+.sb-form .acct select{padding:6px 8px;font-size:12px;background:var(--canvas-2);border:1px solid var(--line);border-radius:6px;color:var(--ink)}
+
+.sb-result{margin-top:12px}
+.sb-result .head{display:flex;align-items:center;gap:8px}
+.sb-result pre{
+  margin-top:8px;background:var(--canvas-2);border:1px solid var(--line);border-radius:6px;
+  padding:12px;font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--ink-2);
+  overflow-x:auto;white-space:pre-wrap;word-break:break-word;max-height:360px;overflow-y:auto;
+}
+.llm-view{margin-top:8px;border:1px dashed var(--line);border-radius:6px;padding:8px 10px;background:var(--panel)}
+.llm-view .k{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}
+.llm-view .txt{font-size:11.5px;color:var(--ink-2);font-family:var(--mono);white-space:pre-wrap}
+.supp-bar{
+  margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  background:var(--warning-tint);border-radius:4px;padding:6px 8px;font-size:11px;
+}
+.supp-bar b{color:var(--warning-strong);font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+
+/* footnotes */
+.footnotes{margin-top:14px;border-top:1px dashed var(--line);padding-top:10px}
+.footnotes .fn{font-size:11px;color:var(--muted);display:flex;gap:8px;margin-top:5px;line-height:1.5}
+.footnotes .fn .mark{font-family:var(--mono);color:var(--warning-strong);flex:0 0 auto}
+.emptystate{padding:16px 12px;font-size:12px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<div class="tibeb"></div>
+<div class="banner">
+  <span><b>Prototype — Debug AI: eval runner + scoring, simple-vs-agentic side-by-side, tool sandbox</b> (FIN-71 · web admin, AI module tab)</span>
+  <span class="spacer"></span>
+  <span class="pill">react, don't review — this is a cheap draft to argue with</span>
+</div>
+
+<div class="mode-bar">
+  <button class="mbtn on" data-mode="eval">Eval runner <span class="mini">36</span></button>
+  <button class="mbtn" data-mode="sbs">Side-by-side</button>
+  <button class="mbtn" data-mode="sandbox">Tool sandbox</button>
+  <span class="spacer"></span>
+  <span class="ctx"><span class="live-dot" style="display:none"></span>fixture <span class="font-mono">eval-msme-01</span> · dataset <span class="font-mono">v1.0.0</span> · judge <span class="font-mono">gemini-2.5-flash·t0</span></span>
+</div>
+
+<div class="page">
+  <main class="eval-page" id="surfaces"></main>
+</div>
+
+<script>
+/* dark theme toggle (prototype nicety, not part of the decision) */
+setTimeout(()=>{document.documentElement.setAttribute("data-theme", window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")},0);
+
+/* ═══════════════════════ MOCK DATA ═══════════════════════ */
+const INTS = ["knowledge","personal","mixed"];
+const LOCS = ["en","am"];
+const TIERS = ["easy","medium","hard"];
+
+function makeItem(intent, locale, idx, difficulty, query, tools, reqCites, unknown){
+  return {
+    id: `${intent.slice(0,3).toUpperCase()}-${locale.toUpperCase()}-${String(idx+1).padStart(2,"0")}`,
+    intent, locale, difficulty, query, tools, reqCites, unknown,
+    answeredTools:["search_knowledge_base"], // default impression
+  };
+}
+
+const GOLDEN = [
+  // ── knowledge × en ──
+  makeItem("knowledge","en",0,"easy","What is the VAT registration threshold for small businesses in Ethiopia?",
+    ["search_knowledge_base"], ["Value Added Tax Proclamation No. 285/2002"], false),
+  makeItem("knowledge","en",1,"easy","What documents are required to register a share company (PLC)?",
+    ["search_knowledge_base"], ["Commercial Code"], false),
+  makeItem("knowledge","en",2,"medium","What penalties apply for late income tax filing?",
+    ["search_knowledge_base","search_trusted_web"], ["Income Tax Proclamation No. 979/2016"], false),
+  makeItem("knowledge","en",3,"medium","Does the establishment of a new trade license require the national ID?",
+    ["search_knowledge_base"], ["Trade License Proclamation"], false),
+  makeItem("knowledge","en",4,"hard","What are the tax obligations for a cross-border trader without a permanent establishment?",
+    ["search_knowledge_base","search_trusted_web"], ["Income Tax Proclamation No. 979/2016"], false),
+  makeItem("knowledge","en",5,"hard","What government body appoints the members of the Ethiopian Investment Board?",
+    [], [], true),
+  // ── knowledge × am ──
+  makeItem("knowledge","am",0,"easy","የንግድ ሥራ ፈቃድ ለማደስ ምን ሰነዶች ያስፈልጋሉ?",
+    ["search_knowledge_base"], ["የንግድ ሥራ ፈቃድ"], false),
+  makeItem("knowledge","am",1,"easy","ቲን (TIN) ለማግኘት ምን ማቅረብ ይጠበቃል?",
+    ["search_knowledge_base"], ["የግብር ከፋይ ቁጥር (TIN)"], false),
+  makeItem("knowledge","am",2,"medium","የተዘገዘ የቫት (VAT) ተመላሽ ማቅረብ ምን ቅጣት አለው?",
+    ["search_knowledge_base","search_trusted_web"], ["የታክስ ክፍያ ማስታወቂያ"], false),
+  makeItem("knowledge","am",3,"medium","የቫት (VAT) ምዝገባ ገደብ ስንት ብር ነው?",
+    ["search_knowledge_base"], ["የተጨማሪ እሴት ታክስ አዋጅ"], false),
+  makeItem("knowledge","am",4,"hard","ለአነስተኛ ንግድ የግብር ክፍያ ጊዜ ምን ያህል ነው?",
+    ["search_knowledge_base"], ["የገቢ ታክስ አዋጅ"], false),
+  makeItem("knowledge","am",5,"hard","የኢትዮጵያ ኢንቨስትመንት ቦርድ አባላት በማን ይሾማሉ?",
+    [], [], true),
+  // ── personal × en ──
+  makeItem("personal","en",0,"easy","When does my trade license need renewal?",
+    ["get_user_profile","check_compliance_status","get_guide_progress"], [], false),
+  makeItem("personal","en",1,"easy","What is my registered business sector?",
+    ["get_user_profile"], [], false),
+  makeItem("personal","en",2,"medium","Which compliance obligation of mine is due soonest?",
+    ["check_compliance_status"], [], false),
+  makeItem("personal","en",3,"medium","What step am I on in the formalization guide?",
+    ["get_guide_progress","search_guides"], [], false),
+  makeItem("personal","en",4,"hard","If my TIN record has the wrong address, how do I update it?",
+    ["get_user_profile","check_compliance_status","search_guides"], [], false),
+  makeItem("personal","en",5,"hard","Which permits do I still need before I can start exporting?",
+    ["check_compliance_status","get_user_profile","search_guides"], [], false),
+  // ── personal × am ──
+  makeItem("personal","am",0,"easy","የንግድ ፈቃዴ መቼ ማደስ አለብኝ?",
+    ["get_user_profile","check_compliance_status","get_guide_progress"], [], false),
+  makeItem("personal","am",1,"easy","የሥራዬ ዘርፍ ምንድነው?",
+    ["get_user_profile"], [], false),
+  makeItem("personal","am",2,"medium","የትኛው ግዴታዬ በቅርቡ ማክበር አለብኝ?",
+    ["check_compliance_status"], [], false),
+  makeItem("personal","am",3,"medium","በመደበኛነት ማውጫ ላይ የትኛው ደረጃ ላይ ነኝ?",
+    ["get_guide_progress","search_guides"], [], false),
+  makeItem("personal","am",4,"hard","የቲን (TIN) አድራሻዬ ትክክል ካልሆነ እንዴት ማስተካከል እችላለሁ?",
+    ["get_user_profile","check_compliance_status","search_guides"], [], false),
+  makeItem("personal","am",5,"hard","ወደ ውጭ መላክ ከመጀመሬ በፊት የትኞቹ ፈቃዶች ያስፈልጉኛል?",
+    ["check_compliance_status","get_user_profile","search_guides"], [], false),
+  // ── mixed × en ──
+  makeItem("mixed","en",0,"easy","Do I qualify for VAT exemption given my export volume?",
+    ["get_user_profile","check_compliance_status","search_knowledge_base"], ["Value Added Tax Proclamation No. 285/2002"], false),
+  makeItem("mixed","en",1,"easy","Is my business required to keep VAT records?",
+    ["get_user_profile","search_knowledge_base"], ["Value Added Tax Proclamation No. 285/2002"], false),
+  makeItem("mixed","en",2,"medium","How does my coffee export activity affect which trade license I need?",
+    ["get_user_profile","search_knowledge_base","search_guides"], ["Trade License Proclamation"], false),
+  makeItem("mixed","en",3,"medium","Will closing my business affect my outstanding tax filings?",
+    ["check_compliance_status","search_knowledge_base"], ["Income Tax Proclamation No. 979/2016"], false),
+  makeItem("mixed","en",4,"hard","My planned expansion to a second branch — which registrations and approvals apply to my company?",
+    ["get_user_profile","check_compliance_status","search_knowledge_base","search_guides"], ["Commercial Code"], false),
+  makeItem("mixed","en",5,"hard","How do the new e-services affect my annual filings as an exporter?",
+    ["check_compliance_status","search_knowledge_base","search_trusted_web"], ["Income Tax Proclamation No. 979/2016"], false),
+  // ── mixed × am ──
+  makeItem("mixed","am",0,"easy","በኤክስፖርት መጠኔ ምክንያት ከቫት (VAT) ነፃ የመሆን መብት አለኝ?",
+    ["get_user_profile","check_compliance_status","search_knowledge_base"], ["የተጨማሪ እሴት ታክስ አዋጅ"], false),
+  makeItem("mixed","am",1,"easy","የንግድ ሥራዬ የቫት (VAT) መዝገብ የማስቀመጥ ግዴታ አለው?",
+    ["get_user_profile","search_knowledge_base"], ["የተጨማሪ እሴት ታክስ አዋጅ"], false),
+  makeItem("mixed","am",2,"medium","የቡና ኤክስፖርት እንቅስቃሴዬ የትኛውን የንግድ ፈቃድ ይፈልጋል?",
+    ["get_user_profile","search_knowledge_base","search_guides"], ["የንግድ ሥራ ፈቃድ"], false),
+  makeItem("mixed","am",3,"medium","ንግዴን ብዘጋ ያለፉ የታክስ ማስታወቂያዎቼን ይጎዳል?",
+    ["check_compliance_status","search_knowledge_base"], ["የገቢ ታክስ አዋጅ"], false),
+  makeItem("mixed","am",4,"hard","ወደ ሁለተኛ ቅርንጫፍ ለማስፋት ማንኛውም ምዝገባ እና ፈቃድ ያስፈልጋል?",
+    ["get_user_profile","check_compliance_status","search_knowledge_base","search_guides"], ["የንግድ ሕግ (Commercial Code)"], false),
+  makeItem("mixed","am",5,"hard","አዲሶቹ ኢ-ሰርቪሶች ዓመታዊ ማስታወቂያዎቼን እንዴት ይጎዱታል?",
+    ["check_compliance_status","search_knowledge_base","search_trusted_web"], ["የገቢ ታክስ አዋጅ"], false),
+];
+
+/* per-cell seeded scores (provisional, pre-calibration FIN-77) — shape mirrors FIN-69/68 metrics */
+const CELL_SCORES = {
+  "knowledge:en": { cit: .95, gnd: .93, tool: .90, ctx: .76, faith: .88, relv: .86, pass: 5, total: 6, verdict: "pass", note: "ctx recall below 0.50 provisional bar on the two hard cells" },
+  "knowledge:am": { cit: .76, gnd: .88, tool: .85, ctx: .52, faith: .71, relv: .78, pass: 3, total: 6, verdict: "fail", note: "BM25 on Fidel weak — context recall 0.52; AM judge under spot-check" },
+  "personal:en": { cit: 1.0, gnd: 1.0, tool: .95, ctx: null, faith: .92, relv: .90, pass: 6, total: 6, verdict: "pass", note: "" },
+  "personal:am": { cit: 1.0, gnd: 1.0, tool: .90, ctx: null, faith: .82, relv: .81, pass: 5, total: 6, verdict: "pass", note: "AM judge spot-check pending" },
+  "mixed:en":  { cit: .83, gnd: .90, tool: .92, ctx: .74, faith: .90, relv: .84, pass: 5, total: 6, verdict: "pass", note: "" },
+  "mixed:am":  { cit: .71, gnd: .85, tool: .87, ctx: .55, faith: .75, relv: .76, pass: 3, total: 6, verdict: "fail", note: "AM retrieval drags citations + context recall together" },
+};
+
+/* pass bars — provisional until FIN-77 calibration */
+const BARS = {
+  cit:   { bar: .80, label: "Required-citation coverage", status: "provisional" },
+  gnd:   { bar: .90, label: "Citation grounding precision", status: "provisional" },
+  tool:  { bar: .90, label: "Tool-use adherence", status: "provisional" },
+  ctx:   { bar: .70, label: "Context recall (KB/mixed)", status: "provisional", na: "personal" },
+  faith: { bar: .85, label: "Faithfulness (judge)", status: "provisional" },
+  relv:  { bar: .80, label: "Answer relevancy (judge)", status: "provisional" },
+};
+
+/* tool registry — mirrors the real backend registry (2 local + 8 expected remote) */
+const TOOLS = [
+  { name: "search_knowledge_base", where: "local", desc: "Hybrid vector + BM25 over the knowledge base, language-filtered.", params: { query: "string — English or Amharic", top_k: "integer, default 5" }, required: ["query"] },
+  { name: "search_trusted_web", where: "local", desc: "Fetch content from trusted Ethiopian government/regulatory domains.", params: { url: "string — whitelisted domain only" }, required: ["url"] },
+  { name: "search_guides", where: "remote", desc: "Guide content + steps from the core-backend.", params: { query: "string", account_id: "uuid?" }, required: ["query"] },
+  { name: "get_user_profile", where: "remote", desc: "Business profile, sector, tags, stage.", params: { account_id: "uuid" }, required: ["account_id"] },
+  { name: "check_compliance_status", where: "remote", desc: "Licenses/deadlines for the account.", params: { account_id: "uuid" }, required: ["account_id"] },
+  { name: "find_template", where: "remote", desc: "Business document template lookup.", params: { name: "string" }, required: ["name"] },
+  { name: "get_guide_progress", where: "remote", desc: "Steps completed/locked for a guide.", params: { account_id: "uuid", guide_id: "uuid" }, required: ["account_id","guide_id"] },
+  { name: "list_sectors", where: "remote", desc: "Sector taxonomy options.", params: {}, required: [] },
+  { name: "list_tags", where: "remote", desc: "Tag taxonomy options.", params: {}, required: [] },
+  { name: "get_guide_detail", where: "remote", desc: "Full guide document by id.", params: { guide_id: "uuid" }, required: ["guide_id"] },
+];
+
+/* deterministic-ish mock results per tool */
+const MOCK_RESULTS = {
+  search_knowledge_base: {
+    success: true, ms: 341,
+    raw: {
+      hits: [
+        { chunk_id: "en:mof-vat:3", doc: "VAT Registration Guide", title: "Value Added Tax Proclamation No. 285/2002", score: 0.84, excerpt: "Any person whose taxable turnover exceeds 1,000,000 ETB must register within 30 days of crossing the threshold…" },
+        { chunk_id: "en:mint-export:2", doc: "Export Procedures — Coffee Sector", title: "Export Procedures", score: 0.71, excerpt: "Coffee exporters must hold a valid business license and TIN before applying for export permits…" },
+        { chunk_id: "en:mint-reg:1", doc: "Business Registration Basics", title: "Business Registration", score: 0.62, excerpt: "Registration requires the TIN, trade license, and sector-specific permits…" }
+      ],
+      vector_top_k: 8, bm25_top_k: 8, merged: 3, language: "en"
+    },
+    llm_view: "Found 3 results:\n[1] VAT Registration Guide · en:mof-vat:3 (0.84) — Any person whose taxable turnover exceeds 1,000,000 ETB must register within 30 days…\n[2] Export Procedures · en:mint-export:2 (0.71) — Coffee exporters must hold a valid business license…\n[3] Business Registration · en:mint-reg:1 (0.62) — Registration requires the TIN…"
+  },
+  search_trusted_web: {
+    success: true, ms: 420,
+    raw: { url: "https://www.mof.gov.et/vat-guide", status: 200, freshness: "2026-08-15", title: "VAT Guide — Ministry of Revenues", length: 3842, text: "Late filing incurs a 5% penalty of the tax due plus monthly interest on the outstanding amount…" },
+    llm_view: "Fetched https://www.mof.gov.et/vat-guide (200, 2026-08-15):\nLate filing incurs a 5% penalty of the tax due plus monthly interest on the outstanding amount…"
+  },
+  get_user_profile: {
+    success: true, ms: 66,
+    raw: { account_id: "eval-msme-01", business_name: "Selam Coffee Export PLC", sector: "crop-farming", region: "OROMIA", stage: "OPERATIONAL", tags: ["plc","op-exporter","has-employees","tax-vat"] },
+    llm_view: "Profile: Selam Coffee Export PLC · sector crop-farming · region OROMIA · stage OPERATIONAL · tags plc, op-exporter, has-employees, tax-vat"
+  },
+  check_compliance_status: {
+    success: true, ms: 188,
+    raw: { account_id: "eval-msme-01", obligations: [
+      { kind: "trade_license", status: "ACTIVE", exp: "2027-01-10", window: "30d" },
+      { kind: "tax_registration", status: "ACTIVE", exp: "2030-06-15", window: "45d" },
+      { kind: "business_registration", status: "ACTIVE", exp: "2031-06-15", window: "60d" }
+    ]},
+    llm_view: "3 obligations — trade_license (2027-01-10, 30d window), tax_registration (2030-06-15, 45d), business_registration (2031-06-15, 60d)"
+  },
+  get_guide_progress: {
+    success: true, ms: 240,
+    raw: { account_id: "eval-msme-01", guide_id: "g-fml-01", guide: "Formalization Path", steps: [
+      { n: 1, step: "Business registration", status: "COMPLETED" },
+      { n: 2, step: "TIN registration", status: "COMPLETED" },
+      { n: 3, step: "Trade license renewal", status: "IN_PROGRESS" },
+      { n: 4, step: "Export permit", status: "LOCKED" }
+    ]},
+    llm_view: "Guide 'Formalization Path' — 4 steps: 1 Business registration (COMPLETED), 2 TIN registration (COMPLETED), 3 Trade license renewal (IN_PROGRESS), 4 Export permit (LOCKED)"
+  },
+  search_guides: {
+    success: true, ms: 220,
+    raw: { query: "trade license renewal", guide: { id: "g-fml-01", title: "Formalization Path", steps: ["registration","TIN","license","export"] } },
+    llm_view: "Guide 'Formalization Path' (g-fml-01) — 4 steps; matches query 'trade license renewal'."
+  },
+  find_template: {
+    success: true, ms: 95,
+    raw: { name: "business_registration", templates: ["registration-form.pdf", "memorandum-template.docx"] },
+    llm_view: "2 templates found for 'business_registration': registration-form.pdf, memorandum-template.docx"
+  },
+  list_sectors: { success: true, ms: 40, raw: { sectors: ["crop-farming","retail","manufacturing","services","construction"] }, llm_view: "Sectors: crop-farming, retail, manufacturing, services, construction" },
+  list_tags: { success: true, ms: 40, raw: { tags: ["plc","sole-proprietor","op-exporter","has-employees","tax-vat","guide-following"] }, llm_view: "Tags: plc, sole-proprietor, op-exporter, has-employees, tax-vat, guide-following" },
+  get_guide_detail: { success: true, ms: 130, raw: { guide_id: "g-fml-01", title: "Formalization Path", steps: [{n:1,title:"Registration",body:"…"},{n:2,title:"TIN",body:"…"}] }, llm_view: "Guide g-fml-01 'Formalization Path' — step titles: Registration, TIN" },
+  default_fail: { success: false, ms: 12, raw: { error: "Tool execution failed: connection refused after 1 retry (failure ladder)", args: {} }, llm_view: "FAILED: connection refused after 1 retry (failure ladder)" }
+};
+
+/* side-by-side sample run (same query, both strategies) */
+const SBS_SAMPLE = {
+  query: "Do I qualify for VAT exemption given my export volume?",
+  intent: "mixed", locale: "en",
+  simple: {
+    strategy: "simple", model: "gemini-2.5-flash", latencyMs: 890, tokens: { prompt: 384, completion: 210 },
+    answer: "VAT exemption is available to exporters whose export turnover exceeds a threshold set under the Value Added Tax Proclamation. Whether your business qualifies depends on your registered activity and export volume. You should check with the tax authority for your specific case.",
+    citations: [{n:1,title:"Value Added Tax Proclamation No. 285/2002",score:0.81}],
+    toolUse: [], wrongFamily: false, exhausted: false,
+    gates: { cit: {got:.5,bar:.80,pass:false}, gnd:{got:1,bar:.90,pass:true}, tool:{got:0,bar:.90,pass:false}, ctx:{got:.4,bar:.70,pass:false} }
+  },
+  agentic: {
+    strategy: "agentic", model: "gemini-2.5-flash", latencyMs: 4230, tokens: { prompt: 1184, completion: 642 },
+    answer: "Based on your registered profile (Selam Coffee Export PLC — exporter, tax-VAT), your export activity **may qualify for VAT exemption** on export-related turnover, but you remain obligated to register if your local taxable turnover crosses the 1,000,000 ETB threshold. Your compliance records show tax registration active through 2030 — the exemption does not remove that obligation. See the cited proclamation for the exact treatment of export income.",
+    citations: [
+      {n:1,title:"Value Added Tax Proclamation No. 285/2002",score:0.84,grounded:true},
+      {n:2,title:"Selam Coffee Export PLC — profile",score:1.0,grounded:true},
+      {n:3,title:"Compliance record (eval-msme-01)",score:0.92,grounded:true}
+    ],
+    toolUse: ["get_user_profile","check_compliance_status","search_knowledge_base"],
+    wrongFamily: false, exhausted: false,
+    gates: { cit: {got:1,bar:.80,pass:true}, gnd:{got:1,bar:.90,pass:true}, tool:{got:1,bar:.90,pass:true}, ctx:{got:.9,bar:.70,pass:true} }
+  }
+};
+
+/* ═══════════════════════ STATE ═══════════════════════ */
+let mode = "eval";
+let cellSel = "knowledge:en";
+let itemSel = "KB-EN-01";
+let runState = "idle";      // idle | running | done
+const surf = document.getElementById("surfaces");
+
+/* helpers */
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+function fmt(ms){ return ms >= 1000 ? (ms/1000).toFixed(2)+"s" : ms+"ms"; }
+function cellKey(i,l){ return `${i}:${l}`; }
+function itemsIn(key){ const [intent,locale] = key.split(":"); return GOLDEN.filter(g => g.intent===intent && g.locale===locale); }
+function pct(v){ return v==null ? "—" : (v*100).toFixed(0)+"%"; }
+
+/* ——— cell scorecard with variance vs provisional bar ——— */
+function cellScoreBars(cs){
+  const k = cellSel; const na = (m) => m==="ctx" && cs.ctx==null;
+  const order = [["cit"],["gnd"],["tool"],["ctx"],["faith"],["relv"]];
+  return order.map(([m]) => {
+    const bar = BARS[m].bar, got = cs[m];
+    if (got==null) return "";
+    const diff = got - bar;
+    const cls = diff >= 0 ? "pass" : "fail";
+    return `<div class="barline">
+      <span class="lbl">${esc(BARS[m].label)}</span>
+      <span class="track"><span class="fill ${cls}" style="width:${Math.min(100,got*100)}%"></span><span class="bar" style="left:${Math.min(100,bar*100)}%"></span></span>
+      <span class="val ${cls}">${pct(got)}</span>
+    </div>`;
+  }).join("");
+}
+
+/* ——— mode: EVAL RUNNER ——— */
+function runnerRow(item){
+  const sel = item.id === itemSel;
+  return `
+    <div class="item ${sel?"on":""}" data-item="${item.id}">
+      <div class="row1">
+        <span class="q">${esc(item.query)}</span>
+        <span class="mono">${item.id}</span>
+        <span class="st"><span class="chip ${item.locale}">${item.locale}</span><span class="chip ${item.difficulty}">${item.difficulty}</span></span>
+      </div>
+      <div class="row2">
+        <span class="chip ${item.intent}">${item.intent}</span>
+        <span class="chip simple" style="display:${item.unknown?"inline-block":"none"}">unknown</span>
+        <span class="perf">${item.answeredTools.slice(0,5).map((t,i)=>`<span class="dot ${i<1?"ok":"bad"}" title="${esc(t)}"></span>`).join("")||"<span style='font-size:10px;color:var(--muted)'>no tools</span>"}</span>
+        <span class="mono">tools ${item.answeredTools.length}/${item.tools.length}</span>
+      </div>
+    </div>`;
+}
+
+function renderEval(){
+  let selectedCell;
+  const group = cellSel.split(":");
+  const cs = CELL_SCORES[cellSel];
+  const items = itemsIn(cellSel);
+  const passing = items.filter(i => !i.unknown).filter(i => i.answeredTools.length >= i.tools.length).length;
+  const verdict = cs.verdict;
+
+  const cellsHtml = INTS.flatMap(intent => LOCS.map(locale => {
+    const key = cellKey(intent, locale);
+    const c = CELL_SCORES[key];
+    const cls = c.verdict === "fail" ? "bad" : (c.verdict === "pass" ? "ok" : "reg");
+    const on = key === cellSel;
+    return `<div class="cell ${on?"on":""}" data-cell="${key}">
+      <div class="cell-top">
+        <span class="nm">${intent.slice(0,3).toUpperCase()}/${locale}</span>
+        <span class="v ${cls}">${(c.pass/c.total*100).toFixed(0)}%</span>
+      </div>
+      <div class="cell-sub"><span class="chip ${locale}">${locale}</span><span class="chip ${intent}">${intent}</span></div>
+      <div class="chunkline">${c.pass}/${c.total} items · ${verdictGist(c)}</div>
+    </div>`;
+  }).join(""));
+
+  const summary = `
+    <div class="sum-strip">
+      ${["cit","gnd","tool","ctx","faith","relv"].map(m => {
+        const bar = BARS[m].bar, got = cs[m];
+        const na = got==null;
+        const cls = na ? "defer" : (got>=bar ? "ok" : "bad");
+        return `<div class="s-card"><div class="k">${m}</div><div class="v ${cls}">${na?"n/a":(got*100).toFixed(0)}%</div><div class="sub">bar ${pct(bar)}</div></div>`;
+      }).join("")}
+    </div>`;
+
+  surf.innerHTML = `
+    <section class="panelc" style="width:360px;flex:0 0 360px">
+      <div class="ph">
+        <h2>Golden set · 36 items</h2>
+        <p>Intent × locale cells, scored against the provisional bars (FIN-77 calibrates).</p>
+      </div>
+      <div class="pb">
+        <div class="matrix-grid">${cellsHtml}</div>
+        <div style="height:12px"></div>
+        <div class="sec-title" style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Cell ${esc(cellSel)} items</div>
+        <div style="margin-top:8px">${items.map(runnerRow).join("")}</div>
+      </div>
+      <div class="pf">Legend: green passes the provisional cell bar; red fails. Unknown-handling scored separately.</div>
+    </section>
+
+    <section class="panelc" style="flex:1">
+      <div class="ph">
+        <h2>Cell detail — ${esc(cellSel)}</h2>
+        <p>${esc(group[0])} × ${esc(group[1])} · ${items.length} items · passed ${cs.pass}/${cs.total}</p>
+      </div>
+      <div class="pb">
+        ${summary}
+        <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px">Variance vs provisional bar</div>
+        ${cellScoreBars(cs)}
+        ${cs.note ? `<div class="sbs-verdict"><b>cell note</b><span>${esc(cs.note)}</span></div>` : ""}
+        <div class="footnotes">
+          <div class="fn"><span class="mark">!</span><span>Bars are <b>provisional</b> until FIN-77 runs a known-bad baseline and gets human approval.</span></div>
+          <div class="fn"><span class="mark">–</span><span>ctx recall is n/a for <span class="font-mono">personal</span> items; unknown-handling is a separate hard gate (100%).</span></div>
+        </div>
+      </div>
+      <div class="pf">
+        <div class="run-tools">
+          <button class="btn primary" id="runCell">${runState==="running" ? '<span class="spin"></span>Running cell…' : "Run this cell (6 items)"}</button>
+          <button class="btn" id="runAll" ${runState==="running"?"disabled":""}>Run full set (36)</button>
+          <button class="btn danger" style="display:none" id="abortTn">Abort</button>
+          <span class="mono" style="font-size:11px;color:var(--muted)">→ captures full traces to the runs rail (replayable)</span>
+        </div>
+      </div>
+    </section>`;
+}
+
+function verdictGist(c){ return c.verdict==="pass" ? "pass" : c.verdict==="fail" ? "fail" : "~"; }
+
+/* ——— mode: SIDE-BY-SIDE ——— */
+function sbsVerdict(a){
+  const pass = a.gates.cit.pass && a.gates.gnd.pass && a.gates.tool.pass && a.gates.ctx.pass;
+  return pass ? `<span class="chip pass">passes gates</span>` : `<span class="chip fail">fails gates</span>`;
+}
+function sbsColumn(name, d, cls){
+  const bars = Object.entries(d.gates).map(([m,g]) => `
+    <div class="barline">
+      <span class="lbl">${esc(BARS[m].label)}</span>
+      <span class="track"><span class="fill ${g.pass?"pass":"fail"}" style="width:${Math.min(100,g.got*100)}%"></span><span class="bar" style="left:${Math.min(100,g.bar*100)}%"></span></span>
+      <span class="val ${g.pass?"ok":"bad"}">${pct(g.got)}</span>
+    </div>`).join("");
+  return `
+    <div class="sbs-col">
+      <div class="head">
+        <span class="nm">${esc(name)}</span>
+        <span class="chip ${cls}">${cls}</span>
+        ${sbsVerdict(d)}
+      </div>
+      <div class="body">
+        <div class="ans-block">${d.answer.split(/\n/).map(p=>p.startsWith("-")?`<ul><li>${esc(p.replace(/^- /,""))}</li></ul>`:esc(p)).join("<br/>")}</div>
+        <div style="margin-top:10px"><div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:5px">Citations</div>
+          ${d.citations.map(c=>`<div class="cite-pill"><span class="n">[${c.n}]</span><span class="t">${esc(c.title)}</span><span class="sc">${c.score.toFixed(2)}</span>${c.grounded===false?`<span class="missing">untraceable</span>`:""}</div>`).join("")}
+        </div>
+        <div class="perf-grid">
+          <div class="pc"><div class="k">latency</div><div class="v">${fmt(d.latencyMs)}</div></div>
+          <div class="pc"><div class="k">tokens</div><div class="v">${(d.tokens.prompt+d.tokens.completion).toLocaleString()}</div></div>
+          <div class="pc"><div class="k">tools</div><div class="v">${d.toolUse.length||0}</div></div>
+        </div>
+        <div style="margin-top:10px"><div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:5px">Gates (deterministic, instant)</div>
+          ${bars}
+        </div>
+        ${d.exhausted ? `<div class="supp-bar"><b>marked unreliable</b><span>iteration cap reached — candidate for auto-flag rather than acceptance.</span></div>` : ""}
+      </div>
+    </div>`;
+}
+
+function renderSbs(){
+  const d = SBS_SAMPLE;
+  surf.innerHTML = `
+    <div class="panelc" style="flex:1">
+      <div class="ph">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <h2 style="flex:1">Side-by-side — ${esc(d.query)}</h2>
+          <span class="chip ${d.intent}">${d.intent}</span>
+          <span class="chip ${d.locale}">${d.locale}</span>
+          <span class="chip cache">fixture account</span>
+        </div>
+        <p>Same query, both strategies, scored on the same gates — the answer-quality delta the eval exists to make visible.</p>
+      </div>
+      <div class="pb" style="display:flex;flex-direction:column">
+        <div class="sbs-grid" style="flex:1;min-height:0">
+          ${sbsColumn("Simple Ask", d.simple, "simple")}
+          ${sbsColumn("Agentic Ask", d.agentic, "agentic")}
+        </div>
+        <div class="box row" style="margin-top:12px">
+          <div style="border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:var(--canvas-2);font-size:12px;color:var(--ink-2);display:flex;gap:8px">
+            <b style="flex:0 0 auto">verdict</b>
+            <span>Simple is faster and cheaper but <b>fails 3 of 4 deterministic gates</b> (missed the export-profile obligation and the 1M threshold nuance); agentic passes and cites the account-record source. The eval runner is what turns this intuition into a pass/fail number.</span>
+          </div>
+        </div>
+        <div class="footnotes">
+          <div class="fn"><span class="mark">!</span><span>Both runs come from the same fixture account (eval-msme-01) and cache-bypass — the only variable is the strategy.</span></div>
+          <div class="fn"><span class="mark">?</span><span>Which cells do you actually want side-by-side for, and does the verdict belong per-run or per-cell?</span></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ——— mode: TOOL SANDBOX ——— */
+let sbTool = TOOLS[0].name;
+let sbResult = null;
+
+function toolForm(tool){
+  const keys = Object.keys(tool.params);
+  const pre = tool.name==="search_knowledge_base" ? {"query":"VAT registration requirements coffee exporter Oromia","top_k":"5"}
+           : tool.name==="search_trusted_web" ? {"url":"https://www.mof.gov.et/vat-guide"}
+           : tool.name==="get_user_profile" ? {"account_id":"eval-msme-01"}
+           : tool.name==="check_compliance_status" ? {"account_id":"eval-msme-01"}
+           : tool.name==="get_guide_progress" ? {"account_id":"eval-msme-01","guide_id":"g-fml-01"}
+           : tool.name==="search_guides" ? {"query":"trade license renewal","account_id":"eval-msme-01"}
+           : tool.name==="find_template" ? {"name":"business_registration"}
+           : tool.name==="get_guide_detail" ? {"guide_id":"g-fml-01"}
+           : {};
+  return `
+    ${keys.length ? keys.map(k => `
+      <div class="field">
+        <label>${esc(k)}</label>
+        <input data-p="${k}" value="${esc(pre[k]||"")}"/>
+        <div class="hint">${esc(tool.params[k])}</div>
+      </div>`).join("") : `<div class="field"><label>no parameters</label></div>`}
+    <div class="acct">
+      <label>account</label>
+      <select id="acctSel"><option value="eval-msme-01" selected>eval-msme-01 (fixture)</option><option value="demo" disabled>demo — no fixture</option></select>
+    </div>
+    <div class="run-tools">
+      <button class="btn primary" id="invokeBtn">Invoke</button>
+      <span class="font-mono" style="font-size:11px;color:var(--muted)">→ calls the real tool execution path against the fixture</span>
+    </div>`;
+}
+
+function renderSandbox(){
+  const tool = TOOLS.find(t => t.name === sbTool);
+  surf.innerHTML = `
+    <section class="panelc" style="width:300px;flex:0 0 300px">
+      <div class="ph">
+        <h2>Tool registry</h2>
+        <p>10 registered tools — 2 local, 8 remote (gRPC).</p>
+      </div>
+      <div class="pb" style="padding:8px">
+        <div class="tool-list" id="toolList">
+          ${TOOLS.map(t => `
+            <button class="tool-row ${t.name===sbTool?"on":""}" data-tool="${t.name}">
+              <span class="t">${esc(t.name)}</span>
+              <span class="d">${esc(t.desc)}</span>
+              <span class="where ${t.where==="local"?"local":""}">${t.where} · ${Object.keys(t.params).length ? Object.keys(t.params).join(", ") : "no params"}</span>
+            </button>`).join("")}
+        </div>
+      </div>
+      <div class="pf">Filters follow the intent gates (no tool can be invoked out of its intended family).</div>
+    </section>
+
+    <section class="panelc" style="flex:1">
+      <div class="ph">
+        <h2>Direct invocation — <span class="font-mono">${esc(tool.name)}</span></h2>
+        <p>${esc(tool.desc)}</p>
+      </div>
+      <div class="pb">
+        <div class="sb-form">${toolForm(tool)}
+          <div class="sb-result" id="sbResult">${sbResult ? renderResult(sbResult, tool) : `<div class="emptystate">Invoke the tool to see its raw result and the exact summary the LLM would receive.</div>`}</div>
+        </div>
+      </div>
+      <div class="pf">
+        <span class="mono" style="font-size:11px;color:var(--muted)">sandbox uses the same ToolRegistry.execute_tool path (credentials + account context injected) — it is the debug escape hatch for "is this tool actually working?".</span>
+      </div>
+    </section>`;
+}
+
+function renderResult(res, tool){
+  const ok = res.success;
+  return `
+    <div class="head">
+      <span class="chip ${ok?"pass":"fail"}">${ok?"success":"failure"}</span>
+      <span class="font-mono" style="font-size:11.5px;color:var(--muted)">${fmt(res.ms)} · ${tool.where}</span>
+      ${ok?"":`<span class="chip regress">retry ladder → stale-flagged → fallback</span>`}
+    </div>
+    <pre>${esc(JSON.stringify(res.raw, null, 2).slice(0, 2400))}</pre>
+    <div class="llm-view"><div class="k">LLM-received summary (≤500 chars, what the model actually sees)</div><div class="txt">${esc(res.llm_view)}</div></div>
+    <div class="supp-bar" style="display:none"><b>note</b><span>suppressed-call path is not reachable here — guards live in the agent loop, not the tool.</span></div>`;
+}
+
+/* ═══════════════════════ EVENTS ═══════════════════════ */
+function render(){
+  if (mode==="eval") renderEval();
+  else if (mode==="sbs") renderSbs();
+  else renderSandbox();
+}
+
+document.querySelectorAll(".mbtn").forEach(b => b.addEventListener("click", () => {
+  mode = b.dataset.mode;
+  document.querySelectorAll(".mbtn").forEach(x => x.classList.toggle("on", x===b));
+  render();
+}));
+
+surf.addEventListener("click", (e) => {
+  const cellBtn = e.target.closest("[data-cell]");
+  if (cellBtn){ cellSel = cellBtn.dataset.cell; itemSel = itemsIn(cellSel)[0]?.id; runState="idle"; render(); return; }
+  const itmBtn = e.target.closest("[data-item]");
+  if (itmBtn){ itemSel = itmBtn.dataset.item; render(); return; }
+  const toolBtn = e.target.closest("[data-tool]");
+  if (toolBtn){ sbTool = toolBtn.dataset.tool; sbResult=null; render(); return; }
+  const runCell = e.target.closest("#runCell");
+  if (runCell){
+    runState="running"; render();
+    setTimeout(()=>{ runState="done"; render(); }, 1400);
+    return;
+  }
+  const runAll = e.target.closest("#runAll");
+  if (runAll){
+    runState="running"; render();
+    setTimeout(()=>{ runState="done"; render(); }, 2600);
+    return;
+  }
+  const inv = e.target.closest("#invokeBtn");
+  if (inv){
+    const tool = TOOLS.find(t => t.name === sbTool);
+    const args = {};
+    document.querySelectorAll("[data-p]").forEach(inp => args[inp.dataset.p] = inp.value);
+    const mock = MOCK_RESULTS[tool.name] || MOCK_RESULTS.default_fail;
+    /* simulate a failure ladder for the web tool when URL is obviously bad */
+    let res = mock;
+    if (tool.name==="search_trusted_web" && !/\.gov\.et$/.test(String(args.url||""))){
+      res = { ...mock, success:false, ms: 4012, raw:{ error:"http:// rejected — domain not on whitelist. Allowed: mof.gov.et, molsa.gov.et, ies, eservices, mint.gov.et…" } };
+    }
+    sbResult = {...res, raw: {...res.raw, args}};
+    render();
+    return;
+  }
+});
+
+render();
+</script>
+</body>
+</html>
