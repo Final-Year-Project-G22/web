@@ -617,7 +617,7 @@ function renderEval(){
       const cells = LOCS.map(locale => {
         const key = cellKey(intent, locale);
         const c = CELL_SCORES[key];
-        const cls = c.verdict === "fail" ? "bad" : (c.verdict === "pass" ? "ok" : "reg");
+        const cls = c.verdict === "fail" ? "bad" : "defer"; // pending calibration → amber, not green
         const on = key === cellSel;
         const unknown = CELL_UNKNOWN[key];
         return `<div class="cell ${on?"on":""}" data-cell="${key}">
@@ -625,7 +625,7 @@ function renderEval(){
             <span class="nm">${locale.toUpperCase()}</span>
             <span class="v ${cls}">${(c.pass/c.total*100).toFixed(0)}%</span>
           </div>
-          <div class="cell-sub"><span class="chip ${intent}">${intent}</span><span class="chip ${c.verdict==="pass"?"pass":"fail"}">${verdictGist(c)}</span></div>
+          <div class="cell-sub"><span class="chip ${intent}">${intent}</span><span class="chip ${c.verdict==="fail"?"fail":"defer"}">${verdictGist(c)}</span></div>
           <div class="chunkline">${c.pass}/${c.total} items</div>
           <div class="unk ${unknown.handle>=unknown.total?"":"bad"}">unknown ${unknown.handle}/${unknown.total}</div>
         </div>`;
@@ -676,7 +676,7 @@ function renderEval(){
         ${cellScoreBars(cs)}
         ${cs.note ? `<div class="sbs-verdict"><b>cell note</b><span>${esc(cs.note)}</span></div>` : ""}
         <div class="footnotes">
-          <div class="fn"><span class="mark">!</span><span>Bars are <b>provisional</b> until FIN-77 runs a known-bad baseline and gets human approval.</span></div>
+          <div class="fn"><span class="mark">!</span><span>Bars are <b>provisional</b> until FIN-77 runs a known-bad baseline and gets human approval — <b>amber = score shown, acceptance deferred</b>. Green verdicts appear only after calibration.</span></div>
           <div class="fn"><span class="mark">judge</span><span>Deterministic gates compute <b>live</b> in the runner; faithfulness &amp; relevancy are LLM-judge metrics filled by the <b>nightly CLI pass</b> (Gemini 2.5 Flash · t0) and surfaced here.</span></div>
           <div class="fn"><span class="mark">–</span><span>ctx recall is n/a for <span class="font-mono">personal</span> items (no KB evidence expected); unknown-handling is a separate hard gate (100%).</span></div>
         </div>
@@ -686,13 +686,18 @@ function renderEval(){
           <button class="btn primary" id="runCell">${runState==="running" ? '<span class="spin"></span>Running cell…' : "Run this cell (6 items)"}</button>
           <button class="btn" id="runAll" ${runState==="running"?"disabled":""}>Run full set (36)</button>
           <button class="btn danger" style="display:none" id="abortTn">Abort</button>
-          <span style="font-size:11px;color:var(--muted)">runs the in-process ask path per item (fixture account · cache-bypassed) → traces land in the <b>separate Eval runs store</b>, replayable.</span>
+          <span style="font-size:11px;color:var(--muted)"><b>POST /eval/run</b> (admin-gated, core-backend) → loops items through the in-process ask path (fixture account · cache-bypassed) → deterministic + judge gates → writes a self-contained row to the <b>dedicated eval_runs store</b> (JSONB trace snapshot); replayable.</span>
         </div>
       </div>
     </section>`;
 }
 
-function verdictGist(c){ return c.verdict==="pass" ? "pass" : c.verdict==="fail" ? "fail" : "~"; }
+/* verdicts are amber "calibration pending" pre-FIN-77 — score shown, acceptance deferred */
+function verdictGist(c){
+  if (c.verdict === "fail") return "fail";
+  if (c.verdict === "pass") return "pending";
+  return "pending";
+}
 
 /* ——— mode: SIDE-BY-SIDE ——— */
 let sbsItem = "KB-EN-01";            // golden item only — free-form not allowed
@@ -750,7 +755,7 @@ function renderSbs(){
             ${GOLDEN.map(g => `<option value="${g.id}" ${g.id===sitem.id?"selected":""}>${g.id} · ${esc(g.query.slice(0,34))}${g.intent!=="knowledge"?" …":""}</option>`).join("")}
           </select>
         </div>
-        <p>Golden items only — no free-form. Knowledge intents by default; <button class="btn" id="sbsUnlock" style="height:auto;padding:1px 8px;font-size:11px">${isPersonal?"show":"unlock"} personal/mixed</button> to see where simple can't reach.</p>
+        <p>Golden items only — no free-form. Knowledge intents by default; <button class="btn" id="sbsUnlock" style="height:auto;padding:1px 8px;font-size:11px">${isPersonal?"show":"unlock"} personal/mixed</button> to see where simple can't reach. <b>Compare runs both strategies fresh</b> (cache-bypassed) on demand — never reuses a stale run.</p>
       </div>
       <div class="pb" style="display:flex;flex-direction:column">
         ${isPersonal ? `
@@ -767,8 +772,9 @@ function renderSbs(){
           </div>
         </div>
         <div class="footnotes">
-          <div class="fn"><span class="mark">!</span><span>Both runs come from the same fixture account (eval-msme-01) and cache-bypass — the only variable is the strategy. Trace for each lands in the Eval runs store, comparable and replayable.</span></div>
-          <div class="fn"><span class="mark">?</span><span>Which cells do you actually want side-by-side for, and does the verdict belong per-run or per-cell?</span></div>
+<div class="fn"><span class="mark">!</span><span>Both runs come from the same fixture account (eval-msme-01) and cache-bypass — the only variable is the strategy. Trace for each lands in the Eval runs store, comparable and replayable.</span></div>
+        <div class="fn"><span class="mark">⇒</span><span><b>Compare</b> triggers the eval-run endpoint for the selected item in both strategies, fresh — apples-to-apples at one moment.</span></div>
+        <div class="fn"><span class="mark">≈</span><span>side-by-side is a debug comparison surface, not acceptance — the acceptance unit stays the <b>Evaluation Cell</b> + its Pass Bars.</span></div>
         </div>
       </div>
     </div>`;
@@ -838,7 +844,7 @@ function renderSandbox(){
         </div>
       </div>
       <div class="pf">
-        <span class="mono" style="font-size:11px;color:var(--muted)">sandbox uses the same ToolRegistry.execute_tool path (credentials + account context injected) — the debug escape hatch for "is this tool actually working?". admin-only (same gate as Debug Streaming) · <b>throwaway</b>: nothing persists, no message rows written.</span>
+        <span class="mono" style="font-size:11px;color:var(--muted)">sandbox uses the same ToolRegistry.execute_tool path (credentials + account context injected) — the debug escape hatch for "is this tool actually working?". admin-only (same gate as Debug Streaming) · <b>throwaway</b>: nothing persists, no message rows written · <b>fixture account only</b> — real-account sandboxing deferred pending the debug-surface security review.</span>
       </div>
     </section>`;
 }
